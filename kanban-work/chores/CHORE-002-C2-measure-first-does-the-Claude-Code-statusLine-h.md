@@ -7,7 +7,7 @@ priority: medium
 assignee: null
 created: 2026-10-08
 tags: [v1.0, VOY-001, measure]
-depends_on: []
+depends_on: [CHORE-003]
 ---
 
 # C2: measure first — does the Claude Code statusLine hook fire under 'claude -p', and which z.ai endpoint answers an API key
