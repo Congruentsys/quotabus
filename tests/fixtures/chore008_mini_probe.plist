@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- CHORE-008 fixture: the EXP-001 Mini plist (packaging/launchd/com.congruentsys.quotabus-probe.plist) as CHORE-007
+     changed it (71bebe7): StartInterval is the 300 s tick. Verbatim otherwise. -->
 <plist version="1.0">
 <dict>
     <key>Label</key>

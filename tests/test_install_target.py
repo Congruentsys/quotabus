@@ -25,7 +25,8 @@ Interface fixed by these tests (the implementer meets it; `packaging/install.sh`
   - `/Users/admin` (today's hard-wired Mini path) appears in no file under packaging/ except packaging/README.md, where
     the fleet's Mini install command is recorded: README names Mini as the fleet's central probe host and carries the
     command, a line containing `install.sh` and `--host <…mini…>`. That command, rendered, yields a unit equivalent to
-    today's plist (tests/fixtures/chore008_mini_probe.plist, a verbatim copy of the EXP-001 plist), field by field.
+    today's plist (tests/fixtures/chore008_mini_probe.plist, a verbatim copy of the EXP-001 plist as
+    CHORE-007 changed it at 71bebe7: StartInterval is the 300 s tick), field by field.
 
 Fakes only: the environment carries a fake key (`sk-test-not-a-key`) and PATH starts with a directory of fake
 ssh/scp/rsync/launchctl/systemctl/sudo that log any call and fail. The controls at the bottom show each checker can fail.
@@ -373,7 +374,13 @@ def test_control_plist_comparison_catches_each_mutated_field():
 
 
 def test_control_fixture_is_the_exp001_mini_plist():
+    """The fixture is the EXP-001 plist as of origin/main 71bebe7 (CHORE-007's 300 s tick)."""
     want = plistlib.loads(MINI_FIXTURE.read_bytes())
+    assert want["StartInterval"] == 300, "CHORE-007 (71bebe7) made StartInterval the 300 s tick"
+    assert "71bebe7" in MINI_FIXTURE.read_text()
+    assert want["Label"] == "com.congruentsys.quotabus-probe" and want["RunAtLoad"] is True
+    assert want["ProgramArguments"][:7] == ["/opt/homebrew/bin/doppler", "run", "--project", "nusy-product-team",
+                                            "--config", "dev", "--"]
     assert want["StandardOutPath"] == "/Users/admin/Library/Logs/quotabus/probe.out.log"
     assert want["ProgramArguments"][-3:] == ["probe", "--config", "/usr/local/etc/quotabus/quotabus.toml"]
     assert FAKE_KEY not in MINI_FIXTURE.read_text()
