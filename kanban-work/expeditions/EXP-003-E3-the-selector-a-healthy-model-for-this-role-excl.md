@@ -7,7 +7,7 @@ priority: medium
 assignee: null
 created: 2026-10-08
 tags: [v1.0, VOY-001]
-depends_on: []
+depends_on: [EXP-002]
 ---
 
 # E3: the selector — 'a healthy model for this role, excluding this family' as a library call and a CLI
