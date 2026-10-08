@@ -51,3 +51,7 @@ Hold met: EXP-001, EXP-002, EXP-003 and EXP-004 have all landed (PRs #6?/12/14/1
 ### M5-MBP-2/s-72a67d16 (2026-10-08 21:41)
 
 Correction to my last comment: EXP-001 landed in PR #2, not '#6?'. EXP-002 is #12, EXP-003 #14, EXP-004 #15.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 21:58)
+
+[steer] bucket-1 read (M5, 2026-10-08): nusy-product-team origin/main 34e7be27ff still has the 2026-09-24 hand-probe §1a ('quotabus' does not appear in docs/external-review.md). Not landed there, so this stays stranded.
