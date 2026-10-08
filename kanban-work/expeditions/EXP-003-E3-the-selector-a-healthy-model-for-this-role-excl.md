@@ -30,3 +30,10 @@ The selector refuses a family the author uses; rc 3 when every candidate is `unk
     kb:by "M5/s-b1fd4c67" ;
   ] .
 ```
+
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 17:22)
+
+Released with depends_on EXP-002 (design §9: the selector is only as honest as the subscription rows it refuses on). No open signal blocks it.
