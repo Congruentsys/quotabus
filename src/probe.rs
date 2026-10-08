@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 use chrono::Utc;
 use futures::future::join_all;
-use reqwest::header::{CONTENT_TYPE, HeaderValue};
+use reqwest::header::HeaderValue;
 use serde_json::json;
 
 use crate::balance::{apply_floor, extract_amount};
@@ -270,11 +270,8 @@ async fn probe_model(
 
     let checked_at = Utc::now();
     let started = Instant::now();
-    let (outcome, transport_error) = match request
-        .header(CONTENT_TYPE, "application/json")
-        .send()
-        .await
-    {
+    // `.json()` already sets the one `Content-Type: application/json`; adding another doubles it (xAI answers 415)
+    let (outcome, transport_error) = match request.send().await {
         Ok(resp) => {
             let status = resp.status().as_u16();
             let headers = resp
