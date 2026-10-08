@@ -21,3 +21,12 @@ Raised by the EXP-004 review (`reviews/EXP-004-r1.md` F2, PR #15). Under the agr
 
 ## Recommendation (an agent's, not a decision)
 3 with 2 as the default: a signal is for a person to act on, and `degraded`/`rate_limited` usually clear on their own.
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 21:57)
+
+[steer] bucket-3: the trigger is REVERSING OR NARROWING A §10 RULING.
+The Captain's SIG-006 ruling, 'Signal per crossing' (DESIGN §10 Q8), is built as one signal per state crossing into ANY bad state. Filing only hard failures would narrow what that ruling files, and that is the Captain's call, not a session's.
+Recommended default: option 3 with option 2 as the default: `[alert] states`, defaulting to the hard failures (quota_exhausted, auth_failed, model_missing, unreachable) PLUS a near-limit window (see CHORE-010, decided alongside). Latency-degraded and rate_limited stay on the bus and are refused by select, but file no signal.
+Left open.
