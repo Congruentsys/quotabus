@@ -76,6 +76,25 @@ pub trait Backend {
     fn scan(&self) -> impl Future<Output = Result<Listing, BackendError>> + Send;
     /// Every row present (unparseable keys are left out; [`Backend::scan`] reports them).
     fn list(&self) -> impl Future<Output = Result<Vec<Record>, BackendError>> + Send;
+    /// The raw value of a store entry that is not a row (`alert.<key>`, the alert's dedup state), or `None`.
+    fn get_entry(
+        &self,
+        key: &str,
+    ) -> impl Future<Output = Result<Option<Vec<u8>>, BackendError>> + Send;
+    /// Write a store entry that is not a row: no per-key TTL, no change subject.
+    fn put_entry(
+        &self,
+        key: &str,
+        bytes: Vec<u8>,
+    ) -> impl Future<Output = Result<(), BackendError>> + Send;
+}
+
+/// Store keys under this prefix are not status rows: they hold `quotabus alert`'s dedup state (DESIGN §3 alert), and
+/// every listing leaves them out. A row key starts with its kind (`api.`, `subscription.`, `local.`), never this.
+pub const ENTRY_PREFIX: &str = "alert.";
+
+fn is_entry(key: &str) -> bool {
+    key.starts_with(ENTRY_PREFIX)
 }
 
 fn parse_row(key: &str, bytes: &[u8]) -> Result<Record, String> {
@@ -153,6 +172,7 @@ impl Backend for FileBackend {
             let name = entry.file_name().to_string_lossy().into_owned();
             if let Some(key) = name.strip_suffix(".json")
                 && !key.starts_with('.')
+                && !is_entry(key)
             {
                 keys.push(key.to_string());
             }
@@ -169,6 +189,24 @@ impl Backend for FileBackend {
 
     async fn list(&self) -> Result<Vec<Record>, BackendError> {
         Ok(self.scan().await?.rows)
+    }
+
+    async fn get_entry(&self, key: &str) -> Result<Option<Vec<u8>>, BackendError> {
+        self.read_raw(key).await
+    }
+
+    async fn put_entry(&self, key: &str, bytes: Vec<u8>) -> Result<(), BackendError> {
+        let path = self.path(key)?;
+        tokio::fs::create_dir_all(&self.dir)
+            .await
+            .map_err(|e| other(&format!("cannot create {}", self.dir.display()), e))?;
+        let tmp = self.dir.join(format!(".{key}.json.tmp"));
+        tokio::fs::write(&tmp, bytes)
+            .await
+            .map_err(|e| other(&format!("cannot write {}", tmp.display()), e))?;
+        tokio::fs::rename(&tmp, &path)
+            .await
+            .map_err(|e| other(&format!("cannot write {}", path.display()), e))
     }
 }
 
@@ -518,9 +556,12 @@ impl Backend for NatsKv {
         })?;
         let mut names = Vec::new();
         while let Some(k) = keys.next().await {
-            names.push(k.map_err(|e| {
+            let k = k.map_err(|e| {
                 BackendError::Unreachable(format!("cannot list bucket {}: {e}", self.bucket))
-            })?);
+            })?;
+            if !is_entry(&k) {
+                names.push(k);
+            }
         }
         names.sort();
         let mut listing = Listing::default();
@@ -535,6 +576,20 @@ impl Backend for NatsKv {
 
     async fn list(&self) -> Result<Vec<Record>, BackendError> {
         Ok(self.scan().await?.rows)
+    }
+
+    async fn get_entry(&self, key: &str) -> Result<Option<Vec<u8>>, BackendError> {
+        self.read_raw(key).await
+    }
+
+    async fn put_entry(&self, key: &str, bytes: Vec<u8>) -> Result<(), BackendError> {
+        // a plain KV put: no `Nats-TTL` header, so the entry outlives the rows' TTL (an expired dedup state would
+        // file the same crossing again), and no change subject (it is not a status row)
+        self.store
+            .put(key, bytes.into())
+            .await
+            .map(|_| ())
+            .map_err(|e| other(&format!("put {key}"), e))
     }
 }
 

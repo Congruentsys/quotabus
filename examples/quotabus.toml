@@ -155,3 +155,22 @@ base_url   = "https://api.github.com"
 secret     = "GITHUB_TOKEN"
 sources    = []                         # off: the only source is undocumented
 # sources  = ["copilot_internal"]       # GET /copilot_internal/user (undocumented)
+
+# ── Alerts: `quotabus alert`, run after each probe cycle (DESIGN §3 alert, §10 Q8; EXP-004). ──
+# One item per crossing (a service going bad), never auto-closed; the last alerted state is kept at `alert.<key>` in
+# the same bucket, and only a measured `ok` re-arms it. stdout is always a sink. A sink left out is not used.
+# `command` is run as given (use an absolute path under launchd/systemd, whose PATH is minimal); yurtle-kanban files
+# on the board of the directory it runs in, so run `quotabus alert` from that repo, or point `command` at a wrapper.
+
+[alert.nusy-kanban]
+command   = "nusy-kanban"               # its server comes from its own environment (NUSY_FLEET_KANBAN_SERVER)
+item_type = "signal"                    # SIG-006: "Signal per crossing"
+tags      = ["provider-status", "infra"]
+
+[alert.yurtle-kanban]
+command   = "yurtle-kanban"             # `create signal "<title>" --push --body-file -`
+item_type = "signal"
+tags      = ["provider-status"]
+
+# [alert.webhook]                       # a JSON POST per crossing; the URL is never printed (it may be a credential)
+# url = "https://example.invalid/hook"

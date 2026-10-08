@@ -88,7 +88,7 @@ alarm and a staleness flag only a parsing reader can see (both `nats kv get flee
           ┌──────────────┬───────────┼───────────────┬──────────────────┐
      quotabus status   quotabus select   quotabus alert (crossing-dedup)   quotabus serve (optional)
      (table, --json,   (CLI + library)   → nusy-kanban signal · yurtle-     (127.0.0.1, JSON + one page)
-      --check rc)                           kanban issue · webhook · stdout
+      --check rc)                           kanban signal · webhook · stdout
 ```
 
 **One binary, five subcommands.** `probe` is the central runner. Where it runs is a config choice made at install:
@@ -189,7 +189,8 @@ item_type = "signal"
 tags      = ["provider-status", "infra"]
 [alert.yurtle-kanban]
 command   = "yurtle-kanban"
-item_type = "issue"
+item_type = "signal"                                  # SIG-006 "Signal per crossing", as on nusy-kanban
+tags      = ["provider-status"]
 [alert.webhook]
 url = "https://example.invalid/hook"
 ```
@@ -218,6 +219,26 @@ id: fleet/ai-status
 ```
 ````
 
+**The Yurtle front-end — what EXP-004 built** (`src/yurtle.rs`, `examples/quotabus.yurtle.md`, `tests/exp004_config.rs`).
+`Config::load` reads a path ending in `.md` as Yurtle and anything else as TOML. No Rust Yurtle reader exists
+(`docs/PRIOR-ART.md` names only the Python `yurtle-rdflib`), so the binary carries a small, strict reader for exactly
+the block above — Yurtle v2.1's `yurtle-table` (`yurtle-spec.md:137-157`) — and nothing else; it is not a Yurtle
+parser. It reads every fenced block whose info string is `yurtle-table` (a block shown inside another fence, as here,
+is not read) and ignores frontmatter, prose, plain markdown tables and every other block. A block is one `@type <Type>`
+line, then one markdown table whose first column is `@id` (`#<id>`); an empty cell is absence and a comma-separated
+cell is a list, as the spec's rules 4-5 say. Cells are typed by column, not inferred (a `floor` must be a number,
+everything else is a string). Refused, so a typo is an error and not a silently dropped value: an unknown `@type` or
+column, a ragged row, a missing separator, a second `@type` line, `@prefix` / `@base` / prose inside a block, a
+per-row `@type` column, an unclosed block. The rows become the same tables the TOML front-end parses, so one
+validation path checks both. The rest of the config is more blocks of the same kind: `@type Bus` (`#bus`: `url`,
+`bucket`), `File` (`#file`: `dir`), `Probe` (`#probe`: `max-tokens`, `degraded-latency-ms`), `Schedule` (`#api`,
+`#balance`, `#subscription`: `interval`, `ttl`, i.e. `[intervals]` and `[ttl]`), and `AlertSink` (`#nusy-kanban`,
+`#yurtle-kanban`, `#webhook`: `command`, `item-type`, `tags`, `url`). `Service` takes the columns above plus
+`protocol`, `cost-class`, `sources`, `publish-balance` (`true`/`false`) and `context` (`<model>=<tokens>, …`). Those
+names, and the split into several blocks, are EXP-004's [INFERENCE: the design shows only the `Service` block, and
+"the binary reads only that block type" rules out a `yurtle` block for the rest]. `examples/quotabus.yurtle.md` loads
+to the same config as `examples/quotabus.toml`.
+
 **Key sources.** The binary reads a secret **only from its environment**, by the NAME the config gives, and refuses to
 probe a service whose name resolves empty (the `backend-env.sh` rule, `docs/external-review.md:66`). Injection is the
 launcher's job: `secretspec run -- quotabus probe` covers keyring/Keychain, 1Password, Doppler (0.21+), `pass`, Vault,
@@ -235,8 +256,44 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
 | change subject | `ai.status.changed.<key>` published only when `state` differs from the previous row (a flapping latency does not spam the bus); the payload is the new row as JSON, on core NATS (no stream captures it). Built by EXP-003 in the bus backend's write, so every row `quotabus probe` writes goes through it. A key with no previous row (never written, or expired out of the bucket) or an unreadable one counts as a change [INFERENCE: the design is silent on the first row]; a failed announcement does not fail the write, the row is already stored [INFERENCE]. The write is conditional on the revision it read (`Nats-Expected-Last-Subject-Sequence`, 0 for an absent key, as async-nats's `Store::update` does): a concurrent writer that moved the key makes the server refuse it (`WrongLastSequence`), and the write re-reads and retries, up to 5 times, so the announce is decided against the row actually replaced and a concurrent change is never left unannounced (review r1 F2). After 5 refusals, or when the last revision cannot be read, the row is written unconditionally and announced: a duplicate announce is harmless, a missing one is not. The announce's flush is bounded at 2 s; past that a warning is logged and the write still returns ok (review r1 F4). The subject is a hint: a subscriber re-reads the row |
 | CLI | `quotabus status [--json] [--kind api] [--stale]` — a one-screen table with AGE and SOURCE columns; `quotabus status --check <service>` exits 0 ok · 1 not ok · 2 CANNOT-ASSESS · 3 UNKNOWN, for pre-flight checks in scripts (LIT §10) |
 | selector | `quotabus select --role review --exclude-family anthropic [--prefer cheapest|fastest|largest-context] [--n 1]` prints `provider model` on line 1 (for `$(…)`), the ranked list with reasons under `--json`; rc 3 when nothing qualifies. Library: `quotabus::select(&rows, &Query, &Config) -> Vec<Candidate>` — a pure function over rows + the static model table (family, cost class, roles, context), unit-testable without a bus. Vocabulary copied from LiteLLM's cooldown (`allowed_fails`, `cooldown`), applied per model not per group (LIT §1) |
-| alert | `quotabus alert` runs after each probe cycle: **crossing-dedup** — one alert per state crossing, keyed `alert.<key>` in the same bucket holding the last alerted state; **only a measured `ok` clears it, a CANNOT-ASSESS never does** (the dead script's rule, `provider-balance-scan.sh:289-295`). Sinks: `nusy-kanban create --tags … --body-file - signal "<title>"` (flags before positionals; `nusy-kanban create --help`), `yurtle-kanban create issue "<title>" --push --body-file -` (`yurtle-kanban/src/yurtle_kanban/cli.py:767-776`) — or, inside a yurtle-kanban repo, its own `create_item` hook action (`hooks.py:372-373, 473-495`) — a JSON webhook, and stdout |
+| alert | `quotabus alert` runs after each probe cycle: **crossing-dedup** — one alert per state crossing, keyed `alert.<key>` in the same bucket holding the last alerted state; **only a measured `ok` clears it, a CANNOT-ASSESS never does** (the dead script's rule, `provider-balance-scan.sh:289-295`). Sinks: `nusy-kanban create --tags … --body-file - signal "<title>"` (flags before positionals; `nusy-kanban create --help`), `yurtle-kanban create signal "<title>" --push --body-file -` (`yurtle-kanban/src/yurtle_kanban/cli.py:767-776`) — or, inside a yurtle-kanban repo, its own `create_item` hook action (`hooks.py:372-373, 473-495`) — a JSON webhook, and stdout. The item type is the sink's `item_type`: `signal` on both boards (§10 Q8, SIG-006). What EXP-004 built is below the table |
 | web | `quotabus serve` on `127.0.0.1` by default: `GET /v1/status`, `GET /v1/select?…`, and one HTML page; feature-gated, off by default |
+
+**Alert — what EXP-004 built** (`src/alert.rs`, `quotabus alert` in `src/main.rs`, `tests/exp004_alert.rs`).
+- **What it reads.** The configured (service, slot) keys, as `status` does, each through the freshness rule (§2).
+  Balance rows are not alerted on their own: the floor reaches the model rows as `quota_exhausted`.
+- **Dedup at `alert.<key>`**, in the same store as the rows (bus: the same bucket; file backend:
+  `<dir>/alert.<key>.json`). The value is JSON, `{contract: "quotabus-alert/1", key, state, at, pending?}`; `state`
+  is the last alerted state. It is written with no per-key TTL (an expired dedup entry would file the same crossing
+  again) and announces no change subject; every listing (`status`, `select`, `probe`'s due check) leaves `alert.*`
+  keys out, so it never reads as a broken row.
+- **A crossing** is a fresh measured state that is not `ok` and differs from the entry's `state` (no entry reads as
+  `ok`). It is filed to every configured sink and printed on stdout (`ALERT <key> <state> (<service> <model>): …`,
+  plain text), then recorded. The same bad state across any number of cycles files once.
+- **Only a measured `ok` clears it:** a fresh `ok` rewrites the entry as `state: "ok"` (re-armed; stdout says
+  `CLEARED`) and files and closes nothing. A CANNOT-ASSESS (`unknown` row, unreadable row) and an UNKNOWN (absent,
+  expired — an expired `ok` included) leave the entry as it is and file nothing.
+- **It never auto-closes.** The only board call is `create`; a recovery is a stdout line, and the item is closed by
+  hand.
+- **Sinks.** `[alert.nusy-kanban]` runs `<command> create --tags <tags> --body-file - <item_type> "<title>"`;
+  `[alert.yurtle-kanban]` runs `<command> create <item_type> "<title>" --push --tags <tags> --body-file -` (never
+  `--no-push`, never `--assign`); the body (key, state, reason, error, `checked_at`, `observed_by`) is on stdin.
+  `command` defaults to the sink's name, `item_type` to `signal`. The child's environment loses every configured
+  `secret` variable. `[alert.webhook]` is a JSON POST of the crossing (key, service, model, state, reason, error,
+  title …); a 2xx is success, and the URL is never printed (a webhook URL is often itself a credential). Title, body,
+  JSON and stdout all pass the redactor.
+- **A sink failure means retry:** the crossing is not recorded, rc is 1, and the next run files it again.
+  **[INFERENCE] partial failure:** the crossing is recorded only when every sink succeeded; the sinks that did are kept
+  in the entry's `pending: {state, filed: [...]}` (its `state` stays the previous one), so the next run retries only
+  the sinks that failed and a failed webhook never files a second kanban item.
+- **[INFERENCE] a bad→bad move** (`model_missing` → `auth_failed`) is a new crossing and files again: the entry holds
+  the last alerted *state*, and the fix differs per state. `degraded` and `rate_limited` are not `ok`, so each is a
+  crossing too.
+- **Exit codes:** 0 every sink called succeeded (or nothing crossed) · 1 a sink, or a dedup read/write, failed
+  (retried next run) · 2 CANNOT-ASSESS: the store cannot be read (bus down, bucket or row directory missing), and
+  nothing is filed. An `alert.<key>` that is not an alert entry skips that key with rc 1 (whether it was filed is
+  unknown, so it neither files nor clears).
+- **When it runs:** after each probe cycle, in the same unit (`packaging/README.md`).
 
 **Selector — what EXP-003 fixed** (`src/select.rs`, `tests/exp003_select.rs`, `tests/exp003_cli_select.rs`). The
 pick is over the configured (service, model slot) pairs, each matched to its row by key; the model table is the config
