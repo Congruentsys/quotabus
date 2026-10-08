@@ -2,7 +2,7 @@
 id: EXP-002
 title: "E2: central subscription reads — every Claude account (Doppler setup-token) and Copilot, from the probe host; no per-host install"
 type: expedition
-status: underway
+status: arrived
 priority: high
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -61,6 +61,12 @@ Six `subscription.anthropic.*` rows and one `subscription.github.*` (Copilot) ro
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:57:09+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T20:20:17+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/12> ;
   ] .
 ```
 
