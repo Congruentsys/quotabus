@@ -152,10 +152,8 @@ async fn probe_service(ctx: &Ctx<'_>, svc: &ServiceConfig, auth: Auth) -> Vec<Re
 
     if let (Some((bal, floor)), true) = (balance, !rows.is_empty()) {
         for r in &mut rows {
+            // the floor only ever turns a working model into quota_exhausted; the balance is on every row
             r.state = apply_floor(r.state, bal.amount, floor);
-            if r.state != State::Unknown {
-                r.reason = None;
-            }
             r.balance = Some(bal.clone());
         }
     }
