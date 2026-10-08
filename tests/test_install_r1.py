@@ -165,3 +165,31 @@ def test_f5_control_ordinary_launchers_are_accepted(tmp_path, launcher):
     out = tmp_path / "out"
     proc, _, _ = run(tmp_path, ["--where", "local", "--os", "macos", "--launcher", launcher, "--render-to", str(out)])
     assert proc.returncode == 0, proc.stderr
+
+
+# ---------------------------------------------------------------- CHORE-007 merge: the default tick is 300 s
+
+def test_default_tick_is_300s_on_macos(tmp_path):
+    import plistlib
+    out = tmp_path / "out"
+    proc, calls, _ = run(tmp_path, ["--where", "local", "--os", "macos", "--render-to", str(out)])
+    assert proc.returncode == 0, proc.stderr
+    assert plistlib.loads((out / f"{LABEL}.plist").read_bytes())["StartInterval"] == 300
+    assert not calls
+
+
+def test_default_tick_is_300s_on_linux(tmp_path):
+    out = tmp_path / "out"
+    proc, calls, _ = run(tmp_path, ["--where", "local", "--os", "linux", "--home", "/home/a", "--render-to", str(out)])
+    assert proc.returncode == 0, proc.stderr
+    timer = (out / "quotabus-probe.timer").read_text()
+    assert "OnUnitActiveSec=300\n" in timer, timer
+    assert not calls
+
+
+def test_control_explicit_interval_still_overrides_the_default(tmp_path):
+    out = tmp_path / "out"
+    proc, _, _ = run(tmp_path, ["--where", "local", "--os", "linux", "--home", "/home/a", "--interval", "120",
+                                "--render-to", str(out)])
+    assert proc.returncode == 0, proc.stderr
+    assert "OnUnitActiveSec=120\n" in (out / "quotabus-probe.timer").read_text()

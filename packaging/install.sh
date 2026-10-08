@@ -3,7 +3,7 @@
 #
 #   packaging/install.sh (--where local | --host <name>) [--user <u>] [--home <dir>] [--os macos|linux]
 #                        [--launcher "<cmd and args>"] [--quotabus <path>] [--probe-config <path>]
-#                        [--interval <seconds>] [--render-to <dir>]
+#                        [--interval <tick seconds>] [--render-to <dir>]
 #
 # With neither --where nor --host it asks on stdin ("local" or a host name).
 #   local   this host, as the current user: --user/--home default to $USER/$HOME, --os to this host's OS.
@@ -16,6 +16,9 @@
 #   "secretspec run --". Default: none. The launcher is stored in the unit and printed in the plan, so it must
 #   carry NO secret: a word like KEY=…, TOKEN=…, SECRET=…, PASSWORD=…, --token or sk-… is refused. Keys arrive only
 #   through the launcher's environment, never a unit or argv.
+# --interval is the TICK, not a probe interval: the unit's StartInterval (launchd) or timer period (systemd).
+#   Default 300 s (CHORE-007). Each `quotabus probe` run makes only the calls that are due; the per-kind
+#   intervals live only in the config's [intervals], and the tick bounds how late a due kind can run.
 # --render-to <dir> is a dry run: it writes the unit(s) into <dir> and prints the plan; it connects to nothing,
 #   loads nothing and writes nothing under the target home.
 # Portable bash (3.2+).
@@ -29,7 +32,7 @@ TIMER_NAME="quotabus-probe.timer"
 die() { echo "install.sh: $*" >&2; exit 2; }
 
 where="" host="" user="" home="" os="" render_to=""
-launcher="" qb_bin="/usr/local/bin/quotabus" probe_config="/usr/local/etc/quotabus/quotabus.toml" interval="900"
+launcher="" qb_bin="/usr/local/bin/quotabus" probe_config="/usr/local/etc/quotabus/quotabus.toml" interval="300"
 
 need() { [ $# -ge 2 ] && [ -n "$2" ] || die "$1 needs a value"; }
 while [ $# -gt 0 ]; do
@@ -175,7 +178,7 @@ EOF
 render_timer() {
     cat <<EOF
 [Unit]
-Description=Run the quotabus central probe every $interval s
+Description=quotabus central probe tick: every $interval s, run the calls that are due
 
 [Timer]
 OnBootSec=60
@@ -215,7 +218,7 @@ print_plan() {
     for u in $units; do echo "unit: $u -> $dest_dir/$u"; done
     [ -z "$log_dir" ] || echo "logs: $log_dir/"
     if [ -n "$launcher" ]; then echo "launcher: $launcher"; else echo "launcher: (none: the unit's environment must carry the keys)"; fi
-    echo "interval: ${interval}s"
+    echo "tick: ${interval}s (per-kind intervals are in the config)"
 }
 
 # ---- dry run
