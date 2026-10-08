@@ -6,7 +6,7 @@ status: underway
 priority: medium
 assignee: M5/s-b1fd4c67
 created: 2026-10-08
-depends_on: []
+depends_on: [CHORE-007]
 ---
 
 # DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind, cite CHORE-007 for TTL rules
