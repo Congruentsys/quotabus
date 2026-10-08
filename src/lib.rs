@@ -13,6 +13,7 @@ pub mod record;
 pub mod redact;
 pub mod schedule;
 pub mod secret;
+pub mod select;
 pub mod subscription;
 
 pub use backend::{Backend, BackendError, BusUrl, FileBackend, Listing, NatsKv};
@@ -26,6 +27,7 @@ pub use record::{
 pub use redact::{ERROR_CAP, Redactor};
 pub use schedule::QueryKind;
 pub use secret::Secret;
+pub use select::{Candidate, Prefer, Query, select};
 
 /// The crate version, as written into `observed_by`.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

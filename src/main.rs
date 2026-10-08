@@ -51,6 +51,23 @@ enum Command {
         #[arg(long)]
         check: Option<String>,
     },
+    /// A healthy model for a role, excluding families: `provider model` on line 1 (one line per `--n`), the ranked
+    /// list with reasons under `--json`; exit 0 chosen · 2 CANNOT-ASSESS (store unreadable) · 3 nothing qualifies.
+    Select {
+        #[arg(long)]
+        role: String,
+        /// A family never chosen (the author's); repeatable.
+        #[arg(long = "exclude-family")]
+        exclude_family: Vec<String>,
+        /// cheapest, fastest or largest-context.
+        #[arg(long)]
+        prefer: Option<String>,
+        /// How many to print.
+        #[arg(long, default_value_t = 1)]
+        n: usize,
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Exit codes of `probe`: a bad config or a backend that cannot be written.
@@ -117,6 +134,7 @@ fn main() -> ExitCode {
                 check,
             },
         )),
+        Command::Select { .. } => todo!("EXP-003: quotabus select"),
     };
     ExitCode::from(code)
 }
