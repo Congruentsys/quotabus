@@ -31,3 +31,10 @@ A model 404 files ONE signal across ten probe cycles; a measured `ok` re-arms it
     kb:by "M5/s-b1fd4c67" ;
   ] .
 ```
+
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 17:22)
+
+Released with depends_on EXP-003. SIG-006 is built to the recommendation (alert = signal, one per crossing, never auto-closed; the item type is sink config), SIG-005's Yurtle twin lands here per the recommendation.
