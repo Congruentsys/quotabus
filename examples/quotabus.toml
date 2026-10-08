@@ -1,4 +1,6 @@
 # quotabus.toml — the fleet's API services and subscription accounts (docs/DESIGN.md §3, §4; EXP-001, EXP-002).
+# `[service.context]` (EXP-003) gives each model's context window to the selector. No window below has been measured
+# or confirmed against its provider, so none is set: a model without one sorts last under `--prefer largest-context`.
 # `secret` is the NAME of an environment variable; the value is injected by the launcher
 # (`doppler run -- quotabus probe` / `secretspec run -- quotabus probe`) and never written here.
 # Model ids marked [unverified] were not confirmed against the provider when this file was written.
@@ -33,6 +35,9 @@ roles      = ["review", "work"]
 cost_class = "metered"
 secret     = "NUSY_GLM"
 balance    = "none"                     # no documented endpoint: UNKNOWN by design
+# [service.context]                     # each model's window in tokens, for `quotabus select --prefer largest-context`
+# "glm-5.3" = 200000                    # NOT measured: 200k is what Claude Code ASSUMES for an unrecognised model
+#                                       # (nusy-product-team docs/external-review.md §1a); set it once the real window is known
 
 [[service]]
 id         = "deepseek"

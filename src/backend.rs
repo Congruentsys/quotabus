@@ -366,6 +366,14 @@ async fn bucket_stream(
     }
 }
 
+/// The subject a state change of `key` is announced on: `ai.status.changed.<key>` (DESIGN §3 Outputs).
+pub fn change_subject(key: &str) -> String {
+    format!("{CHANGE_SUBJECT_PREFIX}{key}")
+}
+
+/// The prefix of every change subject; subscribe to `ai.status.changed.>` for all of them.
+pub const CHANGE_SUBJECT_PREFIX: &str = "ai.status.changed.";
+
 impl NatsKv {
     /// Connect and create the bucket if missing, WITH per-key TTL (`limit_markers`, so the stream has
     /// `allow_msg_ttl`). For the probe.
@@ -426,6 +434,13 @@ impl NatsKv {
 impl Backend for NatsKv {
     async fn put(&self, row: &Record) -> Result<(), BackendError> {
         let bytes = serde_json::to_vec(row).map_err(|e| other("serialise row", e))?;
+        // the previous row's state, read before the write: the change subject fires only when it differs (DESIGN §3
+        // Outputs). Absent (never written, or expired out) and unreadable both count as a change [INFERENCE]: the
+        // reader then learns of a state it could not have known.
+        let previous = match self.read_raw(&row.key).await {
+            Ok(Some(b)) => serde_json::from_slice::<Record>(&b).ok().map(|r| r.state),
+            _ => None,
+        };
         // async-nats 0.50's Store has no put-with-TTL: publish to the key's subject with a `Nats-TTL` header
         let mut headers = async_nats::HeaderMap::new();
         headers.insert(
@@ -433,11 +448,23 @@ impl Backend for NatsKv {
             format!("{}s", row.ttl_s.max(1)).as_str(),
         );
         self.js
-            .publish_with_headers(self.put_subject(&row.key), headers, bytes.into())
+            .publish_with_headers(self.put_subject(&row.key), headers, bytes.clone().into())
             .await
             .map_err(|e| other(&format!("put {}", row.key), e))?
             .await
             .map_err(|e| other(&format!("put {} (no ack)", row.key), e))?;
+        if previous != Some(row.state) {
+            // core NATS, not JetStream: no stream captures `ai.status.changed.>`, so there is no ack to wait for. The
+            // row is already stored, so a failed announcement does not fail the put.
+            let client = self.js.client();
+            let announced = client
+                .publish(change_subject(&row.key), bytes.into())
+                .await
+                .is_ok();
+            if announced {
+                let _ = client.flush().await;
+            }
+        }
         Ok(())
     }
 
