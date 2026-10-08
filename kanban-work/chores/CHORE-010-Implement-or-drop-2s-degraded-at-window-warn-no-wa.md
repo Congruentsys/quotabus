@@ -19,3 +19,9 @@ A decision: either (a) add a per-kind or per-service `warn_pct` with a DEFAULT v
 
 ## Definition of Done (once the default is chosen)
 (a) a `warn_pct` config with the chosen default; a window at or above it reads `degraded`, with a test and a control; DESIGN §2 cites it. Or (b) §2 no longer claims it. `make check` green.
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 20:15)
+
+Kept in harbor: it lacks a default warn % (or a ruling to drop the clause). No ruling names one; the question is for the Captain.
