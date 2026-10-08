@@ -244,8 +244,12 @@ pick is over the configured (service, model slot) pairs, each matched to its row
 - **Only a fresh measured `ok` is chosen.** The freshness rule (§2) is applied at the query's `now`; an absent or
   expired row, a CANNOT-ASSESS (`unknown`) row, and every other state are refused, **`degraded` included**
   [INFERENCE: the design asks for "a healthy model" and says nothing that admits `degraded`].
-- **The role must be listed** on the service; a service with no `roles` (a Claude subscription account) is never a
-  candidate. A family is refused when it is the service's or the row's `family`, compared without case; any number
+- **A subscription seat is never a candidate** (`kind = "subscription"`, a Claude account or the Copilot seat), even
+  fresh, `ok` and listing the role. This is the interim rule pending the Captain's SIG-009 (open: can a seat be a
+  candidate, and as which model?): a seat's row is per ACCOUNT with the service id in the model slot (§2), so there is
+  no model to print as `provider model` (review r1 F1, `reviews/EXP-003-r1.md`). A healthy model that a seat serves
+  is chosen only when it is configured as its own API service.
+- **The role must be listed** on the service. A family is refused when it is the service's or the row's `family`, compared without case; any number
   of `--exclude-family` may be given; a refused family is refused even when it is the only healthy one.
 - **Ordering.** `--prefer` sets the first key, the other two break ties, then the row key, so the answer is total
   and repeatable: `fastest` is the row's `latency_ms`, lowest first; `largest-context` is `[service.context]`, largest

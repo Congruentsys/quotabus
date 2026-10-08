@@ -25,7 +25,9 @@ $(quotabus select --role review --exclude-family anthropic)
 
 It prints `provider model` on one line, the healthiest candidate first (DESIGN §3, "selector"): a model whose
 service lists the `review` role, whose family is not excluded, and whose row on the bus is a fresh `ok` (never
-`degraded`, never an expired row, never `unknown`). It reads the bus and never writes it.
+`degraded`, never an expired row, never `unknown`). It reads the bus and never writes it. **A subscription seat is never chosen** (a Claude account, the Copilot seat),
+pending the Captain's ruling on quotabus SIG-009: today the selector names only API and local models, so the Copilot
+CLI route of external-review §4.2 is not a pick, and the provider map below needs no `github` arm.
 
 ## Exit codes, and what the caller does
 

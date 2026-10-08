@@ -9,7 +9,7 @@ use serde::Serialize;
 
 use crate::config::Config;
 use crate::freshness::{Verdict, freshness};
-use crate::record::{Record, State, record_key};
+use crate::record::{Kind, Record, State, record_key};
 
 /// `--prefer cheapest|fastest|largest-context`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,7 +58,7 @@ pub struct Candidate {
 
 /// Every qualifying candidate, best first. Empty when nothing qualifies.
 ///
-/// A configured (service, model slot) qualifies when the service lists `query.role`, neither the service's family nor
+/// A configured (service, model slot) qualifies when the service is not a subscription seat (SIG-009), lists `query.role`, neither the service's family nor
 /// its row's family is excluded, and the freshness rule (§2) applied at `query.now` gives a measured `ok`: an absent,
 /// expired, CANNOT-ASSESS or any other state (`degraded` included) is never chosen. Ordering: `--prefer`'s key first,
 /// then the others as tie-breakers, then the row key, so the answer is total and repeatable.
@@ -72,7 +72,12 @@ pub fn select(rows: &[Record], query: &Query, config: &Config) -> Vec<Candidate>
     };
     let mut ranked: Vec<(Rank, Candidate)> = Vec::new();
     for svc in &config.services {
-        if !svc.roles.iter().any(|r| r == &query.role) || excluded(&svc.family) {
+        // a subscription seat is never a candidate, pending the Captain's SIG-009: its row is per ACCOUNT, with the
+        // service id in the model slot, so there is no model to print as `provider model` (review r1 F1)
+        if svc.kind == Kind::Subscription
+            || !svc.roles.iter().any(|r| r == &query.role)
+            || excluded(&svc.family)
+        {
             continue;
         }
         for slot in svc.slots() {
@@ -85,7 +90,7 @@ pub fn select(rows: &[Record], query: &Query, config: &Config) -> Vec<Candidate>
             else {
                 continue;
             };
-            if excluded(&row.family) {
+            if row.kind == Kind::Subscription || excluded(&row.family) {
                 continue;
             }
             let Verdict::State {
@@ -154,7 +159,8 @@ struct Rank {
     context: Option<u64>,
 }
 
-/// `cost_class`, cheapest first: `local` (own hardware), `subscription`/`free` (already paid for), `metered`, then
+/// `cost_class`, cheapest first: `local` (own hardware), `subscription`/`free` (already paid for; a seat itself is
+/// never a candidate, SIG-009, but an API service may declare the class), `metered`, then
 /// anything else or unset. [INFERENCE: the design names the classes it uses, `local` and `metered`, but no order.]
 fn cost_rank(class: Option<&str>) -> u8 {
     match class.map(str::trim) {
