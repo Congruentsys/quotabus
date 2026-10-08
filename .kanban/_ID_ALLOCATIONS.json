@@ -110,5 +110,12 @@
     "number": 6,
     "allocated_at": "2026-10-08T17:04:22.175248",
     "allocated_by": "Hank Head"
+  },
+  {
+    "id": "SIG-007",
+    "prefix": "SIG",
+    "number": 7,
+    "allocated_at": "2026-10-08T17:04:24.396737",
+    "allocated_by": "Hank Head"
   }
 ]
