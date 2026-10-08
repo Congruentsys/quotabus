@@ -1,0 +1,4 @@
+# The board and the script tests (make check). Install into the repo's .venv:
+#   python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
+yurtle-kanban==3.4.0
+pytest==9.1.1

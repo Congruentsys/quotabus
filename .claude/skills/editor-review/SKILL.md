@@ -8,10 +8,10 @@ allowed-tools: Bash(.venv/bin/yurtle-kanban *), Bash(PYTHONPATH= .venv/bin/yurtl
 
 # Editor Review — mock target-journal review before Captain read
 
-**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): `create`/`update` take `--push`; `move` and
-`comment` go through `scripts/yk_push.sh` (with `ME` set in the same Bash call).
+**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): yurtle-kanban 3.4.0 pushes `move`,
+`comment` and `rank` by default; `create`/`update` take `--push` (with `ME` set in the same Bash call).
 
-> Ported from nusy-product-team `editor-review` (2026-10-02), nk → yurtle-kanban 3.2.0.
+> Ported from nusy-product-team `editor-review` (2026-10-02), nk → yurtle-kanban 3.2.0; adapted to quotabus 2026-10-08 (yurtle-kanban 3.4.0).
 
 The Captain's standing rule: **before he reads a paper draft, a different session pretends to be
 the editor of the target journal and reviews it.** This front-loads venue-fit and rigor fixes so
@@ -46,7 +46,7 @@ draft markdown). Resolve its **target venue(s)** from the paper item / its LIT r
 .venv/bin/yurtle-kanban show PAPER-NNN       # target venue, related LIT review + draft path
 ```
 
-(On a Spark, prefix `PYTHONPATH=`.) Read the **draft** and its **LIT review** (prior art /
+Read the **draft** and its **LIT review** (prior art /
 publishability). Confirm you are not the author (`git log --format='%an %s' -- <draft path>`, and
 the item's assignee). Identify the target venue(s).
 
@@ -69,7 +69,7 @@ Assess, in the voice of that venue's editor:
 Write it next to the paper, named by venue:
 
 ```text
-research/<paper-area>/EDITOR-REVIEW-PAPER-NNN-<venue>.md
+docs/reviews/EDITOR-REVIEW-PAPER-NNN-<venue>.md
 ```
 
 Include: venue, reviewer (session), date, the 6 assessments above, the decision, the numbered
@@ -81,8 +81,8 @@ docs).
 Hand the saved review to the author:
 
 ```bash
-ME="${NUSY_AGENT_NAME:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
-scripts/yk_push.sh comment PAPER-NNN --agent "$ME" --body "Editor-review (<venue>): <decision>. Review: <path>."
+ME="${QB_AGENT:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
+.venv/bin/yurtle-kanban comment PAPER-NNN --agent "$ME" --body "Editor-review (<venue>): <decision>. Review: <path>."
 ```
 
 The author addresses the required revisions and updates the draft. Re-run `/editor-review` if the
@@ -90,12 +90,11 @@ decision was Major-revision/Reject and a re-review is warranted.
 
 ### 5 — Then the Captain reads
 
-Only after the editor-review + author edits does the Captain read. Comment the PAPER item, then
-`git pull --rebase && git push`:
+Only after the editor-review + author edits does the Captain read. Comment the PAPER item (it lands on origin at once):
 
 ```bash
-ME="${NUSY_AGENT_NAME:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
-scripts/yk_push.sh comment PAPER-NNN --agent "$ME" --body "Editor-review (<venue>) complete: <decision>; edits applied; ready for Captain read. Review: <path>."
+ME="${QB_AGENT:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
+.venv/bin/yurtle-kanban comment PAPER-NNN --agent "$ME" --body "Editor-review (<venue>) complete: <decision>; edits applied; ready for Captain read. Review: <path>."
 ```
 
 ## Guardrails

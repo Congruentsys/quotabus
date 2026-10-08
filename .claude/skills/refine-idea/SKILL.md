@@ -8,10 +8,14 @@ allowed-tools: Bash(.venv/bin/yurtle-kanban *), Bash(PYTHONPATH= .venv/bin/yurtl
 
 # Refine Idea — the planning step between capture and work
 
-**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): `create`/`update` take `--push`; `move` and
-`comment` go through `scripts/yk_push.sh` (with `ME` set in the same Bash call).
+**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): yurtle-kanban 3.4.0 pushes `move`,
+`comment` and `rank` by default; `create`/`update` take `--push` (with `ME` set in the same Bash call).
 
-> Ported from nusy-product-team `refine-idea` (2026-10-02), nk → yurtle-kanban 3.2.0.
+> Ported from nusy-product-team `refine-idea` (2026-10-02), nk → yurtle-kanban 3.2.0; adapted to quotabus 2026-10-08 (yurtle-kanban 3.4.0).
+>
+> ⚠ **quotabus has not configured the research (HDD) board this skill writes to** (CLAUDE.md § Skills). Until a
+> question needs the full trio, a measure-first question is a chore in pairit § The measure lane; configuring the
+> research board is a chore of its own.
 
 **Captain-directed, 2026-08-13, verbatim:** *"this is the planning step we need to add to kanban.
 IDEA -> review and refine -> HDD (turn into hypotheses, measures, expr) - Then define work -> then
@@ -55,12 +59,11 @@ chore or sent to the Captain as a "decision", is an unfiled experiment.
 
 ## Required environment
 
-Run from the repo root. The CLI is `.venv/bin/yurtle-kanban` (on a Spark, prefix `PYTHONPATH=`).
+Run from the repo root. The CLI is `.venv/bin/yurtle-kanban`.
 Name yourself on every board write: `--agent "$ME"`, with
-`ME="${NUSY_AGENT_NAME:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"` set in the same command (shell
+`ME="${QB_AGENT:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"` set in the same command (shell
 variables do not survive between tool calls; CLAUDE.md § The board). A move on an item held by someone is
-refused unless you name yourself. `move`, `update` and `comment` commit locally: `git pull --rebase && git push` after each
-phase (board files go straight to `main`).
+refused unless you name yourself. Every board write lands on origin at once (`update --push`; `move` and `comment` push by default).
 
 **The idea lifecycle on this board** (`.venv/bin/yurtle-kanban states --board research`):
 
@@ -79,7 +82,7 @@ Legal moves: `draft → active | abandoned`, `active → complete | abandoned | 
 ## Phase 1 — Claim
 
 ```bash
-scripts/yk_push.sh move IDEA-R-NNN active --assign "$ME" --agent "$ME"
+.venv/bin/yurtle-kanban move IDEA-R-NNN active --assign "$ME" --agent "$ME"
 ```
 
 (`claim` does not apply: it takes only a `ready` item, and the research board has no `ready`
@@ -89,7 +92,7 @@ status.)
 here:
 
 ```bash
-scripts/yk_push.sh move IDEA-R-NNN draft --agent "$ME"   # holder; a peer adds --take-over
+.venv/bin/yurtle-kanban move IDEA-R-NNN draft --agent "$ME"   # holder; a peer adds --take-over
 ```
 
 ## Phase 2 — Validate the premise, adversarially
@@ -110,7 +113,7 @@ Nothing but execution would have caught that.
 ## Phase 3 — Verdict
 
 One of three, recorded as a comment on the idea
-(`scripts/yk_push.sh comment IDEA-R-NNN --agent "$ME" --body-file <a file>`; never `--body-file -`: a retried write would re-read an empty stdin):
+(`.venv/bin/yurtle-kanban comment IDEA-R-NNN --agent "$ME" --body-file <a file>`):
 
 - **KILL** — go to Phase 6. This is a **success**, and the pass produced **zero** across the first
   two ideas, which is itself a signal worth watching.
@@ -178,7 +181,7 @@ Then ask the gate whether this idea may be marked filed:
 satisfy a count while nothing was filed. The gate refuses; it does not move. On PASS:
 
 ```bash
-scripts/yk_push.sh move IDEA-R-NNN complete --resolution completed --agent "$ME"
+.venv/bin/yurtle-kanban move IDEA-R-NNN complete --resolution completed --agent "$ME"
 ```
 
 **Two-way traceability is then a single read each:** `show IDEA-R-NNN` lists what the idea became;
@@ -189,8 +192,8 @@ scripts/yk_push.sh move IDEA-R-NNN complete --resolution completed --agent "$ME"
 **Kill from `draft` (captured) — one command, no reason, no review:**
 
 ```bash
-scripts/yk_push.sh move IDEA-R-NNN abandoned --resolution wont_do --agent "$ME"
-scripts/yk_push.sh comment IDEA-R-NNN --agent "$ME" --body "[refine-idea] killed at capture — <one line>"
+.venv/bin/yurtle-kanban move IDEA-R-NNN abandoned --resolution wont_do --agent "$ME"
+.venv/bin/yurtle-kanban comment IDEA-R-NNN --agent "$ME" --body "[refine-idea] killed at capture — <one line>"
 ```
 
 **Kill from `active` (refining) — record WHICH objection killed it, with its citation** (the
@@ -201,7 +204,7 @@ premise artifact path), in the comment. Checked for non-emptiness only.
 (one void premise once cost six separate investigations).
 
 **Killing must stay cheaper than advancing**, and resurrection cheaper still
-(`scripts/yk_push.sh move IDEA-R-NNN draft --agent "$ME"`, ungated, from `abandoned` or `active`). A cheap
+(`.venv/bin/yurtle-kanban move IDEA-R-NNN draft --agent "$ME"`, ungated, from `abandoned` or `active`). A cheap
 kill is only safe when resurrection is cheap — and the pipeline's measured defect was that it is a
 **ratchet** (3 of 39 ideas ever resolved), so anything that makes killing expensive makes the defect
 worse.

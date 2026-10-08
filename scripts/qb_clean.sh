@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# scripts/qb_clean.sh <ID> [--disposable <tree-name>]... — quotabus-loop's clean step (HAZ-009), run after an
-# item is LANDED and before the next pick. It replaces the snippet that was in
-# .claude/skills/quotabus-loop/SKILL.md § Cleaning up between items, so the step can be tested.
+# scripts/qb_clean.sh <ID> [--disposable <tree-name>]... — quotabus-loop's clean step, run after an item is LANDED
+# and before the next pick (.claude/skills/quotabus-loop/SKILL.md § Cleaning up between items). A script, so the
+# step can be tested: tests/test_qb_clean.py.
 #
 # Operates on the git repository of the CURRENT DIRECTORY (the main checkout, or any worktree of it).
 #
@@ -12,17 +12,17 @@
 # A tree is KEPT (reported, never forced) when:
 #   - it holds commits not on origin ("push or report, never remove");
 #   - `git worktree remove` refuses it (uncommitted work);
-#   - HAZ-009: its gitignored `data/`, or any ignored path under `runs/` or `checkpoints/`, holds a file.
+#   - its gitignored `data/` or `runs/` holds a file.
 #     `git worktree remove` deletes ignored files silently, so the script checks first. The KEPT line names the
-#     path and says what to do: move it to the durable per-item host path `~/.nusy/qb-data/<ID>/` and record that
+#     path and says what to do: move it to the durable per-item host path `~/.local/state/quotabus-work/<ID>/` and record that
 #     path in the item, then re-run; or declare it disposable explicitly with `--disposable <tree-name>`.
-# An empty or absent `data/` (and `runs/`, `checkpoints/`) does not keep a tree.
+# An empty or absent `data/` (and `runs/`) does not keep a tree.
 #
 # --disposable <tree-name>   (repeatable) the basename of ONE of this item's trees whose ignored data is declared
-#                            disposable: that tree is removed with its data/runs/checkpoints. It never applies to
+#                            disposable: that tree is removed with its data/ and runs/. It never applies to
 #                            any other tree, and it does not override the commits-not-on-origin or uncommitted rules.
 #
-# Then `git worktree prune`, and the free space on /tmp is printed. Below ${RL_MIN_FREE_GIB:-25} GiB it prints
+# Then `git worktree prune`, and the free space on /tmp is printed. Below ${QB_MIN_FREE_GIB:-25} GiB it prints
 # a STOP line and exits 14.
 #
 # Exit codes: 0 done (kept trees are reported, not an error) | 2 usage | 14 low disk: STOP and report.
@@ -41,8 +41,8 @@ while [ $# -gt 0 ]; do
     *) usage ;;
   esac
 done
-MIN_GIB="${RL_MIN_FREE_GIB:-25}"
-case "$MIN_GIB" in ''|*[!0-9]*) echo "qb_clean.sh: RL_MIN_FREE_GIB must be a whole number of GiB" >&2; exit 2 ;; esac
+MIN_GIB="${QB_MIN_FREE_GIB:-25}"
+case "$MIN_GIB" in ''|*[!0-9]*) echo "qb_clean.sh: QB_MIN_FREE_GIB must be a whole number of GiB" >&2; exit 2 ;; esac
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "qb_clean.sh: not inside a git repository" >&2; exit 2; }
 
 is_disposable() { local d; for d in "${DISPOSABLE[@]+"${DISPOSABLE[@]}"}"; do [ "$d" = "$1" ] && return 0; done; return 1; }
@@ -50,7 +50,7 @@ is_disposable() { local d; for d in "${DISPOSABLE[@]+"${DISPOSABLE[@]}"}"; do [ 
 # The ignored artefact dirs of tree $1 that hold at least one file (empty dirs do not count), space-separated.
 artefact_dirs() {
   local w="$1" d found=""
-  for d in data runs checkpoints; do
+  for d in data runs; do
     [ -d "$w/$d" ] || continue
     if [ -n "$(find "$w/$d" ! -type d -print -quit 2>/dev/null)" ]; then found="$found $d/"; fi
   done
@@ -64,7 +64,7 @@ MAIN="$(head -1 "$LIST")"                     # the first entry is the main chec
 while IFS= read -r w; do
   [ "$w" = "$MAIN" ] && continue
   b="${w##*/}"
-  case "$b" in "$ID"|"$ID-merge"|"rv-$ID"|"rv-$ID-"*) ;; *) continue ;; esac   # docs and packet lanes use /tmp/<id> too
+  case "$b" in "$ID"|"$ID-merge"|"rv-$ID"|"rv-$ID-"*) ;; *) continue ;; esac
   [ -d "$w" ] || continue                     # already gone: prune below drops the registration
   if [ -n "$(git -C "$w" log --oneline HEAD --not --remotes=origin -- 2>/dev/null | head -1)" ]; then
     echo "[clean] KEPT $w (commits not on origin) — push or report, never remove"; continue; fi
@@ -72,7 +72,7 @@ while IFS= read -r w; do
     echo "[clean] KEPT $w (uncommitted work) — report it, never force"; continue; fi
   arts="$(artefact_dirs "$w")"
   if [ -n "$arts" ] && ! is_disposable "$b"; then
-    echo "[clean] KEPT $w (ignored artefacts in ${arts// /, }) — move them to ~/.nusy/qb-data/$ID/ and record that path in the item, then re-run; or declare them disposable: scripts/qb_clean.sh $ID --disposable $b"
+    echo "[clean] KEPT $w (ignored artefacts in ${arts// /, }) — move them to ~/.local/state/quotabus-work/$ID/ and record that path in the item, then re-run; or declare them disposable: scripts/qb_clean.sh $ID --disposable $b"
     continue
   fi
   # `git worktree remove` without --force still refuses uncommitted work; ignored files go with the tree.

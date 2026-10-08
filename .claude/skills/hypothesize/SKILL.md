@@ -8,10 +8,14 @@ allowed-tools: Bash(.venv/bin/yurtle-kanban *), Bash(PYTHONPATH= .venv/bin/yurtl
 
 # Hypothesize — scaffold H → M → EXPR in one step
 
-**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): `create`/`update` take `--push`; `move` and
-`comment` go through `scripts/yk_push.sh` (with `ME` set in the same Bash call).
+**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): yurtle-kanban 3.4.0 pushes `move`,
+`comment` and `rank` by default; `create`/`update` take `--push` (with `ME` set in the same Bash call).
 
-> Ported from nusy-product-team `hypothesize` (2026-10-02), nk → yurtle-kanban 3.2.0.
+> Ported from nusy-product-team `hypothesize` (2026-10-02), nk → yurtle-kanban 3.2.0; adapted to quotabus 2026-10-08 (yurtle-kanban 3.4.0).
+>
+> ⚠ **quotabus has not configured the research (HDD) board this skill writes to** (CLAUDE.md § Skills). Until a
+> question needs the full trio, a measure-first question is a chore in pairit § The measure lane; configuring the
+> research board is a chore of its own.
 
 Turn an empirical question into the three linked research-board items, so an agent never has to
 choose between "do it scientifically" and "do it fast" — the scientific path *is* the fast path.
@@ -40,12 +44,10 @@ engine fast."
 
 ## Required environment
 
-Run from the repo root. The CLI is `.venv/bin/yurtle-kanban`; on a Spark (DGX1/DGX2) prefix it
-with `PYTHONPATH=` (the host PYTHONPATH shadows the venv). Pass `--agent "$ME"` on moves and comments so
-they are attributed to this session, with `ME="${NUSY_AGENT_NAME:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"`
-set in the same command (CLAUDE.md § The board). Board writes are files in git: `create … --push` commits and pushes in one
-step; `update`, `move` and `comment` commit locally, so `git pull --rebase && git push` after them
-(board and research files are docs — they go straight to `main`).
+Run from the repo root. The CLI is `.venv/bin/yurtle-kanban`. Pass `--agent "$ME"` on moves and comments so
+they are attributed to this session, with `ME="${QB_AGENT:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"`
+set in the same command (CLAUDE.md § The board). Board writes are files in git, and every one lands on origin at once (`create`/`update` with `--push`;
+`move` and `comment` push by default in 3.4.0).
 
 ## Pipeline
 
@@ -217,13 +219,13 @@ only — see integrity rule (a).
 ### Stage 6 — GO / NO-GO / PIVOT
 
 - **GO** → hand off to the normal trio pipeline above. Move the Idea along
-  (`scripts/yk_push.sh move IDEA-R-NNN active --agent "$ME"`, then `complete --resolution completed` once the
+  (`.venv/bin/yurtle-kanban move IDEA-R-NNN active --agent "$ME"`, then `complete --resolution completed` once the
   trio is filed — see `/refine-idea` Phase 5); create the H with `--source-idea IDEA-R-NNN`, plus
   the two optional provenance lines from step 1: `Outcome:` from Stage 2 and
   `Derived-by: /hypothesize --discover IDEA-R-NNN`.
-- **NO-GO** → `scripts/yk_push.sh move IDEA-R-NNN abandoned --resolution wont_do --agent "$ME"`, with the
+- **NO-GO** → `.venv/bin/yurtle-kanban move IDEA-R-NNN abandoned --resolution wont_do --agent "$ME"`, with the
   provenance-stamped spike eval JSON as the warrant, named in a comment
-  (`scripts/yk_push.sh comment IDEA-R-NNN --agent "$ME" --body "NO-GO: <measurement> — <command>; eval: <path>"`).
+  (`.venv/bin/yurtle-kanban comment IDEA-R-NNN --agent "$ME" --body "NO-GO: <measurement> — <command>; eval: <path>"`).
   **No H/M/EXPR ceremony for a dead line.**
 - **PIVOT** → re-enter at Stage 4 with a revised riskiest assumption.
 
