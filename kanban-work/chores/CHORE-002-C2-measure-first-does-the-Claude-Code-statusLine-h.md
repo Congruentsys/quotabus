@@ -2,7 +2,7 @@
 id: CHORE-002
 title: "C2: measure first — does the Claude Code statusLine hook fire under 'claude -p', and which z.ai endpoint answers an API key"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -30,5 +30,11 @@ Two findings files under `docs/findings/`, each with the exact command and its o
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:20:06+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T18:30:13+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/3> ;
   ] .
 ```
