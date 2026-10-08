@@ -2,12 +2,13 @@
 id: SIG-001
 title: "Q2: run the central probe on Mini as a prebuilt binary?"
 type: signal
-status: backlog
+status: arrived
 priority: medium
 assignee: null
 created: 2026-10-08
 tags: [captain-decision, design]
 depends_on: []
+resolution: completed
 ---
 
 # Q2: run the central probe on Mini as a prebuilt binary?
@@ -23,3 +24,16 @@ Still open — not decided by any session. It blocks nothing in v1.0, so the wor
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
 
 Captain 2026-10-08: "If this is FOSS, the config will have to ask to run locally or on another host. In this case, run on mini". This is NOT the plain default: where the central probe runs must be a CONFIG choice (local, or a named other host) for FOSS users. Our fleet sets it to Mini (prebuilt binary under launchd, as recommended).
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:done ;
+    kb:at "2026-10-08T18:52:39+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:forcedMove "true"^^xsd:boolean ;
+    kb:resolution "completed" ;
+  ] .
+```
