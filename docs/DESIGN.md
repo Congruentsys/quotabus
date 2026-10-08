@@ -1,4 +1,4 @@
-> **Origin.** Written in nusy-product-team as `docs/design/IDEA-13333-PROVIDER-STATUS-MONITOR.md` (commit `27feda15ea`, 2026-10-08) and copied here as the starting design. Paths of the form `path:line` refer to that repository. The Captain's answers to §10 (2026-10-08) are recorded in the kanban items: Q1 `quotabus` under Congruentsys · Q6 no actuation in v1.0 (a later expedition) · Q9 yes · Q11 work filed on this repo's board. The other §10 questions are open as signals.
+> **Origin.** Written in nusy-product-team as `docs/design/IDEA-13333-PROVIDER-STATUS-MONITOR.md` (commit `27feda15ea`, 2026-10-08) and copied here as the starting design. Paths of the form `path:line` refer to that repository. The Captain's answers to §10 (2026-10-08) are recorded in the kanban items: Q1 `quotabus` under Congruentsys · Q6 no actuation in v1.0 (a later expedition) · Q9 yes (conditional on C2; C2 measured the condition false — reopened as SIG-008, see §10 Q9) · Q11 work filed on this repo's board. The other §10 questions are open as signals.
 
 # IDEA-13333 — Design: an AI provider & account status monitor (standalone FOSS)
 
