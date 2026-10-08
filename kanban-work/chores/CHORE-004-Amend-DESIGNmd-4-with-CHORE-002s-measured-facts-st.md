@@ -7,7 +7,7 @@ priority: medium
 assignee: null
 created: 2026-10-08
 tags: [v1.0, VOY-001, design]
-depends_on: []
+depends_on: [CHORE-002]
 ---
 
 # Amend DESIGN.md §4 with CHORE-002's measured facts (statusLine under claude -p; z.ai quota endpoint)
