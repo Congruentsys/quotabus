@@ -2,7 +2,7 @@
 id: EXP-001
 title: "E1: probe runner + NATS KV publisher + status CLI for the API providers (replaces the hand probe)"
 type: expedition
-status: backlog
+status: provisioning
 priority: high
 assignee: null
 created: 2026-10-08
@@ -26,3 +26,14 @@ Part of VOY-001. Design: `docs/DESIGN.md` §2 (the record), §3, §4 (probe cata
 - A wrong key reads `auth_failed`; a retired model name reads `model_missing`.
 - Bus down reads CANNOT-ASSESS with rc 2, never `ok`.
 - The per-key TTL measurement is recorded with its command.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T17:22:06+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
