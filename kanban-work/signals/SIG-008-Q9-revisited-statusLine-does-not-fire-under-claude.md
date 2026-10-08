@@ -23,3 +23,9 @@ A second official route was found: `claude -p --output-format stream-json` emits
 
 ## Recommendation (an agent's, not a decision)
 Yes to 1 and 2, with the fallback kept: the statusLine covers interactive hosts, `rate_limit_event` covers `claude -p`-only hosts, and both are official. EXP-002 waits on this answer for its Claude Code step.
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
+
+Captain 2026-10-08 (asked by M5-MBP-2/s-72a67d16): "Both + fallback". This is the recommended default. E2 installs the statusLine for interactive hosts, ALSO captures the stream-json rate_limit_event from `claude -p` runs into the same cache, and keeps the ~/.claude.json cachedUsageUtilization fallback.
