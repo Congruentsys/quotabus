@@ -103,35 +103,65 @@ ttl      = "45m"           # 3 missed probes = UNKNOWN
 max_tokens = 20            # the 8-token smoke of docs/external-review.md:33
 
 [[service]]
-id = "glm"; kind = "api"; provider = "zhipu"; family = "zhipu"; account = "nusy-product-team"
-base_url = "https://api.z.ai/api/anthropic"; protocol = "anthropic"
-models = ["glm-5.3", "glm-5.2", "glm-4.6"]; roles = ["review", "work"]; cost_class = "metered"
-secret = "NUSY_GLM"                                   # a NAME; the value comes from the environment
-balance = "none"                                      # UNKNOWN by design (provider-balance.conf:20-22)
+id         = "glm"
+kind       = "api"
+provider   = "zhipu"
+family     = "zhipu"
+account    = "nusy-product-team"
+base_url   = "https://api.z.ai/api/anthropic"
+protocol   = "anthropic"
+models     = ["glm-5.3", "glm-5.2", "glm-4.6"]
+roles      = ["review", "work"]
+cost_class = "metered"
+secret     = "NUSY_GLM"                               # a NAME; the value comes from the environment
+balance    = "none"                                   # UNKNOWN by design (provider-balance.conf:20-22)
 
 [[service]]
-id = "deepseek"; kind = "api"; provider = "deepseek"; family = "deepseek"; account = "nusy-product-team"
-base_url = "https://api.deepseek.com/anthropic"; protocol = "anthropic"
-models = ["deepseek-v4-pro", "deepseek-v4-flash"]; roles = ["review"]; cost_class = "metered"
-secret = "NUSY_DEEPSEEK"
+id         = "deepseek"
+kind       = "api"
+provider   = "deepseek"
+family     = "deepseek"
+account    = "nusy-product-team"
+base_url   = "https://api.deepseek.com/anthropic"
+protocol   = "anthropic"
+models     = ["deepseek-v4-pro", "deepseek-v4-flash"]
+roles      = ["review"]
+cost_class = "metered"
+secret     = "NUSY_DEEPSEEK"
 [service.balance]
-url = "https://api.deepseek.com/user/balance"; path = "balance_infos[0].total_balance"; currency = "CNY"; floor = 150
+url      = "https://api.deepseek.com/user/balance"
+path     = "balance_infos[0].total_balance"
+currency = "CNY"
+floor    = 150
 
 [[service]]
-id = "claude-max"; kind = "subscription"; provider = "anthropic"; family = "anthropic"; account = "{host}"
-sources = ["statusline", "claude_json"]               # official first; "oauth_usage" is opt-in (undocumented)
+id       = "claude-max"
+kind     = "subscription"
+provider = "anthropic"
+family   = "anthropic"
+account  = "{host}"
+sources  = ["statusline", "claude_json"]              # official first; "oauth_usage" is opt-in (undocumented)
 
 [[service]]
-id = "copilot"; kind = "subscription"; provider = "github"; family = "openai"; account = "{host}"
-sources = ["copilot_internal"]                        # undocumented; labelled so in every row
+id       = "copilot"
+kind     = "subscription"
+provider = "github"
+family   = "openai"
+account  = "{host}"
+sources  = ["copilot_internal"]                       # undocumented; labelled so in every row
 
 [alert.nusy-kanban]
-command = "nusy-kanban"; item_type = "signal"; tags = ["provider-status", "infra"]
+command   = "nusy-kanban"
+item_type = "signal"
+tags      = ["provider-status", "infra"]
 [alert.yurtle-kanban]
-command = "yurtle-kanban"; item_type = "issue"
+command   = "yurtle-kanban"
+item_type = "issue"
 [alert.webhook]
 url = "https://example.invalid/hook"
 ```
+
+One key per line: TOML has no `;` separator, so a line of `;`-separated keys does not parse; the block above loads with Python's `tomllib`, and `examples/quotabus.toml` (the E1 file) uses the same layout.
 
 `quotabus.yurtle.md` — the same rows, readable in Obsidian and queryable by `yurtle-rdflib` (one block; the rest is prose):
 
@@ -168,7 +198,7 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
 
 | output | shape |
 |---|---|
-| KV bucket `ai_status` | created with per-key TTL — natscli `nats kv add --marker-ttl=<d>` and `nats kv put --ttl=<d>` (measured in `--help`, natscli 0.3.1 on M5); async-nats 0.50 `kv::Config.limit_markers: Duration` behind the `server_2_11` feature (https://docs.rs/async-nats/latest/async_nats/jetstream/kv/struct.Config.html). ⚠ Mini runs 2.12.4 but every existing bucket reports `Per-Key TTL Supported: false` (LIT §6; `kv info fleet_alert_state` today) — a NEW bucket, created with the option, is required and is the first thing to measure |
+| KV bucket `ai_status` | created with per-key TTL — natscli `nats kv add --marker-ttl=<d>` (bucket) and `nats kv create --ttl=<d>` (key) — in natscli 0.3.1 the per-key `--ttl` is on `kv create` ("Sets a TTL for the key"), `kv put --help` lists no TTL flag, and `kv add --ttl` is the bucket-wide max age, not a per-key TTL (`--help` of each, natscli 0.3.1 on M5 and Mini; `docs/findings/EXP-001-per-key-ttl.md:38-41`). `kv create` writes only a new or deleted key, so a hand-written TTL row over an existing key is a delete, then a create; the binary writes rows through the client library, not natscli; async-nats 0.50 `kv::Config.limit_markers: Duration` behind the `server_2_11` feature (https://docs.rs/async-nats/latest/async_nats/jetstream/kv/struct.Config.html). ⚠ Mini runs 2.12.4 but every existing bucket reports `Per-Key TTL Supported: false` (LIT §6; `kv info fleet_alert_state` today) — a NEW bucket, created with the option, is required. Measured by EXP-001: a new bucket made with `--marker-ttl` reports `Per-Key TTL Supported: true` and a 5 s key is absent at +8 s on Mini's 2.12.4 (`docs/findings/EXP-001-per-key-ttl.md:3-4,22-29`) |
 | change subject | `ai.status.changed.<key>` published only when `state` differs from the previous row (a flapping latency does not spam the bus) |
 | CLI | `quotabus status [--json] [--kind api] [--stale]` — a one-screen table with AGE and SOURCE columns; `quotabus status --check <service>` exits 0 ok · 1 not ok · 2 CANNOT-ASSESS · 3 UNKNOWN, for pre-flight checks in scripts (LIT §10) |
 | selector | `quotabus select --role review --exclude-family anthropic [--prefer cheapest|fastest|largest-context] [--n 1]` prints `provider model` on line 1 (for `$(…)`), the ranked list with reasons under `--json`; rc 3 when nothing qualifies. Library: `quotabus::select(&rows, &Query, &Config) -> Vec<Candidate>` — a pure function over rows + the static model table (family, cost class, roles, context), unit-testable without a bus. Vocabulary copied from LiteLLM's cooldown (`allowed_fails`, `cooldown`), applied per model not per group (LIT §1) |
@@ -186,7 +216,7 @@ The cheapest probe for an Anthropic-protocol provider is the 8-token call alread
 | GLM / z.ai (`NUSY_GLM`) | messages probe per configured model. **Undocumented, opt-in, labelled — pending SIG-003 (open):** `GET /api/monitor/usage/quota/limit` answers the API key (Bearer or raw `Authorization`) with the Coding-Plan quota: two windows, 5 h and weekly, each with cap, remaining, % used and `nextResetTime` (epoch ms) — field meanings [inferred]; **unconfirmed:** a further 35-token call left `remaining` unchanged, so the counter either lags or does not register a call that small, and an adapter must not treat `remaining` as a live per-call meter. `GET /api/biz/subscription/list` gives plan status and renewal; its billing fields are never published (usagebar's endpoints, LIT §2; `docs/findings/CHORE-002-zai-endpoint.md`) | 200/401/404/429; latency. ⚠ a bad key gets **HTTP 200 with body `code: 401`** on three of the five endpoints (`/api/anthropic/v1/models`, both biz/monitor endpoints; the messages probe and `/api/paas/v4/models` give a real 401) ⇒ an adapter reads the body's `code`/`success`, never the HTTP status alone. No rate-limit headers on any response (`docs/findings/CHORE-002-zai-endpoint.md`) | balance — no documented endpoint, and no wallet balance on any endpoint probed 2026-10-08 (`docs/findings/CHORE-002-zai-endpoint.md`); three candidates 404'd 2026-08-25 (`scripts/fleet/provider-balance.conf:20-22`; the two live rows are `:25-26`). Headroom only from the quota endpoint (no headers) |
 | DeepSeek (`NUSY_DEEPSEEK`) | `GET /user/balance` + messages probe | `balance_infos[0].total_balance`, `is_available` (LIT §2; conf row); the measured real case is a NEGATIVE balance (`-0.12 CNY` row on the bus today) ⇒ `quota_exhausted` | rate-limit headers [unverified] |
 | Kimi / Moonshot (`NUSY_KIMI`) | `GET /v1/users/me/balance` + messages probe | `data.available_balance` (conf row); 404 on `kimi-k2.5`/`kimi-latest` ⇒ `model_missing` (`external-review.md:46`) | rate-limit headers [unverified] |
-| OpenAI (`OPENAI_API_KEY`, Doppler `santiago`, root scope) | responses-API call with a 20-token ceiling on `gpt-5.6-sol` | 200/401/404/429; `x-ratelimit-*` [unverified] | balance — none exists (LIT §2); cost needs an admin key — deferred (§10 Q10) |
+| OpenAI (`OPENAI_API_KEY`, Doppler `santiago`, root scope) | chat-completions call, `POST <base>/chat/completions` with `max_completion_tokens: 20`, on `gpt-5.6-sol` (`src/probe.rs:247-261`; other OpenAI-protocol providers get `max_tokens`, and the code's stated reason — OpenAI's own models refuse `max_tokens` on chat completions — is not measured in a finding). Chosen by E1 over the responses API this row first named; it measurably works: `openai gpt-5.6-sol` read `ok` on Mini's bus in EXP-001's real run, 2026-10-08 (PR #2 review and author comments; `reviews/EXP-001-r1.md:167-172`, F5) | 200/401/404/429; `x-ratelimit-*` [unverified] | balance — none exists (LIT §2); cost needs an admin key — deferred (§10 Q10) |
 | Together (`TOGETHER_API_KEY`) · xAI (`XAI_API_KEY`, disabled) | OpenAI-protocol chat probe | 200/401 — xAI's disabled key is the standing **negative control**: it must read `auth_failed`, never `ok` | balance [unverified] |
 | local Qwen, DGX1 `192.168.8.180:30000` (`NUSY_LOCAL_QWEN`) | `GET /v1/models`, then a 20-token completion | reachability, model list, latency | balance (self-hosted). From M5 it is unreachable (`external-review.md:49`) — the row says `cannot_assess:unreachable` with `observed_by`, which is the honest answer, and DGX1's own `agent` can probe it locally (`kind = local`) |
 | Anthropic API (no key today) | messages probe | `anthropic-ratelimit-{requests,tokens}-{limit,remaining,reset}`, `retry-after`; spend-cap 429 carries `enforced_spend_limit_reached` (LIT §2) | prepaid balance (none) |
