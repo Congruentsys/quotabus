@@ -111,6 +111,36 @@ pub struct Config {
     pub ttl: PerKindTtl,
     /// The `[[service]]` array.
     pub services: Vec<ServiceConfig>,
+    /// `[alert.*]`: where `quotabus alert` files a crossing (DESIGN §3 alert; EXP-004).
+    pub alert: AlertConfig,
+}
+
+/// `[alert.*]`: the sinks `quotabus alert` files one item per crossing to (DESIGN §3 alert, §10 Q8; EXP-004). A sink
+/// left out is not used; stdout is always written.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct AlertConfig {
+    /// `[alert.nusy-kanban]`.
+    pub nusy_kanban: Option<KanbanSink>,
+    /// `[alert.yurtle-kanban]`.
+    pub yurtle_kanban: Option<KanbanSink>,
+    /// `[alert.webhook]`.
+    pub webhook: Option<WebhookSink>,
+}
+
+/// `[alert.nusy-kanban]` / `[alert.yurtle-kanban]`: the command run, the item type it creates and the tags it carries.
+#[derive(Debug, Clone, PartialEq)]
+pub struct KanbanSink {
+    /// The executable: a bare name looked up on PATH, or a path.
+    pub command: String,
+    /// The item type created (`signal`, SIG-006 / §10 Q8).
+    pub item_type: String,
+    pub tags: Vec<String>,
+}
+
+/// `[alert.webhook]`: a JSON POST per crossing.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WebhookSink {
+    pub url: String,
 }
 
 /// One duration per query kind (`[intervals]`).
@@ -433,7 +463,15 @@ impl Config {
             intervals,
             ttl,
             services,
+            alert: AlertConfig::default(),
         })
+    }
+
+    /// The Yurtle front-end (DESIGN §3 "Config — one model, two front-ends"): the same rows as the TOML, read from the
+    /// `yurtle-table` block(s) of a Yurtle v2.1 markdown file; the rest of the file is ignored. EXP-004.
+    pub fn from_yurtle_str(text: &str) -> Result<Config, ConfigError> {
+        let _ = text;
+        todo!("EXP-004: the yurtle-table reader")
     }
 
     /// How often `kind` is queried: `[intervals] <kind>` (default 12h; subscription 1h).

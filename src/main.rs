@@ -68,6 +68,9 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// File one item per crossing (a service going bad) to every configured `[alert.*]` sink and stdout; the last
+    /// alerted state is kept at `alert.<key>` in the store, and only a measured `ok` clears it (DESIGN §3; EXP-004).
+    Alert,
 }
 
 /// Exit codes of `probe`: a bad config or a backend that cannot be written.
@@ -151,8 +154,15 @@ fn main() -> ExitCode {
                 json,
             },
         )),
+        Command::Alert => rt.block_on(alert(&config, &redactor)),
     };
     ExitCode::from(code)
+}
+
+/// `quotabus alert`: EXP-004 (stub).
+async fn alert(config: &Config, redactor: &Redactor) -> u8 {
+    let _ = (config, redactor);
+    todo!("EXP-004: quotabus alert")
 }
 
 /// tracing to stderr, every line through the redactor. `RUST_LOG` uses the `target=level,…` form.
