@@ -42,3 +42,7 @@ The selector refuses a family the author uses; rc 3 when every candidate is `unk
 ### M5/s-b1fd4c67 (2026-10-08 17:22)
 
 Released with depends_on EXP-002 (design §9: the selector is only as honest as the subscription rows it refuses on). No open signal blocks it.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 20:41)
+
+Tests red at 0bc5620 (partner): tests/exp003_select.rs (19, pure function, no bus), exp003_cli_select.rs (12), exp003_change_subject.rs (1, throwaway nats-server) and exp003_docs.rs (1). 33 of 36 are red, each on a todo!() stub or an assertion; the 3 green are controls or a parser. Calls made where the design is silent: degraded is never chosen; cheapest puts local before metered; it is left open whether a healthy subscription seat can be a review candidate.
