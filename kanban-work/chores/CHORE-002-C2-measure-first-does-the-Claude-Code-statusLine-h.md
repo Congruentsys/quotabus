@@ -2,9 +2,9 @@
 id: CHORE-002
 title: "C2: measure first — does the Claude Code statusLine hook fire under 'claude -p', and which z.ai endpoint answers an API key"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001, measure]
 depends_on: [CHORE-003]
@@ -25,5 +25,10 @@ Two findings files under `docs/findings/`, each with the exact command and its o
     kb:status kb:ready ;
     kb:at "2026-10-08T17:22:08+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T18:20:06+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
