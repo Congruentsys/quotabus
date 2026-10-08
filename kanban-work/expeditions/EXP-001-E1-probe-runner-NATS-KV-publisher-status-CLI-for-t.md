@@ -2,7 +2,7 @@
 id: EXP-001
 title: "E1: probe runner + NATS KV publisher + status CLI for the API providers (replaces the hand probe)"
 type: expedition
-status: underway
+status: arrived
 priority: high
 assignee: M5/s-b1fd4c67
 created: 2026-10-08
@@ -40,6 +40,12 @@ Part of VOY-001. Design: `docs/DESIGN.md` §2 (the record), §3, §4 (probe cata
     kb:status kb:in_progress ;
     kb:at "2026-10-08T17:31:08+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T18:40:02+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/2> ;
   ] .
 ```
 
