@@ -32,3 +32,10 @@ Seen in HAZ-003's real path (PR #13): `subscription.anthropic.hankh95.claude-han
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-08 21:38)
+
+tests red at 98335d9 (branch chore/CHORE-011-round-used-pct): tests/chore011_round_used_pct.rs via Runner::run_due — 6 red on assertions (unified 0.14 → 14.000000000000002, 0.123456 → 12.3456; stream-json same; Copilot 100−33.333 → 66.667; entitlement fallback 66.666…), 2 controls show the == and 2-dp checks can fail; window_pct also checked.
