@@ -8,10 +8,10 @@ allowed-tools: Bash(.venv/bin/yurtle-kanban *), Bash(PYTHONPATH= .venv/bin/yurtl
 
 # UXR Review — UX expert review + simulated study before Captain read
 
-**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): `create`/`update` take `--push`; `move` and
-`comment` go through `scripts/yk_push.sh` (with `ME` set in the same Bash call).
+**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): yurtle-kanban 3.4.0 pushes `move`,
+`comment` and `rank` by default; `create`/`update` take `--push` (with `ME` set in the same Bash call).
 
-> Ported from nusy-product-team `uxr-review` (2026-10-02), nk → yurtle-kanban 3.2.0.
+> Ported from nusy-product-team `uxr-review` (2026-10-02), nk → yurtle-kanban 3.2.0; adapted to quotabus 2026-10-08 (yurtle-kanban 3.4.0).
 
 The Captain's standing rule: **before he reads a human/agent surface (UI, API, data format), a
 different session pretends to be a UXR expert and runs a simulated user study.** This front-loads
@@ -80,7 +80,7 @@ rate X, or that real users behave this way.
 .venv/bin/yurtle-kanban show <ITEM-ID>       # surface description, target users, related H/M/EXPR
 ```
 
-(On a Spark, prefix `PYTHONPATH=`.) Read the **prototype** (or the built surface) and its
+Read the **prototype** (or the built surface) and its
 **hypothesis** (what claim it validates). Confirm you are not the author (the item's assignee, and
 `git log --format='%an %s' -- <surface paths>`). Identify the target users (developers? agents?
 end-users? domain experts?).
@@ -150,10 +150,10 @@ Assess, in the voice of a UX researcher:
 
 ### 6 — Save the review + study results
 
-Write it under `research/`, named by item:
+Write it under `docs/reviews/`, named by item:
 
 ```text
-research/<area>/UXR-REVIEW-<ITEM-ID>.md
+docs/reviews/UXR-REVIEW-<ITEM-ID>.md
 ```
 
 Include:
@@ -203,8 +203,8 @@ Commit it straight to `main` (findings are docs).
 Hand the saved review to the author:
 
 ```bash
-ME="${NUSY_AGENT_NAME:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
-scripts/yk_push.sh comment <ITEM-ID> --agent "$ME" --body "UXR-review: <decision>. Review: <path>."
+ME="${QB_AGENT:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
+.venv/bin/yurtle-kanban comment <ITEM-ID> --agent "$ME" --body "UXR-review: <decision>. Review: <path>."
 ```
 
 The author addresses the required revisions (code changes land through `pairit`) and updates the
@@ -212,12 +212,11 @@ surface. Re-run `/uxr-review` if the decision was Major-revision/Block and a re-
 
 ### 8 — Then the Captain reads
 
-Only after the UXR-review + author edits does the Captain read. Comment the item, then
-`git pull --rebase && git push`:
+Only after the UXR-review + author edits does the Captain read. Comment the item (it lands on origin at once):
 
 ```bash
-ME="${NUSY_AGENT_NAME:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
-scripts/yk_push.sh comment <ITEM-ID> --agent "$ME" --body "UXR-review complete: <decision>; edits applied; ready for Captain read. Review: <path>."
+ME="${QB_AGENT:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"
+.venv/bin/yurtle-kanban comment <ITEM-ID> --agent "$ME" --body "UXR-review complete: <decision>; edits applied; ready for Captain read. Review: <path>."
 ```
 
 ## Guardrails
