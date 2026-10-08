@@ -2,12 +2,13 @@
 id: SIG-009
 title: "Can a subscription seat (a Claude account, Copilot) be a 'select' candidate — and as which model?"
 type: signal
-status: backlog
+status: arrived
 priority: medium
 assignee: null
 created: 2026-10-08
 tags: [captain-decision, design]
 depends_on: []
+resolution: completed
 ---
 
 # Can a subscription seat (a Claude account, Copilot) be a 'select' candidate — and as which model?
@@ -35,3 +36,16 @@ Basis:
 - Measured (M5, 2026-10-08, quotabus b5c20f5): no subscription service in DESIGN §3 or examples/quotabus.toml has `roles`, and no text in DESIGN makes a seat a select candidate (grep 'copilot' with review/select/role → none). No reader relies on seats being picked.
 Option 2 (route reviews to a seat by a configured model) would be a NEW feature, not a decision; the Captain can file it.
 Closed with move --force, because the board refuses harbor→arrived (see the steer skill). Decided — open to the Captain's veto.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:done ;
+    kb:at "2026-10-08T21:57:57+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:forcedMove "true"^^xsd:boolean ;
+    kb:resolution "completed" ;
+  ] .
+```
