@@ -2,7 +2,7 @@
 id: CHORE-011
 title: "Round subscription windows' used_pct (0.14 × 100 is stored as 14.000000000000002)"
 type: chore
-status: underway
+status: arrived
 priority: low
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-08
@@ -30,6 +30,12 @@ Seen in HAZ-003's real path (PR #13): `subscription.anthropic.hankh95.claude-han
     kb:status kb:in_progress ;
     kb:at "2026-10-08T21:36:14+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T21:48:24+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/16> ;
   ] .
 ```
 
