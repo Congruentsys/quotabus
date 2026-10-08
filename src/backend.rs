@@ -4,10 +4,11 @@ use std::future::Future;
 use std::path::PathBuf;
 use std::time::Duration;
 
+use async_nats::jetstream::context::PublishErrorKind;
 use async_nats::jetstream::{self, kv};
 use futures::StreamExt;
 
-use crate::record::Record;
+use crate::record::{Record, State};
 use crate::secret::Secret;
 
 /// Remove every credential `bus` carried from `text` (an error from the client), whatever the redactor knows.
@@ -434,25 +435,50 @@ impl NatsKv {
 impl Backend for NatsKv {
     async fn put(&self, row: &Record) -> Result<(), BackendError> {
         let bytes = serde_json::to_vec(row).map_err(|e| other("serialise row", e))?;
-        // the previous row's state, read before the write: the change subject fires only when it differs (DESIGN §3
-        // Outputs). Absent (never written, or expired out) and unreadable both count as a change [INFERENCE]: the
-        // reader then learns of a state it could not have known.
-        let previous = match self.read_raw(&row.key).await {
-            Ok(Some(b)) => serde_json::from_slice::<Record>(&b).ok().map(|r| r.state),
-            _ => None,
-        };
-        // async-nats 0.50's Store has no put-with-TTL: publish to the key's subject with a `Nats-TTL` header
-        let mut headers = async_nats::HeaderMap::new();
-        headers.insert(
-            async_nats::header::NATS_MESSAGE_TTL,
-            format!("{}s", row.ttl_s.max(1)).as_str(),
-        );
-        self.js
-            .publish_with_headers(self.put_subject(&row.key), headers, bytes.clone().into())
-            .await
-            .map_err(|e| other(&format!("put {}", row.key), e))?
-            .await
-            .map_err(|e| other(&format!("put {} (no ack)", row.key), e))?;
+        // The write is conditional on the revision it read (`Nats-Expected-Last-Subject-Sequence`, as async-nats's own
+        // `Store::update` does), so the announce decision is made against the row actually replaced: a concurrent
+        // writer that got in between makes the server refuse this write, and it re-reads and retries (review r1 F2).
+        // The previous row's state decides the change subject (DESIGN §3 Outputs). Absent (never written, or expired
+        // out) and unreadable both count as a change [INFERENCE]: the reader then learns of a state it could not have
+        // known. After CAS_ATTEMPTS refusals, or when the last revision cannot be read, the row is written
+        // unconditionally and announced: a duplicate announce is harmless, a missing one is not.
+        let subject = self.put_subject(&row.key);
+        let mut previous = None;
+        let mut written = false;
+        for _ in 0..CAS_ATTEMPTS {
+            let Some((revision, prev)) = self.last_revision(&subject).await else {
+                break;
+            };
+            let mut headers = ttl_headers(row);
+            headers.insert(
+                async_nats::header::NATS_EXPECTED_LAST_SUBJECT_SEQUENCE,
+                revision.to_string().as_str(),
+            );
+            let ack = self
+                .js
+                .publish_with_headers(subject.clone(), headers, bytes.clone().into())
+                .await
+                .map_err(|e| other(&format!("put {}", row.key), e))?
+                .await;
+            match ack {
+                Ok(_) => {
+                    previous = prev;
+                    written = true;
+                    break;
+                }
+                Err(e) if e.kind() == PublishErrorKind::WrongLastSequence => continue,
+                Err(e) => return Err(other(&format!("put {} (no ack)", row.key), e)),
+            }
+        }
+        if !written {
+            // async-nats 0.50's Store has no put-with-TTL: publish to the key's subject with a `Nats-TTL` header
+            self.js
+                .publish_with_headers(subject, ttl_headers(row), bytes.clone().into())
+                .await
+                .map_err(|e| other(&format!("put {}", row.key), e))?
+                .await
+                .map_err(|e| other(&format!("put {} (no ack)", row.key), e))?;
+        }
         if previous != Some(row.state) {
             // core NATS, not JetStream: no stream captures `ai.status.changed.>`, so there is no ack to wait for. The
             // row is already stored, so a failed announcement does not fail the put.
@@ -503,7 +529,48 @@ impl Backend for NatsKv {
     }
 }
 
+/// How many times a conditional write is retried after a concurrent writer moved the key's revision.
+const CAS_ATTEMPTS: usize = 5;
+
+/// The per-key TTL header of a row's write.
+fn ttl_headers(row: &Record) -> async_nats::HeaderMap {
+    let mut headers = async_nats::HeaderMap::new();
+    headers.insert(
+        async_nats::header::NATS_MESSAGE_TTL,
+        format!("{}s", row.ttl_s.max(1)).as_str(),
+    );
+    headers
+}
+
 impl NatsKv {
+    /// The last message on a key's subject: its stream sequence (0 when there is none) and, when it is a row, that
+    /// row's state. A delete or TTL marker has no row, so its state is `None`. `None` when it cannot be read.
+    async fn last_revision(&self, subject: &str) -> Option<(u64, Option<State>)> {
+        use async_nats::jetstream::stream::LastRawMessageErrorKind;
+        match self
+            .store
+            .stream
+            .get_last_raw_message_by_subject(subject)
+            .await
+        {
+            Ok(m) => Some((
+                m.sequence,
+                serde_json::from_slice::<Record>(&m.payload)
+                    .ok()
+                    .map(|r| r.state),
+            )),
+            Err(e) => match e.kind() {
+                LastRawMessageErrorKind::NoMessageFound => Some((0, None)),
+                LastRawMessageErrorKind::JetStream(je)
+                    if je.error_code() == jetstream::ErrorCode::NO_MESSAGE_FOUND =>
+                {
+                    Some((0, None))
+                }
+                _ => None,
+            },
+        }
+    }
+
     async fn read_raw(&self, key: &str) -> Result<Option<Vec<u8>>, BackendError> {
         match self.store.get(key).await {
             Ok(v) => Ok(v.map(|b| b.to_vec())),
