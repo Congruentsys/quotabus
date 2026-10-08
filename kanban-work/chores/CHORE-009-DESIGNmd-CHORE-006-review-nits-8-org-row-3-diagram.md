@@ -2,7 +2,7 @@
 id: CHORE-009
 title: "DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind, cite CHORE-007 for TTL rules"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -26,3 +26,14 @@ Coordinate with CHORE-007, which also edits §3/§4: if CHORE-007 has landed, ed
 ## Done when
 A PR amends DESIGN.md on F1, F2 and F3, each citing `reviews/CHORE-006-r1.md`; `make check` green; reviewed by a
 distinct session (a DESIGN.md change) and merged.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T19:17:48+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
