@@ -23,8 +23,8 @@
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/tmp/quotabus-probe.out.log</string>
+    <string>/Users/admin/Library/Logs/quotabus/probe.out.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/quotabus-probe.err.log</string>
+    <string>/Users/admin/Library/Logs/quotabus/probe.err.log</string>
 </dict>
 </plist>
