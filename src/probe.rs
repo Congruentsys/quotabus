@@ -33,7 +33,7 @@ pub struct Runner {
 }
 
 /// How a service authenticates this cycle.
-enum Auth {
+pub(crate) enum Auth {
     Key(Secret),
     /// A `local` service with no `secret` configured: probed without a key.
     None,
@@ -42,12 +42,17 @@ enum Auth {
 }
 
 /// What one service's probe needs, shared by its model probes.
-struct Ctx<'a> {
-    client: &'a reqwest::Client,
-    redactor: &'a Redactor,
-    config: &'a Config,
+pub(crate) struct Ctx<'a> {
+    pub(crate) client: &'a reqwest::Client,
+    pub(crate) redactor: &'a Redactor,
+    pub(crate) config: &'a Config,
     /// The cycle's clock: every row it writes is `checked_at` this.
-    now: DateTime<Utc>,
+    pub(crate) now: DateTime<Utc>,
+    /// The `claude` binary for the stream-json fallback: `QUOTABUS_CLAUDE_BIN` through the env lookup, else None
+    /// (then `claude` on PATH).
+    pub(crate) claude_bin: Option<String>,
+    /// Every configured secret NAME: stripped from a child process's environment.
+    pub(crate) secret_names: Vec<String>,
 }
 
 /// What is due for one service this cycle.
@@ -122,6 +127,13 @@ impl Runner {
             redactor: &redactor,
             config: &self.config,
             now,
+            claude_bin: (self.env)("QUOTABUS_CLAUDE_BIN").filter(|b| !b.is_empty()),
+            secret_names: self
+                .config
+                .services
+                .iter()
+                .filter_map(|s| s.secret.clone())
+                .collect(),
         };
         let stored: HashMap<&str, &Record> =
             store_rows.iter().map(|r| (r.key.as_str(), r)).collect();
@@ -133,11 +145,23 @@ impl Runner {
                     now,
                 )
         };
+        // subscription accounts are read centrally too, each on the subscription kind's own schedule (EXP-002)
+        let subscriptions = self
+            .config
+            .services
+            .iter()
+            .filter(|s| s.kind == Kind::Subscription)
+            .filter(|s| {
+                due(
+                    QueryKind::Subscription,
+                    &record_key(s.kind, &s.provider, &s.account, &s.id),
+                )
+            })
+            .map(|svc| crate::subscription::read(&ctx, svc, self.auth(svc)));
         let services = self
             .config
             .services
             .iter()
-            // subscriptions are read per host by `quotabus agent` (a later expedition), never by the central probe
             .filter(|s| s.kind != Kind::Subscription)
             .map(|svc| {
                 let balance_key = balance_key(svc);
@@ -159,7 +183,8 @@ impl Runner {
                 };
                 probe_service(&ctx, svc, self.auth(svc), due)
             });
-        join_all(services).await.into_iter().flatten().collect()
+        let (api, subs) = futures::join!(join_all(services), join_all(subscriptions));
+        api.into_iter().flatten().chain(subs).collect()
     }
 
     /// One unscheduled cycle, every kind now: one redacted row per (service, model), each carrying its balance.
@@ -282,7 +307,7 @@ fn unmeasured(
         .collect()
 }
 
-fn row(
+pub(crate) fn row(
     ctx: &Ctx<'_>,
     svc: &ServiceConfig,
     model: &str,
@@ -422,7 +447,7 @@ async fn probe_model(
 }
 
 /// A transport failure: the outcome and its (unredacted) description.
-fn transport(e: reqwest::Error) -> (Outcome, Option<String>) {
+pub(crate) fn transport(e: reqwest::Error) -> (Outcome, Option<String>) {
     let outcome = if e.is_timeout() {
         Outcome::Timeout
     } else {
@@ -450,7 +475,7 @@ fn sensitive(key: &Secret) -> HeaderValue {
 
 /// A header value marked sensitive, so the HTTP stack never prints it. An unencodable key becomes an empty value
 /// (the provider then answers 401, which is the truth about such a key).
-fn sensitive_str(value: &str) -> HeaderValue {
+pub(crate) fn sensitive_str(value: &str) -> HeaderValue {
     let mut v = HeaderValue::from_str(value).unwrap_or_else(|_| HeaderValue::from_static(""));
     v.set_sensitive(true);
     v

@@ -57,8 +57,52 @@ pub struct Headroom {
     pub requests_remaining: Option<u64>,
     pub tokens_remaining: Option<u64>,
     pub reset_at: Option<String>,
+    /// The most-used subscription window's `used_pct` (its name in `window`).
     pub window_pct: Option<f64>,
     pub window: Option<String>,
+    /// A subscription's windows (EXP-002): only those the source carried; an absent window is left out, never 0 %.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub windows: Vec<Window>,
+}
+
+/// One subscription usage window (DESIGN §2): `five_hour`, `seven_day` or `monthly`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Window {
+    pub window: String,
+    /// 0–100, as measured.
+    pub used_pct: f64,
+    /// RFC 3339.
+    pub reset_at: Option<String>,
+    /// Seconds from `checked_at` to `reset_at`.
+    pub reset_in_s: Option<i64>,
+    /// `(used_pct / 100) / (elapsed / len)`: 1.0 uses the window up exactly at its reset; above 1, sooner.
+    pub pace: Option<f64>,
+}
+
+impl Window {
+    /// A window measured at `now`: `len_s` is the window's length (None when unknown, so no pace).
+    pub fn measured(
+        name: &str,
+        used_pct: f64,
+        reset: Option<DateTime<Utc>>,
+        len_s: Option<i64>,
+        now: DateTime<Utc>,
+    ) -> Window {
+        let reset_in_s = reset.map(|r| (r - now).num_seconds());
+        let pace = match (reset_in_s, len_s) {
+            (Some(left), Some(len)) if len > 0 && len - left > 0 => {
+                Some((used_pct / 100.0) / ((len - left) as f64 / len as f64))
+            }
+            _ => None,
+        };
+        Window {
+            window: name.to_string(),
+            used_pct,
+            reset_at: reset.map(|r| r.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)),
+            reset_in_s,
+            pace,
+        }
+    }
 }
 
 /// One record per (kind, provider, account, model).

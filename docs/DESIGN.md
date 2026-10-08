@@ -37,23 +37,27 @@ that kind has a last row to be due from (§3). Its `state` is `ok`, `quota_exhau
 the balance kind's. A reader choosing or listing models skips it (`probe.name == "balance"`); the floor reaches the
 model rows themselves as `quota_exhausted`. Config refuses a model whose slug is `balance` on such a service.
 
+**A subscription row is per account.** A `kind = "subscription"` service is one account (a Claude login, a Copilot
+seat) and writes one row, `subscription.<provider>.<account>.<service id>`: the service id stands in the model slot, and
+`account` is the configured label. Its `headroom.windows[]` carries the usage windows (EXP-002, §4).
+
 | field | type | notes |
 |---|---|---|
 | `contract` | `"ai-status/1"` | versioned like the dead rows (`provider_balance/1.0`, `account-util/1.0`, LIT §6) |
 | `key` | string | the KV key, `<kind>.<provider>.<account>.<model>` — slugs only (KV keys exclude `@`, so an email is never a key) [unverified: exact KV key charset] |
-| `kind` | `api` \| `subscription` \| `local` | API key · per-host login (Claude Max, Copilot) · self-hosted endpoint (DGX1 Qwen) |
+| `kind` | `api` \| `subscription` \| `local` | API key · subscription account (Claude Max, Copilot), read centrally with the account's own token · self-hosted endpoint (DGX1 Qwen) |
 | `provider`, `account`, `model` | string | `account` is the LABEL from config (`nusy-product-team`, `hankh95`), never an email unless the operator chose one |
 | `family` | string | `anthropic` \| `openai` \| `zhipu` \| `deepseek` \| `moonshot` \| `qwen` … — what the selector's exclusion rule reads (`external-review.md:20`) |
 | `state` | enum | `ok` · `auth_failed` (401/403) · `model_missing` (404 on the model id) · `quota_exhausted` (402; 429 with no retry window; "exceeded your monthly quota"; balance ≤ floor) · `rate_limited` (429 with `retry-after`/reset) · `degraded` (200 but latency > threshold, or a window ≥ warn %) · `unknown` |
 | `reason` | string | required when `state=unknown`: `cannot_assess:<why>` written by a probe that could not measure (unreachable, unparseable, no endpoint by design, token login exposes no usage); `absent` / `expired` are **reader-derived**, never written |
 | `balance` | `{amount, currency, source}`? | only where a provider exposes one (§4); `source` names the endpoint |
-| `headroom` | `{requests_remaining, tokens_remaining, reset_at, window_pct, window}`? | from `x-ratelimit-*` / `anthropic-ratelimit-*` headers or a subscription window (`five_hour`, `seven_day`, `monthly`) |
+| `headroom` | `{requests_remaining, tokens_remaining, reset_at, window_pct, window, windows}`? | from `x-ratelimit-*` / `anthropic-ratelimit-*` headers or a subscription's windows. `windows[]` (subscriptions, EXP-002): `{window: five_hour \| seven_day \| monthly, used_pct (0–100), reset_at (RFC 3339), reset_in_s, pace}`, `reset_in_s = reset_at − checked_at`, `pace = (used_pct/100) / (elapsed/len)` with `elapsed = len − reset_in_s` and `len` 5 h, 7 d, or the month before a `monthly` reset (1.0 empties the window exactly at its reset). Only the windows the source carried are written: an absent window is left out, **never 0 %**. `window` / `window_pct` / `reset_at` repeat the most-used window |
 | `latency_ms` | int? | the probe's wall time |
 | `probe` | `{name, source}` | `source ∈ {official, undocumented, file, header}` — LIT §10 "two-source truth with provenance" |
 | `error` | string? | redacted, ≤ 200 chars (§6) |
 | `checked_at` | RFC 3339 | when the probe ran |
 | `ttl_s` | int | how long this record is trustworthy; chosen per kind (§3) |
-| `observed_by` | string | `<host>/<binary>@<version>` — the per-host agent's own host for subscriptions |
+| `observed_by` | string | `<host>/<binary>@<version>` — the probe host, for subscription rows too (they are read centrally, EXP-002) |
 
 **The freshness rule, applied by EVERY reader (library, CLI, selector, UI, alert):**
 
@@ -74,12 +78,12 @@ alarm and a staleness flag only a parsing reader can see (both `nats kv get flee
 ## 3. Architecture
 
 ```text
-           keys (never on argv, never in a row)                      per-host, local reads only
-   secretspec run -- / doppler run -- / env  ─┐             ┌─ statusline hook file · ~/.claude.json
-                                              v             │   gh token -> copilot_internal/user
-   [central host]  quotabus probe  (API 12 h · balance 12 h · local) [every host] quotabus agent (subscription 5 min)
-                 │  one row per (kind,provider,account,model)              │  rows keyed by its own host
-                 └──────────────► NATS KV  ai_status  (per-key TTL)  ◄─────┘   + $SRV registration
+           keys (never on argv, never in a row): API keys, Claude setup-tokens, the Copilot token
+   secretspec run -- / doppler run -- / env  ─┐
+                                              v                       nothing runs on any other host
+   [central host]  quotabus probe  (API 12 h · balance 12 h · local · subscription 1 h)
+                 │  one row per (kind,provider,account,model); one subscription row per account
+                 └──────────────► NATS KV  ai_status  (per-key TTL)
                                      │ change subject ai.status.changed.<key>
           ┌──────────────┬───────────┼───────────────┬──────────────────┐
      quotabus status   quotabus select   quotabus alert (crossing-dedup)   quotabus serve (optional)
@@ -90,17 +94,15 @@ alarm and a staleness flag only a parsing reader can see (both `nats kv get flee
 **One binary, five subcommands.** `probe` is the central runner. Where it runs is a config choice made at install:
 this host, or a named other host (§10 Q2; the install step is CHORE-008). The fleet sets Mini: a prebuilt binary is not
 a build, so the bus host's no-build rule holds. **Each query kind has its own interval**, set on its own (§10 Q5): API
-(messages) probes and balance reads default to every 12 h, subscription reads to every 5 min; no interval is shared, and
+(messages) probes and balance reads default to every 12 h, subscription reads to every 1 h (the Captain, 2026-10-08, on EXP-002: "Hourly"); no interval is shared, and
 a later kind (e.g. a quota-window read) gets its own. Every interval in this document is a default, not a constant. The
-rulings name no default for the `local` kind's probe (DGX1 Qwen); that is not decided here. The central probe still runs that kind — every service but `subscription` (`src/probe.rs:136-153`; `local-qwen` in `examples/quotabus.toml:111-122`) — so the diagram shows `local` beside API and balance (`reviews/CHORE-006-r1.md:101-107`). `agent` is the per-host reader of subscription state, which must run locally: `claude auth
-status` over SSH on macOS returns a confident, false "not logged in" (`f8b7f2f531^:scripts/fleet/account-util-publish.sh:7-17`;
-memory `feedback_claude_auth_probe_fails_over_ssh_on_macos`). `status`, `select`, `alert`, `serve` are readers.
+rulings name no default for the `local` kind's probe (DGX1 Qwen); that is not decided here. The central probe still runs that kind (`local-qwen` in `examples/quotabus.toml`), so the diagram shows `local` beside API and balance (`reviews/CHORE-006-r1.md:101-107`). **Subscription accounts are read by the same central probe** (EXP-002), each with its own token from the environment — the Captain, 2026-10-08, rescoping EXP-002: "Doppler has the API keys for all agents (includeing all of the claude agents that run on each machine. We should not need to run anything else on the other machines (just Mini or M5 depending on where we host this)". The per-host `agent`, the statusLine capture and the per-host units of the earlier plan are dropped: no read depends on a host's own login, so `claude auth status` over SSH on macOS returning a false "not logged in" (`f8b7f2f531^:scripts/fleet/account-util-publish.sh:7-17`), which is why a per-host reader was once planned, no longer matters. `status`, `select`, `alert`, `serve` are readers.
 
 **Scheduling — a tick, and what is due.** The intervals live only in the config: `[intervals]` (one key per kind)
 and `[ttl]` (one per kind; a kind left out is 3 × its own interval — CHORE-007's Definition of Done, `kanban-work/chores/CHORE-007-*.md:22`, not a Captain ruling). The launchd unit (§5) only ticks — `quotabus probe`
 every 300 s — and each run makes a kind's calls only when that kind is **due**: its interval has elapsed since its last
 row in the store (no row = due; a row written without a call, such as `secret_unset`, is not a run). Due-ness is per
-row: each (service, model) for the API probe, and each service's balance row (§2) for the balance read, so a due API
+row: each (service, model) for the API probe, each service's balance row (§2) for the balance read, and each subscription account's row for the subscription read, so a due API
 probe never triggers a balance read and vice versa (CHORE-007, `kanban-work/chores/CHORE-007-*.md:23`; both citations per `reviews/CHORE-006-r1.md:109-117`). An API probe applies the floor and carries the balance from the
 last fresh balance row. Until a `local` default is decided, a `local` service's probe runs on `[intervals] api`.
 `quotabus probe --force` runs every kind now.
@@ -123,11 +125,12 @@ max_tokens = 20            # the 8-token smoke of docs/external-review.md:33
 [intervals]      # one per query kind, each set on its own; none is shared (§10 Q5)
 api          = "12h"       # messages probe, per model
 balance      = "12h"       # balance GETs
-# subscription = "5m"      # per-host reads by `agent` (E2); the key arrives with EXP-002
+subscription = "1h"        # subscription account reads, central (EXP-002; the Captain: "Hourly")
 
 [ttl]            # optional, per kind; each defaults to 3 x its own interval (3 missed = UNKNOWN; CHORE-007)
-# api     = "36h"
-# balance = "36h"
+# api          = "36h"
+# balance      = "36h"
+# subscription = "3h"
 
 [[service]]
 id         = "glm"
@@ -161,20 +164,23 @@ path     = "balance_infos[0].total_balance"
 currency = "CNY"
 floor    = 150
 
-[[service]]
-id       = "claude-max"
+[[service]]                                           # one per Claude account (the fleet has six)
+id       = "claude-hankh95"                           # the row's model slot: subscription.anthropic.hankh95.claude-hankh95
 kind     = "subscription"
 provider = "anthropic"
 family   = "anthropic"
-account  = "{host}"
-sources  = ["statusline", "claude_json"]              # official first; "oauth_usage" is opt-in (undocumented)
+account  = "hankh95"                                  # the account LABEL, not a host
+models   = ["claude-haiku-4-5"]                       # the model of the 1-token direct read
+secret   = "NUSY_CLAUDE_TOKEN_HANKH95"                # the account's setup-token, by NAME
+sources  = ["unified_headers", "stream_json"]         # the fleet's: undocumented direct read, official fallback
 
 [[service]]
 id       = "copilot"
 kind     = "subscription"
 provider = "github"
 family   = "openai"
-account  = "{host}"
+account  = "hankh95"
+secret   = "GITHUB_TOKEN"
 sources  = ["copilot_internal"]                       # undocumented; labelled so in every row
 
 [alert.nusy-kanban]
@@ -188,7 +194,7 @@ item_type = "issue"
 url = "https://example.invalid/hook"
 ```
 
-One key per line: TOML has no `;` separator, so a line of `;`-separated keys does not parse; the block above loads with Python's `tomllib`. The `[intervals]` / `[ttl]` tables are the per-kind shape of §10 Q5, built by CHORE-007 for `api` and `balance` (the binary refuses any other key there until EXP-002 adds `subscription`); `examples/quotabus.toml` uses the same layout.
+One key per line: TOML has no `;` separator, so a line of `;`-separated keys does not parse; the block above loads with Python's `tomllib`. The `[intervals]` / `[ttl]` tables are the per-kind shape of §10 Q5, built by CHORE-007 for `api` and `balance`; EXP-002 added `subscription`, and the binary refuses any other key there. A subscription source runs only when `sources` lists it (`unified_headers`, `stream_json`, `copilot_internal`); `examples/quotabus.toml` uses the same layout, with the undocumented sources off (§10 Q4).
 
 `quotabus.yurtle.md` — the same rows, readable in Obsidian and queryable by `yurtle-rdflib` (one block; the rest is prose):
 
@@ -208,7 +214,7 @@ id: fleet/ai-status
 | #glm      | api          | zhipu     | zhipu    | nusy-product-team | https://api.z.ai/api/anthropic    | glm-5.3, glm-5.2         | review, work | NUSY_GLM      |                                                |                                |          |       |
 | #deepseek | api          | deepseek  | deepseek | nusy-product-team | https://api.deepseek.com/anthropic | deepseek-v4-pro         | review       | NUSY_DEEPSEEK | https://api.deepseek.com/user/balance          | balance_infos[0].total_balance | CNY      | 150   |
 | #kimi     | api          | moonshot  | moonshot | nusy-product-team | https://api.moonshot.ai/anthropic | kimi-k3                  | review       | NUSY_KIMI     | https://api.moonshot.ai/v1/users/me/balance    | data.available_balance         | USD      | 100   |
-| #claude   | subscription | anthropic | anthropic| {host}            |                                   |                          |              |               |                                                |                                |          |       |
+| #claude-hankh95 | subscription | anthropic | anthropic | hankh95 | https://api.anthropic.com    | claude-haiku-4-5         |              | NUSY_CLAUDE_TOKEN_HANKH95 |                                  |                                |          |       |
 ```
 ````
 
@@ -247,10 +253,10 @@ messages probe or the reverse (CHORE-007, `kanban-work/chores/CHORE-007-*.md:23`
 | Kimi / Moonshot (`NUSY_KIMI`) | `GET /v1/users/me/balance` + messages probe | `data.available_balance` (conf row); 404 on `kimi-k2.5`/`kimi-latest` ⇒ `model_missing` (`external-review.md:46`) | rate-limit headers [unverified] |
 | OpenAI (`OPENAI_API_KEY`, Doppler `santiago`, root scope) | chat-completions call, `POST <base>/chat/completions` with `max_completion_tokens: 20`, on `gpt-5.6-sol` (`src/probe.rs:247-261`; other OpenAI-protocol providers get `max_tokens`, and the code's stated reason — OpenAI's own models refuse `max_tokens` on chat completions — is not measured in a finding). Chosen by E1 over the responses API this row first named; it measurably works: `openai gpt-5.6-sol` read `ok` on Mini's bus in EXP-001's real run, 2026-10-08 (PR #2 review and author comments; `reviews/EXP-001-r1.md:167-172`, F5) | 200/401/404/429; `x-ratelimit-*` [unverified] | balance — none exists (LIT §2); cost needs an admin key — deferred to E5 (Captain 2026-10-08, §10 Q10) |
 | Together (`TOGETHER_API_KEY`) · xAI (`XAI_API_KEY`, disabled) | OpenAI-protocol chat probe | 200/401 — xAI's disabled key is the standing **negative control**: it must read `auth_failed`, never `ok` | balance [unverified] |
-| local Qwen, DGX1 `192.168.8.180:30000` (`NUSY_LOCAL_QWEN`) | `GET /v1/models`, then a 20-token completion | reachability, model list, latency | balance (self-hosted). From M5 it is unreachable (`external-review.md:49`) — the row says `cannot_assess:unreachable` with `observed_by`, which is the honest answer, and DGX1's own `agent` can probe it locally (`kind = local`) |
+| local Qwen, DGX1 `192.168.8.180:30000` (`NUSY_LOCAL_QWEN`) | `GET /v1/models`, then a 20-token completion | reachability, model list, latency | balance (self-hosted). From M5 it is unreachable (`external-review.md:49`) — the row says `cannot_assess:unreachable` with `observed_by`, which is the honest answer (`kind = local`) |
 | Anthropic API (no key today) | messages probe | `anthropic-ratelimit-{requests,tokens}-{limit,remaining,reset}`, `retry-after`; spend-cap 429 carries `enforced_spend_limit_reached` (LIT §2) | prepaid balance (none) |
-| Claude Max, per host | **official:** a `statusLine` command that tees stdin JSON to `~/.cache/quotabus/claude-rate-limits.json` (`rate_limits.five_hour.{used_percentage,resets_at}`, `seven_day`; Pro/Max only; LIT §2) — no host has a `statusLine` today (`~/.claude/settings.json` keys measured). **fallback:** read `~/.claude.json` `cachedUsageUtilization` (works over SSH; memory above). **opt-in:** `GET api.anthropic.com/api/oauth/usage` (undocumented). **second official source (Captain 2026-10-08, §10 Q9, SIG-008):** `claude -p --output-format stream-json` emits a `rate_limit_event`, `rate_limit_info.unifiedWindows.{five_hour,seven_day}.{utilization,resetsAt}` — it matched the statusLine to the unit in the same minute (0.19/0.09 ↔ 19/9 %; `docs/findings/CHORE-002-statusline-under-claude-p.md`); E2 captures it from `claude -p` runs into the same cache file. All three are used: statusLine on interactive hosts, `rate_limit_event` on `claude -p` runs, the `~/.claude.json` fallback kept | ⚠ an `oauth_token` login never writes the cache (`account-util-publish.sh:38-40`) ⇒ `unknown`, `reason=cannot_assess:token_login_no_usage_panel`; the hook does **not** fire under `claude -p` (text or stream-json), only in an interactive session, so on a host that runs only `claude -p` the hook never writes the cache (the `rate_limit_event` capture does); `rate_limits` is absent on the first render (before an API reply) ⇒ absent = not yet known, never 0 % (`docs/findings/CHORE-002-statusline-under-claude-p.md`) |
-| Copilot, per host | `gh api copilot_internal/user` with the host's `gh` login → `quota_snapshots.premium_interactions.{remaining, percent_remaining, reset_date}` (LIT §2) | `remaining == 0` or "exceeded your monthly quota" ⇒ `quota_exhausted` | undocumented endpoint, labelled; no model probe (a `copilot -p` call spends quota) |
+| Claude Max, every account, from the probe host (EXP-002) | **direct, `unified_headers` (undocumented):** one `POST api.anthropic.com/v1/messages` per account with its setup-token (Doppler `nusy-product-team` holds `NUSY_CLAUDE_TOKEN_<ACCOUNT>` for six accounts, all `oat`-class setup-tokens) as `Authorization: Bearer`, `anthropic-beta: oauth-2025-04-20`, Haiku, `max_tokens: 1` (~35 input tokens) → 200 with `anthropic-ratelimit-unified-{5h,7d}-{utilization,reset,status}`, `anthropic-ratelimit-unified-status` and `-overage-status`; all six accounts answered 200 with both windows (fake-token control: 401). **fallback, `stream_json` (official, Claude Code's own output):** when that reply carries no unified headers, `claude -p --output-format stream-json` runs once for the account with the token only in the child's environment (`CLAUDE_CODE_OAUTH_TOKEN`, never argv); its `rate_limit_event`, `rate_limit_info.unifiedWindows.{five_hour,seven_day}.{utilization,resetsAt}`, carried the same numbers as the headers (0.3 / 0.12, the same resets). The Captain, 2026-10-08: "Direct, stream-json fallback". **Not usable:** `GET api.anthropic.com/api/oauth/usage` answers a setup-token **403 permission_error**, "OAuth token does not meet scope requirement user:profile" (fake-token control: 401). All measured on M5, 2026-10-08 (EXP-002's body; raw artefacts kept out of git). Cost: ~36 tokens of the account's own quota per read, at the 1 h default 24 reads per account per day | utilization (0–1) → `used_pct`; reset (epoch s) → `reset_at`, `reset_in_s`, `pace`; `allowed` → `ok`, `allowed_warning` → `degraded` [INFERENCE: a status word the measurement did not see], `rejected` → `quota_exhausted`; 401/403 → `auth_failed`, never retried through `claude` | a reply with no unified headers and no `stream_json` listed, no `claude` binary, a failed run, or a stream with no `rate_limit_event` ⇒ `unknown`, `cannot_assess:<why>`; a window the source did not carry is left out, never 0 % |
+| Copilot, from the probe host (EXP-002) | `GET api.github.com/copilot_internal/user` with the configured token (the fleet's: Doppler `GITHUB_TOKEN`) → 200, `quota_snapshots.premium_interactions.{entitlement, remaining, percent_remaining, unlimited}`, `quota_reset_date` (measured on M5, 2026-10-08) | a `monthly` window, `used_pct = 100 − percent_remaining`, `reset_at` from `quota_reset_date`; `requests_remaining`; `remaining == 0` or "exceeded your monthly quota" ⇒ `quota_exhausted`; 401/403 ⇒ `auth_failed` | undocumented endpoint (`copilot_internal`), labelled `probe.source = undocumented` in every row and off unless `sources` lists it; no model probe (a `copilot -p` call spends quota) |
 
 ## 5. Language, runtime, packaging
 
@@ -267,8 +273,8 @@ prior art (agent-quota) is a catalogue to read, not a base.
 **Crates:** `clap`, `serde`/`serde_json`, `toml`, `reqwest` (rustls), `async-nats` (feature `server_2_11`), `tokio`,
 `tracing`; optional features `serve` (axum, one page), `yurtle` (the table reader), `secretspec` (in-process SDK).
 
-**Packaging:** `packaging/install.sh` renders `com.congruentsys.quotabus-probe.plist` (the central host, chosen at install: this host or a named one, §10 Q2; the fleet's is Mini), `com.congruentsys.quotabus-agent.plist` (M5, Air; not yet shipped — E2 work),
-`quotabus-agent.service` + `.timer` (DGX1/2; not yet shipped — E2 work) — the fleet's existing shapes
+**Packaging:** `packaging/install.sh` renders `com.congruentsys.quotabus-probe.plist` (the central host, chosen at install: this host or a named one, §10 Q2; the fleet's is Mini), or a systemd service and timer on Linux, and
+nothing for any other host: subscription accounts are read by the central probe (EXP-002) — the fleet's existing shapes
 (`scripts/com.nusy.kanban-snapshot.plist`, `scripts/backup/t9-backup.timer`); GitHub release binaries for
 `aarch64-apple-darwin`, `aarch64-unknown-linux-gnu`, `x86_64-unknown-linux-gnu`. CI mirrors
 `arrow-kanban/.github/workflows/ci.yml:1-40`: `cargo fmt --check`, build + test `--locked` across feature profiles, clippy.
@@ -295,7 +301,7 @@ prior art (agent-quota) is a catalogue to read, not a base.
 | **key expiry / rotation reminders** — `expires = "2026-12-31"` per service → `degraded` 14 days out | a dead key is otherwise found by a failed call | E5, config-only |
 | **model drift sweep** — `GET /v1/models` (where offered) diffed against configured ids; a 404 on a configured model is already `model_missing` | names drift (`kimi-k2.5`), nothing probes live ids (LIT §8.6) | E5 |
 | **tmux session census from the hub** — `quotabus census` reads `tmux ls -F` per host over SSH and publishes `census/1.0`-shaped rows (the dead `fleet-session-census.sh` contract: `{identity, host, written_at, cap, live, sessions[{name,kind,age_s}]}`, read on the bus today) | the Captain named M5 as the hub; the row contract already exists | a SEPARATE optional module behind a feature flag, its own expedition; not in the core's config model |
-| **NATS services registration** (`$SRV.PING/INFO/STATS`) for the per-host agent | `nats micro ls` lists live agents without a bespoke heartbeat (LIT §6) | E2 [unverified: async-nats `service` feature name] |
+| **NATS services registration** (`$SRV.PING/INFO/STATS`) for the central probe | `nats micro ls` lists a live probe without a bespoke heartbeat (LIT §6) | later; the per-host agent it was first meant for is dropped (EXP-002) [unverified: async-nats `service` feature name] |
 
 **Deliberately out:** routing or proxying calls; pausing providers or switching accounts (the dead script's one act,
 `:296-315` — actuation belongs to the reader); cookie-based reads of claude.ai / chatgpt.com (AIQuotaBar's method);
@@ -320,7 +326,7 @@ wants it); a persistent history store (the bus keeps `history = 1`; trends are `
 | **E1** | expedition (one Opus context) | repo scaffold + CI + MIT; TOML config; the probe runner for the **six key-bearing API rows** (GLM, DeepSeek, Kimi, OpenAI, Together, local Qwen — xAI as the disabled negative control; this count is this document's reading of `external-review.md:24-31,63`); balance adapters for DeepSeek/Kimi from `provider-balance.conf`; the record (§2); redaction; KV publisher with `checked_at`/`ttl_s`, bucket created with per-key TTL; `status` table + `--json` + `--check`; `com.…quotabus-probe.plist` for Mini | `quotabus status` on M5 shows the six rows from Mini's bucket with ages; a wrong key reads `auth_failed`; `kimi-k2.5` reads `model_missing`; bus down reads CANNOT-ASSESS rc 2; a key put with `--ttl` is ABSENT after expiry on Mini 2.12.4 (the measure-first item) |
 | **C1** | chore | `docs/external-review.md` §1a replaced by "run `quotabus status`"; the hand probe retired | doc-only, straight to main |
 | **C2** | chore | measure: does the `statusLine` hook fire under `claude -p`; which z.ai endpoint answers an API key | two findings files, each with the command |
-| **E2** | expedition | `agent`: Claude statusline capture + stream-json `rate_limit_event` capture + `~/.claude.json` fallback (§10 Q9) + Copilot `copilot_internal/user`; `$SRV` registration; units for all five hosts; reset countdown and pace | five `subscription.*` rows on the bus from five hosts, each `observed_by` its own host; a token-login host reads `cannot_assess:token_login_no_usage_panel`, never `ok` |
+| **E2** | expedition | central subscription reads in `quotabus probe` (the Captain's rescope, 2026-10-08): every Claude account by its Doppler setup-token — the direct `unified_headers` read, the `stream_json` fallback — and Copilot via `copilot_internal/user`, on `[intervals] subscription` (1 h) with its own TTL; reset countdown and pace; nothing installed on the other hosts | six `subscription.anthropic.*` rows and one `subscription.github.*` (Copilot) row on the bus, all `observed_by` the probe host, each with its windows, resets and age; a bad-token control reads `auth_failed`, never `ok` |
 | **E3** | expedition | `select` library + CLI; change subjects; `pairit` / external-review doc wiring ("the reviewer is `$(quotabus select --role review --exclude-family anthropic)`") | the selector refuses a family the author uses; rc 3 when every candidate is `unknown`; unit tests without a bus |
 | **E4** | expedition | `alert` with crossing-dedup; nusy-kanban, yurtle-kanban, webhook sinks; the Yurtle front-end (`yurtle-table` reader) and `examples/` | a Kimi 404 files ONE signal across ten cycles; a measured `ok` re-arms it; a CANNOT-ASSESS does not; the Yurtle and TOML examples load to identical configs |
 | **E5** | expedition (optional) | `serve`; spend via `ccusage --json`; key expiry; model drift sweep; file backend polish for outsiders | one page on `127.0.0.1`; a `expires` 14 days out reads `degraded` |
@@ -344,6 +350,7 @@ are on file as paraphrase only (Origin note).
    **Captain 2026-10-08:** "Off FOSS, on fleet" (`kanban-work/signals/SIG-003-*.md:30`). **The recommended default.**
 5. **Cadence and spend.** API probes every 15 min (≤ 96 × ~30 tokens per model per day), subscription reads every 5 min (free), balance GETs every 15 min — *recommend these; make them config*.
    **Captain 2026-10-08:** "Slower - twice a day, but make it a config setting"; on scope: "API + balance only" (`kanban-work/signals/SIG-004-*.md:26`). Then, adding to it: "for how often to query, make sure there are separate times for the different types of queries." (`kanban-work/signals/SIG-004-*.md:43`). **Not the recommended default:** API probes and balance reads default to every 12 h (≤ 2 × ~30 tokens per model per day), subscription reads stay at every 5 min, and each query kind has its own config interval, set independently — none is shared (§3, §4). Built by CHORE-007.
+   **Later, Captain 2026-10-08, on EXP-002:** subscription cadence "Hourly" (`kanban-work/expeditions/EXP-002-*.md`): `[intervals] subscription` defaults to 1 h, with its own TTL.
 6. **Does it act?** The dead script paused a provider at a measured zero. *Recommend no*: publish + alert only; the loop skills and `select` are the actuator, which keeps the tool safe to FOSS.
 7. **TOML first, Yurtle in E4** (the Captain's words lead with Yurtle). *Recommend TOML first*: it lands E1 fastest and is what outsiders expect; Yurtle follows as the same rows in a `yurtle-table` block, which Obsidian and `yurtle-rdflib` read today.
    **Captain 2026-10-08:** "TOML first, Yurtle in E4" (`kanban-work/signals/SIG-005-*.md:26`). **The recommended default.**
@@ -351,6 +358,7 @@ are on file as paraphrase only (Origin note).
    **Captain 2026-10-08:** "Signal per crossing" (`kanban-work/signals/SIG-006-*.md:26`). **The recommended default.**
 9. **A `statusLine` entry in every host's `~/.claude/settings.json`** — a fleet-wide Claude config change to get the official per-host read; the `~/.claude.json` fallback works without it. *Recommend yes*, installed by E2's unit, measured first by C2. The Captain's first answer, a "yes" on 2026-10-08, is on file only as paraphrase and was conditional on C2 confirming the hook fires under `claude -p` (`kanban-work/voyages/VOY-001-*.md` "Captain's rulings"). C2 (CHORE-002) measured that precondition **false** (§4 Claude Max row; `docs/findings/CHORE-002-statusline-under-claude-p.md`), so it was re-asked as SIG-008, whose recommendation was: install the statusLine for interactive hosts, add the stream-json `rate_limit_event` as a second source, keep the `~/.claude.json` fallback (`kanban-work/signals/SIG-008-*.md:25-26`).
    **Captain 2026-10-08:** "Both + fallback" (`kanban-work/signals/SIG-008-*.md:32`). **The recommended default (SIG-008's):** E2 installs the statusLine for interactive hosts, also captures the stream-json `rate_limit_event` from `claude -p` runs into the same cache, and keeps the `~/.claude.json` `cachedUsageUtilization` fallback.
+   **Later, Captain 2026-10-08, rescoping EXP-002:** "Doppler has the API keys for all agents (includeing all of the claude agents that run on each machine. We should not need to run anything else on the other machines (just Mini or M5 depending on where we host this)" (`kanban-work/expeditions/EXP-002-*.md`). This replaces the per-host statusLine, its stream-json tee and the `~/.claude.json` fallback: every Claude account is read centrally (§4), and nothing is written to any host's `~/.claude/settings.json`.
 10. **Admin keys** (Anthropic Admin API needs an org; OpenAI cost needs an admin key). *Recommend defer*: for these two the probe IS the status; revisit with E5's spend view.
    **Captain 2026-10-08:** "Defer to E5" (`kanban-work/signals/SIG-007-*.md:26`). **The recommended default.**
 11. **Repo membership on the board.** A new voyage under the IDEA's refine (E1–E4 = 4 expeditions + 2 chores, a legitimate voyage), or chores under an existing campaign? *Recommend a voyage*, dual-tracked per §8.

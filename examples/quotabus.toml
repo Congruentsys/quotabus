@@ -1,4 +1,4 @@
-# quotabus.toml — the fleet's API services (docs/DESIGN.md §3, §4; EXP-001).
+# quotabus.toml — the fleet's API services and subscription accounts (docs/DESIGN.md §3, §4; EXP-001, EXP-002).
 # `secret` is the NAME of an environment variable; the value is injected by the launcher
 # (`doppler run -- quotabus probe` / `secretspec run -- quotabus probe`) and never written here.
 # Model ids marked [unverified] were not confirmed against the provider when this file was written.
@@ -10,10 +10,12 @@ bucket = "ai_status"
 [intervals]                             # each query kind on its own schedule (DESIGN §3, SIG-004)
 api     = "12h"                         # messages / chat-completions probe: twice a day
 balance = "12h"                         # balance GET: twice a day
+subscription = "1h"                     # subscription account reads: hourly (EXP-002)
 
 # [ttl]                                 # a kind left out is 3 × its own interval (3 missed runs = UNKNOWN)
-# api     = "36h"
-# balance = "36h"
+# api          = "36h"
+# balance      = "36h"
+# subscription = "3h"
 
 [probe]
 max_tokens = 20
@@ -120,3 +122,31 @@ models     = ["qwen3"]                  # [unverified]
 roles      = ["work"]
 cost_class = "local"
 secret     = "NUSY_LOCAL_QWEN"
+
+# ── Subscription accounts, read centrally by `quotabus probe` on this host (DESIGN §4, EXP-002). ──
+# Nothing runs on any other host: each account's token is injected by the launcher like any API key.
+# Undocumented sources are OFF here (SIG-003): uncomment them to opt in; every row they write is labelled
+# `probe.source = "undocumented"`. The fleet's own config turns them on.
+
+[[service]]
+id         = "claude-hankh95"           # one [[service]] per Claude account; the row key ends in this id
+kind       = "subscription"
+provider   = "anthropic"
+family     = "anthropic"
+account    = "hankh95"                  # the account LABEL (a slug), never an email
+base_url   = "https://api.anthropic.com"
+models     = ["claude-haiku-4-5"]       # the model of the 1-token read
+secret     = "NUSY_CLAUDE_TOKEN_HANKH95"   # a setup-token (`claude setup-token`)
+sources    = ["stream_json"]            # `claude -p --output-format stream-json`: Claude Code's own output (official)
+# sources  = ["unified_headers", "stream_json"]   # undocumented direct read first, stream-json when its headers are missing
+
+[[service]]
+id         = "copilot"
+kind       = "subscription"
+provider   = "github"
+family     = "openai"
+account    = "hankh95"
+base_url   = "https://api.github.com"
+secret     = "GITHUB_TOKEN"
+sources    = []                         # off: the only source is undocumented
+# sources  = ["copilot_internal"]       # GET /copilot_internal/user (undocumented)
