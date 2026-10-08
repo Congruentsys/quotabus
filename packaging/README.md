@@ -8,7 +8,8 @@ the target's home — a launchd agent on macOS (`<home>/Library/LaunchAgents/com
 logs in `<home>/Library/Logs/quotabus/`), a systemd user service and timer on Linux
 (`<home>/.config/systemd/user/quotabus-probe.{service,timer}`) — then copies it into place and loads it
 (`launchctl bootout` then `launchctl bootstrap gui/<uid>`, the uid computed on the target, so the target user must be
-logged in at the GUI; or `systemctl --user enable --now quotabus-probe.timer`; over `ssh`/`scp` for `--host`).
+logged in at the GUI; or `loginctl enable-linger <user>` (so the timer outlives the session) and
+`systemctl --user enable --now quotabus-probe.timer`; over `ssh`/`scp` for `--host`).
 `--render-to <dir>` is a dry run: it writes the unit(s) into `<dir>`, prints the plan with each absolute install
 path, and connects to, loads and writes under nothing else. `install.sh --help` lists every flag.
 

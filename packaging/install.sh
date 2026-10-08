@@ -88,6 +88,7 @@ else
         esac
     fi
 fi
+case "$user" in *[!A-Za-z0-9._-]*|-*) die "--user is not a plain account name: $user" ;; esac
 case "$home" in /*) ;; *) die "--home must be absolute: $home" ;; esac
 home="${home%/}"
 
@@ -226,7 +227,9 @@ if [ "$os" = "macos" ]; then
     load_cmd="launchctl bootout gui/\$(id -u)/$LABEL 2>/dev/null || true; launchctl bootstrap gui/\$(id -u) '$dest_dir/$PLIST_NAME'"
     mkdir_cmd="mkdir -p '$dest_dir' '$log_dir'"
 else
-    load_cmd="systemctl --user daemon-reload && systemctl --user enable --now $TIMER_NAME"
+    # Lingering keeps the user's systemd manager (and so the timer) running with no session open: without it the
+    # timer stops when the installing ssh session, or the last login, ends. Needed locally too on a headless host.
+    load_cmd="loginctl enable-linger $user || echo 'install.sh: warning: loginctl enable-linger $user failed; the timer runs only while $user is logged in' >&2; systemctl --user daemon-reload && systemctl --user enable --now $TIMER_NAME"
     mkdir_cmd="mkdir -p '$dest_dir'"
 fi
 
