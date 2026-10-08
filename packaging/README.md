@@ -16,6 +16,11 @@ logged in at the GUI; or `loginctl enable-linger <user>` (so the timer outlives 
 `--render-to <dir>` is a dry run: it writes the unit(s) into `<dir>`, prints the plan with each absolute install
 path, and connects to, loads and writes under nothing else. `install.sh --help` lists every flag.
 
+**Nothing runs on the other hosts.** The central probe is the only unit: it reads every subscription account too
+(each Claude account by its own setup-token, Copilot by its token, all injected by the launcher like any API key;
+DESIGN §4, EXP-002), so no agent, statusLine hook or timer is installed on any other host, and no host's
+`~/.claude/settings.json` is touched (the Captain, 2026-10-08, rescoping EXP-002).
+
 **No secret is in any unit or on argv.** Keys reach the binary only through the launcher that wraps it, given as
 `--launcher "<command and args>"` — e.g. `doppler run --project … --config … --` or `secretspec run --` — which
 injects the environment variables the config's `secret` names list.

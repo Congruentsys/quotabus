@@ -13,6 +13,7 @@ pub mod record;
 pub mod redact;
 pub mod schedule;
 pub mod secret;
+pub mod subscription;
 
 pub use backend::{Backend, BackendError, BusUrl, FileBackend, Listing, NatsKv};
 pub use classify::{Classification, HttpOutcome, Outcome, Thresholds, classify};
@@ -20,7 +21,7 @@ pub use config::{Config, ConfigError, ServiceConfig};
 pub use freshness::{UnknownReason, Verdict, freshness};
 pub use probe::Runner;
 pub use record::{
-    Balance, CONTRACT, Headroom, Kind, Probe, ProbeSource, Record, State, record_key, slug,
+    Balance, CONTRACT, Headroom, Kind, Probe, ProbeSource, Record, State, Window, record_key, slug,
 };
 pub use redact::{ERROR_CAP, Redactor};
 pub use schedule::QueryKind;

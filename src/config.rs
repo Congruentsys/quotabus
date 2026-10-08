@@ -87,6 +87,17 @@ pub struct ServiceConfig {
     pub publish_balance: bool,
 }
 
+impl ServiceConfig {
+    /// The model slots this service writes rows under: its models, or for a subscription its id (one row per
+    /// account, DESIGN §2). A balance row is not a slot.
+    pub fn slots(&self) -> Vec<String> {
+        match self.kind {
+            Kind::Subscription => vec![self.id.clone()],
+            _ => self.models.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Config {
     pub bus: Option<BusConfig>,
@@ -105,6 +116,7 @@ pub struct Config {
 pub struct PerKind {
     pub api: Duration,
     pub balance: Duration,
+    pub subscription: Duration,
 }
 
 /// `[ttl]`: a kind left out takes 3 × its own interval.
@@ -112,10 +124,14 @@ pub struct PerKind {
 pub struct PerKindTtl {
     pub api: Option<Duration>,
     pub balance: Option<Duration>,
+    pub subscription: Option<Duration>,
 }
 
-/// The default interval of every kind: twice a day (the Captain on SIG-004, 2026-10-08).
+/// The default interval of the API and balance kinds: twice a day (the Captain on SIG-004, 2026-10-08).
 pub const DEFAULT_INTERVAL: Duration = Duration::from_secs(12 * 3600);
+
+/// The default interval of the subscription kind: hourly (the Captain on EXP-002's rescope, 2026-10-08).
+pub const DEFAULT_SUBSCRIPTION_INTERVAL: Duration = Duration::from_secs(3600);
 
 /// A kind's default TTL is this many of its own intervals: 3 missed runs = UNKNOWN.
 pub const TTL_INTERVALS: u32 = 3;
@@ -125,6 +141,7 @@ impl Default for PerKind {
         PerKind {
             api: DEFAULT_INTERVAL,
             balance: DEFAULT_INTERVAL,
+            subscription: DEFAULT_SUBSCRIPTION_INTERVAL,
         }
     }
 }
@@ -134,6 +151,7 @@ impl PerKind {
         match kind {
             QueryKind::Api => self.api,
             QueryKind::Balance => self.balance,
+            QueryKind::Subscription => self.subscription,
         }
     }
 }
@@ -143,6 +161,7 @@ impl PerKindTtl {
         match kind {
             QueryKind::Api => self.api,
             QueryKind::Balance => self.balance,
+            QueryKind::Subscription => self.subscription,
         }
     }
 }
@@ -233,6 +252,7 @@ mod raw {
     pub struct PerKind {
         pub api: Option<String>,
         pub balance: Option<String>,
+        pub subscription: Option<String>,
     }
 
     #[derive(Deserialize, Clone, Copy)]
@@ -288,14 +308,14 @@ impl Config {
             if p.interval.is_some() {
                 return Err(ConfigError(
                     "[probe] interval is retired: set each kind's own in [intervals] (api = \"12h\", \
-                     balance = \"12h\")"
+                     balance = \"12h\", subscription = \"1h\")"
                         .into(),
                 ));
             }
             if p.ttl.is_some() {
                 return Err(ConfigError(
-                    "[probe] ttl is retired: set each kind's own in [ttl] (api, balance; default 3 × \
-                     its interval)"
+                    "[probe] ttl is retired: set each kind's own in [ttl] (api, balance, subscription; \
+                     default 3 × its interval)"
                         .into(),
                 ));
             }
@@ -314,13 +334,21 @@ impl Config {
             if let Some(b) = i.balance {
                 intervals.balance = parse_duration(&b)?;
             }
+            if let Some(s) = i.subscription {
+                intervals.subscription = parse_duration(&s)?;
+            }
         }
         let mut ttl = PerKindTtl::default();
         if let Some(t) = raw.ttl {
             ttl.api = t.api.as_deref().map(parse_duration).transpose()?;
             ttl.balance = t.balance.as_deref().map(parse_duration).transpose()?;
+            ttl.subscription = t.subscription.as_deref().map(parse_duration).transpose()?;
         }
-        for (name, kind) in [("api", QueryKind::Api), ("balance", QueryKind::Balance)] {
+        for (name, kind) in [
+            ("api", QueryKind::Api),
+            ("balance", QueryKind::Balance),
+            ("subscription", QueryKind::Subscription),
+        ] {
             let t = ttl
                 .get(kind)
                 .unwrap_or_else(|| intervals.get(kind).saturating_mul(TTL_INTERVALS));
@@ -403,7 +431,7 @@ impl Config {
         })
     }
 
-    /// How often `kind` is queried: `[intervals] <kind>` (default 12h).
+    /// How often `kind` is queried: `[intervals] <kind>` (default 12h; subscription 1h).
     pub fn interval_for(&self, kind: QueryKind) -> Duration {
         self.intervals.get(kind)
     }

@@ -12,6 +12,9 @@ pub enum QueryKind {
     Api,
     /// The balance endpoint GET (`[intervals] balance`).
     Balance,
+    /// EXP-002: a subscription account read by the central probe (`[intervals] subscription`, default 1 h; its TTL
+    /// `[ttl] subscription`, default 3 × its own interval).
+    Subscription,
 }
 
 /// The model slot (and `probe.name`) of a service's balance row: `<kind>.<provider>.<account>.balance`. The store
@@ -20,7 +23,11 @@ pub const BALANCE: &str = "balance";
 
 /// The `reason`s of a row written without making a call (no key, no endpoint). Such a row is not a run: its kind
 /// stays due, so a key that arrives is used at the next tick, not an interval later.
-const NO_CALL: [&str; 2] = ["cannot_assess:secret_unset", "cannot_assess:no_endpoint"];
+const NO_CALL: [&str; 3] = [
+    "cannot_assess:secret_unset",
+    "cannot_assess:no_endpoint",
+    "cannot_assess:no_source",
+];
 
 /// Due at `now` when there is no last row, the last row made no call, or `interval` has elapsed since it.
 pub fn is_due(last: Option<&Record>, interval: std::time::Duration, now: DateTime<Utc>) -> bool {

@@ -124,6 +124,7 @@ pub fn headroom_from_headers(headers: &[(String, String)]) -> Option<Headroom> {
             .map(str::to_string),
         window_pct: None,
         window: None,
+        windows: Vec::new(),
     };
     (h != Headroom::default()).then_some(h)
 }

@@ -37,7 +37,8 @@ enum Command {
     },
     /// Read rows and apply the freshness rule.
     Status {
-        /// Print a JSON array: one {service, key, verdict, reason, age_s, row} per configured (service, model).
+        /// Print a JSON array: one {service, key, verdict, reason, age_s, row} per configured (service, model); a
+        /// subscription service has one entry, its account.
         #[arg(long)]
         json: bool,
         /// Only services of this kind (api, local, subscription).
@@ -366,7 +367,7 @@ async fn status(config: &Config, redactor: &Redactor, args: &StatusArgs) -> u8 {
     let now = Utc::now();
     let mut entries = Vec::new();
     for svc in services {
-        for model in &svc.models {
+        for model in &svc.slots() {
             let key = quotabus::record_key(svc.kind, &svc.provider, &svc.account, model);
             let row = by_key.get(key.as_str()).map(|r| (*r).clone());
             let verdict = match &failure {
@@ -457,6 +458,19 @@ fn table_out(entries: &[Entry], now: chrono::DateTime<Utc>) -> String {
                 detail.push(' ');
             }
             detail.push_str(&format!("balance {} {}", b.amount, b.currency));
+        }
+        for w in row
+            .and_then(|r| r.headroom.as_ref())
+            .map(|h| h.windows.as_slice())
+            .unwrap_or_default()
+        {
+            if !detail.is_empty() {
+                detail.push(' ');
+            }
+            detail.push_str(&format!("{} {:.0}%", w.window, w.used_pct));
+            if let Some(s) = w.reset_in_s {
+                detail.push_str(&format!(" (resets in {})", human_age(s)));
+            }
         }
         lines.push([
             e.service.clone(),
