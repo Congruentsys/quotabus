@@ -2,7 +2,7 @@
 id: CHORE-004
 title: "Amend DESIGN.md §4 with CHORE-002's measured facts (statusLine under claude -p; z.ai quota endpoint)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -19,3 +19,14 @@ A PR to `docs/DESIGN.md` §4 (and the §10 Q9 line) that:
 1. Claude Max row: replaces "whether the hook fires under `claude -p` is **measure first**" with the result (it does not; interactive only; `rate_limits` is absent on the first render, so absent means unknown, not 0 %). Names the stream-json `rate_limit_event` as a measured alternative, pending SIG-008.
 2. GLM / z.ai row: adds `GET /api/monitor/usage/quota/limit` (5 h and weekly quota windows; undocumented; field meanings [inferred]; the counter did not move after a 35-token call) and `/api/biz/subscription/list` (plan status; billing fields never published), pending SIG-003. Keeps "no wallet balance". Records that **a bad key gets HTTP 200 with body `code: 401`** on three of the five endpoints, so an adapter reads the body's `code`/`success`. Records that there are no rate-limit headers.
 3. Each change cites the findings file. `make check` is green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T18:28:58+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
