@@ -2,11 +2,15 @@
 id: CHORE-009
 title: "DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind, cite CHORE-007 for TTL rules"
 type: chore
-status: underway
+status: harbor
 priority: medium
-assignee: M5/s-b1fd4c67
+assignee: null
 created: 2026-10-08
 depends_on: [CHORE-007]
+bounce_sha: "5a1cbaad6b4c836010d50a64b4fd3e97455aceabb8de3c36ea141a6bf5dfaac8"
+bounced_by: M5/s-b1fd4c67
+bounced_at: 2026-10-08T19:21:10+00:00
+bounces: 1
 ---
 
 # DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind, cite CHORE-007 for TTL rules
@@ -40,5 +44,18 @@ distinct session (a DESIGN.md change) and merged.
     kb:status kb:in_progress ;
     kb:at "2026-10-08T19:20:44+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:backlog ;
+    kb:at "2026-10-08T19:21:10+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+    kb:bounced "true"^^xsd:boolean ;
   ] .
 ```
+
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 19:21)
+
+[bounce by M5/s-b1fd4c67, body-sha:5a1cbaad6b4c] Edits DESIGN.md §3/§4 text that CHORE-007 (underway, M5-MBP-2 session) is rewriting; the item says to edit on top of CHORE-007, so it now depends_on CHORE-007 and goes back unclaimed.
