@@ -2,7 +2,7 @@
 id: CHORE-002
 title: "C2: measure first — does the Claude Code statusLine hook fire under 'claude -p', and which z.ai endpoint answers an API key"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -16,3 +16,14 @@ Part of VOY-001; before E2. Design §4 and §10 Q9. The Captain said yes (2026-1
 
 ## Definition of Done
 Two findings files under `docs/findings/`, each with the exact command and its output: (1) statusLine under `claude -p` — fires or not, with the JSON it receives; (2) the z.ai endpoint that answers, and what it reports.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T17:22:08+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
