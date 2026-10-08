@@ -21,6 +21,14 @@ static EMAIL: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
         .expect("email regex")
 });
+/// The userinfo of a URL, `scheme://user:pass@` or token-form `scheme://token@` (HAZ-001 r1 F1): masked wherever it
+/// appears, so even a redactor that does not know the bus password (a config error quoting the TOML line) scrubs it.
+/// The password may itself contain `@` (the match runs to the last `@` before the host); `,` ends it, so a server
+/// list is scrubbed per server.
+static URL_USERINFO: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"([A-Za-z][A-Za-z0-9+.-]*://)(?:([^\s:/@"',\[\]]*):)?[^\s/"',\[\]]*@"#)
+        .expect("url userinfo regex")
+});
 /// An organisation id such as OpenAI's `org-…`.
 static ORG_ID: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\borg-[A-Za-z0-9]{6,}").expect("org id regex"));
@@ -70,6 +78,12 @@ impl Redactor {
         for v in values {
             out = out.replace(v, MASK);
         }
+        out = URL_USERINFO
+            .replace_all(&out, |c: &regex::Captures| match c.get(2) {
+                Some(user) => format!("{}{}:{MASK}@", &c[1], user.as_str()),
+                None => format!("{}{MASK}@", &c[1]),
+            })
+            .into_owned();
         for (prefix, word_start) in PATTERNS {
             out = scrub_pattern(&out, prefix, *word_start);
         }
@@ -125,4 +139,30 @@ fn scrub_pattern(text: &str, prefix: &str, word_start: bool) -> String {
     }
     out.push_str(rest);
     out
+}
+
+#[cfg(test)]
+mod url_userinfo_tests {
+    use super::Redactor;
+
+    #[test]
+    fn url_userinfo_is_masked_and_emails_and_plain_urls_are_kept_apart() {
+        let r = Redactor::default();
+        assert_eq!(
+            r.redact("2 | url = \"nats://qb:pw9@127.0.0.1:4222\" junk"),
+            "2 | url = \"nats://qb:***@127.0.0.1:4222\" junk"
+        );
+        assert_eq!(r.redact("nats://tok9@h:4222"), "nats://***@h:4222");
+        assert_eq!(r.redact("nats://qb:p@w@h:1"), "nats://qb:***@h:1");
+        assert_eq!(
+            r.redact("nats://a:x@h1:1,nats://a:y@h2:2"),
+            "nats://a:***@h1:1,nats://a:***@h2:2"
+        );
+        assert_eq!(r.redact("nats://127.0.0.1:4222"), "nats://127.0.0.1:4222");
+        assert_eq!(r.redact("mail a.b@example.com"), "mail ***");
+        assert_eq!(
+            r.redact("nats://qb:pw@mini.lan:4222"),
+            "nats://qb:***@mini.lan:4222"
+        );
+    }
 }
