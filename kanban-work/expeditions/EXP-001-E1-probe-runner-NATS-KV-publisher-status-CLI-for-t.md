@@ -37,3 +37,10 @@ Part of VOY-001. Design: `docs/DESIGN.md` §2 (the record), §3, §4 (probe cata
     kb:by "M5/s-b1fd4c67" ;
   ] .
 ```
+
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 17:22)
+
+Released with depends_on CHORE-003. Open signals it touches are built to docs/DESIGN.md §10's recommendation, none blocking: SIG-001 (central probe on Mini as a prebuilt binary → the launchd plist targets Mini), SIG-002 (balances and account labels published as slugs, publish_balance per service), SIG-004 (cadence 15 min API / balances, as config), SIG-005 (TOML first), SIG-007 (no admin keys; the probe is the status). Any of them can be reversed by config or a later PR if the Captain rules otherwise.
