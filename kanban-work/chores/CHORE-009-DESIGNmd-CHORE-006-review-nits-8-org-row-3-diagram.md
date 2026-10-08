@@ -2,9 +2,9 @@
 id: CHORE-009
 title: "DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind, cite CHORE-007 for TTL rules"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5/s-b1fd4c67
 created: 2026-10-08
 depends_on: []
 ---
@@ -35,5 +35,10 @@ distinct session (a DESIGN.md change) and merged.
     kb:status kb:ready ;
     kb:at "2026-10-08T19:17:48+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T19:20:44+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
   ] .
 ```
