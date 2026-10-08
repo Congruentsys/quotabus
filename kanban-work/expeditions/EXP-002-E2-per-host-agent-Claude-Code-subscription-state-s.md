@@ -7,7 +7,7 @@ priority: high
 assignee: null
 created: 2026-10-08
 tags: [v1.0, VOY-001]
-depends_on: []
+depends_on: [EXP-001, CHORE-002]
 ---
 
 # E2: per-host agent — Claude Code subscription state (statusLine capture + ~/.claude.json fallback) and GitHub Copilot quota, one row per host
