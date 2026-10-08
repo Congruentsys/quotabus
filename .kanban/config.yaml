@@ -1,0 +1,13 @@
+# yurtle-kanban configuration
+kanban:
+  theme: nautical
+
+  paths:
+    root: kanban-work/
+    scan_paths:
+    - "kanban-work/"
+
+    ignore:
+      - "**/archive/**"
+      - "**/templates/**"
+      - "**/_TEMPLATE*"
