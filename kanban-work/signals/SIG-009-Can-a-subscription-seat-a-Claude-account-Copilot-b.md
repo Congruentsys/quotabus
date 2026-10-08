@@ -49,3 +49,7 @@ Closed with move --force, because the board refuses harbor→arrived (see the st
     kb:resolution "completed" ;
   ] .
 ```
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 21:58)
+
+[steer] reflected: CHORE-012 is filed to change DESIGN §3 and the wiring note from 'interim' to decided.
