@@ -73,10 +73,11 @@ impl Runner {
         }
     }
 
-    /// A redactor holding every secret value the configured names resolve to.
+    /// A redactor holding every secret value the configured names resolve to, and the configured account labels.
     pub fn redactor(&self) -> Redactor {
         let mut r = Redactor::default();
         for svc in &self.config.services {
+            r.allow_label(svc.account.clone());
             if let Auth::Key(s) = self.auth(svc) {
                 r.add(s);
             }

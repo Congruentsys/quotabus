@@ -1190,6 +1190,7 @@ dependencies = [
  "clap",
  "futures",
  "libc",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",
