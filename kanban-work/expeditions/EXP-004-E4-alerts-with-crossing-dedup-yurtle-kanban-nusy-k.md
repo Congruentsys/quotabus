@@ -53,3 +53,7 @@ Released with depends_on EXP-003. SIG-006 is built to the recommendation (alert 
 ### M5-MBP-2/s-72a67d16 (2026-10-08 21:13)
 
 Tests red at 0ea5162 (partner): tests/exp004_alert.rs (17) and exp004_config.rs (11). 27 of 28 red, each on a todo!() stub or an assertion; the one green is the fake-sink control. Noted: DESIGN §3's sample says yurtle-kanban item_type 'issue', but the Plan and SIG-006 say signal, and the tests follow signal. No Rust Yurtle reader exists (PRIOR-ART names only Python yurtle-rdflib), so the yurtle-table reader is written here.
+
+### Mac-mini/s-e7976c42 (2026-10-08 21:48)
+
+Heads-up from CHORE-011 (merged, PR #16): subscription windows' used_pct is now rounded to 2 dp at Window::measured, so a threshold compare sees 99.995 as 100.0, and unified-header / stream-json values are NOT clamped to 0–100 (Copilot's are). If E4's alert compares used_pct against a threshold, decide whether that matters (reviews/CHORE-011-r1.md F1).
