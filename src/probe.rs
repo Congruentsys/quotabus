@@ -1,17 +1,20 @@
 //! The probe runner (DESIGN §4): one row per (service, model), keys from the environment only.
 
+use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use futures::future::join_all;
 use reqwest::header::HeaderValue;
 use serde_json::json;
 
-use crate::balance::{apply_floor, extract_amount};
+use crate::balance::{apply_floor, exhaust, extract_amount};
 use crate::classify::{HttpOutcome, Outcome, Thresholds, classify};
 use crate::config::{BalanceEndpoint, BalanceSpec, Config, Protocol, ServiceConfig};
+use crate::freshness::{Verdict, freshness};
 use crate::record::{Balance, CONTRACT, Kind, Probe, ProbeSource, Record, State, record_key};
 use crate::redact::Redactor;
+use crate::schedule::{BALANCE, QueryKind, is_due};
 use crate::secret::Secret;
 
 type EnvLookup = Box<dyn Fn(&str) -> Option<String> + Send + Sync>;
@@ -22,8 +25,8 @@ const TOTAL_TIMEOUT: Duration = Duration::from_secs(30);
 const PROMPT: &str = "Reply with exactly: OK";
 const ANTHROPIC_VERSION: &str = "2023-06-01";
 
-/// Runs one probe cycle over every configured service. A service's `base_url` (and balance `url`) is where it is
-/// probed, so a test points it at a local stub.
+/// Runs one probe cycle over every configured service, or only what is due. A service's `base_url` (and balance
+/// `url`) is where it is probed, so a test points it at a local stub.
 pub struct Runner {
     config: Config,
     env: EnvLookup,
@@ -43,6 +46,18 @@ struct Ctx<'a> {
     client: &'a reqwest::Client,
     redactor: &'a Redactor,
     config: &'a Config,
+    /// The cycle's clock: every row it writes is `checked_at` this.
+    now: DateTime<Utc>,
+}
+
+/// What is due for one service this cycle.
+struct Due<'a> {
+    /// The models whose API probe is due.
+    models: Vec<&'a str>,
+    /// Whether the balance read is due (false when the service has no balance endpoint).
+    balance: bool,
+    /// The service's last balance row in the store, if any: used for the floor when only the API probe is due.
+    stored_balance: Option<&'a Record>,
 }
 
 impl Runner {
@@ -85,8 +100,17 @@ impl Runner {
         r
     }
 
-    /// One cycle: one redacted row per (service, model). Rows are returned, not published.
-    pub async fn run_once(&self) -> Vec<Record> {
+    /// One scheduled cycle (CHORE-007): make a query kind's calls only when that kind is DUE, i.e. its own
+    /// `[intervals]` entry has elapsed since that kind's last row in `store_rows` (no row = due); `force` runs every
+    /// kind. Due-ness is per row: each (service, model) for the API probe, each service's balance row for the
+    /// balance read. `now` is the clock (injectable for tests): every returned row has `checked_at == now` and
+    /// `ttl_s` equal to its own kind's TTL. Rows are returned, not published.
+    pub async fn run_due(
+        &self,
+        store_rows: &[Record],
+        now: DateTime<Utc>,
+        force: bool,
+    ) -> Vec<Record> {
         let client = reqwest::Client::builder()
             .connect_timeout(CONNECT_TIMEOUT)
             .timeout(TOTAL_TIMEOUT)
@@ -97,6 +121,17 @@ impl Runner {
             client: &client,
             redactor: &redactor,
             config: &self.config,
+            now,
+        };
+        let stored: HashMap<&str, &Record> =
+            store_rows.iter().map(|r| (r.key.as_str(), r)).collect();
+        let due = |kind: QueryKind, key: &str| {
+            force
+                || is_due(
+                    stored.get(key).copied(),
+                    self.config.interval_for(kind),
+                    now,
+                )
         };
         let services = self
             .config
@@ -104,12 +139,49 @@ impl Runner {
             .iter()
             // subscriptions are read per host by `quotabus agent` (a later expedition), never by the central probe
             .filter(|s| s.kind != Kind::Subscription)
-            .map(|svc| probe_service(&ctx, svc, self.auth(svc)));
+            .map(|svc| {
+                let balance_key = balance_key(svc);
+                let due = Due {
+                    models: svc
+                        .models
+                        .iter()
+                        .filter(|m| {
+                            due(
+                                QueryKind::Api,
+                                &record_key(svc.kind, &svc.provider, &svc.account, m),
+                            )
+                        })
+                        .map(String::as_str)
+                        .collect(),
+                    balance: matches!(svc.balance, BalanceSpec::Endpoint(_))
+                        && due(QueryKind::Balance, &balance_key),
+                    stored_balance: stored.get(balance_key.as_str()).copied(),
+                };
+                probe_service(&ctx, svc, self.auth(svc), due)
+            });
         join_all(services).await.into_iter().flatten().collect()
+    }
+
+    /// One unscheduled cycle, every kind now: one redacted row per (service, model), each carrying its balance.
+    /// The balance's own row (which only the schedule needs) is left out. Rows are returned, not published.
+    pub async fn run_once(&self) -> Vec<Record> {
+        let mut rows = self.run_due(&[], Utc::now(), true).await;
+        rows.retain(|r| r.probe.name != BALANCE);
+        rows
     }
 }
 
-async fn probe_service(ctx: &Ctx<'_>, svc: &ServiceConfig, auth: Auth) -> Vec<Record> {
+/// `<kind>.<provider>.<account>.balance`: the row a service's balance read writes.
+fn balance_key(svc: &ServiceConfig) -> String {
+    record_key(svc.kind, &svc.provider, &svc.account, BALANCE)
+}
+
+async fn probe_service(
+    ctx: &Ctx<'_>,
+    svc: &ServiceConfig,
+    auth: Auth,
+    due: Due<'_>,
+) -> Vec<Record> {
     let probe_name = match svc.protocol {
         Some(Protocol::Anthropic) => "messages",
         Some(Protocol::Openai) | None => "chat_completions",
@@ -120,6 +192,7 @@ async fn probe_service(ctx: &Ctx<'_>, svc: &ServiceConfig, auth: Auth) -> Vec<Re
             return unmeasured(
                 ctx,
                 svc,
+                &due.models,
                 probe_name,
                 "no_endpoint",
                 "no base_url/protocol configured",
@@ -134,49 +207,72 @@ async fn probe_service(ctx: &Ctx<'_>, svc: &ServiceConfig, auth: Auth) -> Vec<Re
                 Some(n) => format!("environment variable {n} is unset or empty; not probed"),
                 None => "no secret configured; not probed".to_string(),
             };
-            return unmeasured(ctx, svc, probe_name, "secret_unset", &why);
+            return unmeasured(ctx, svc, &due.models, probe_name, "secret_unset", &why);
         }
     };
 
     let balance = async {
-        match (&svc.balance, &key) {
-            (BalanceSpec::Endpoint(b), Some(k)) => fetch_balance(ctx, svc, b, k).await,
+        match (&svc.balance, &key, due.balance) {
+            (BalanceSpec::Endpoint(b), Some(k), true) => {
+                Some(balance_row(ctx, svc, fetch_balance(ctx, svc, b, k).await))
+            }
             _ => None,
         }
     };
     let models = join_all(
-        svc.models
+        due.models
             .iter()
             .map(|model| probe_model(ctx, svc, protocol, base, model, key.as_ref(), probe_name)),
     );
     let (balance, mut rows) = futures::join!(balance, models);
 
-    if let (Some((bal, floor)), true) = (balance, !rows.is_empty()) {
+    // the floor and the published balance come from this cycle's read, else from the last read while it is fresh
+    let last_read = balance.as_ref().or(due
+        .stored_balance
+        .filter(|r| matches!(freshness(Some(r), ctx.now), Verdict::State { .. })));
+    if let Some(b) = last_read.filter(|b| b.state != State::Unknown) {
         for r in &mut rows {
             // the floor only ever turns a working model into quota_exhausted; the balance is on every row unless
-            // the service says `publish_balance = false`
-            r.state = apply_floor(r.state, bal.amount, floor);
-            if svc.publish_balance {
-                r.balance = Some(bal.clone());
+            // the service says `publish_balance = false` (then the balance row carries none either)
+            if b.state == State::QuotaExhausted {
+                r.state = exhaust(r.state);
             }
+            r.balance = b.balance.clone();
         }
     }
+    rows.extend(balance);
     rows
+}
+
+/// The balance row: `quota_exhausted` at or below the floor, else `ok`; `unknown` when the read failed.
+fn balance_row(ctx: &Ctx<'_>, svc: &ServiceConfig, read: Option<(Balance, f64)>) -> Record {
+    let mut r = row(ctx, svc, BALANCE, BALANCE, QueryKind::Balance);
+    match read {
+        Some((bal, floor)) => {
+            r.state = apply_floor(State::Ok, bal.amount, floor);
+            if svc.publish_balance {
+                r.balance = Some(bal);
+            }
+        }
+        None => r.reason = Some("cannot_assess:balance_unreadable".to_string()),
+    }
+    tracing::info!(key = %r.key, state = r.state.as_str(), "balance read");
+    r
 }
 
 /// Rows for a service that could not be measured at all (no call is made).
 fn unmeasured(
     ctx: &Ctx<'_>,
     svc: &ServiceConfig,
+    models: &[&str],
     probe_name: &str,
     why: &str,
     error: &str,
 ) -> Vec<Record> {
-    let now = Utc::now();
-    svc.models
+    models
         .iter()
         .map(|model| {
-            let mut r = row(ctx, svc, model, probe_name, now);
+            let mut r = row(ctx, svc, model, probe_name, QueryKind::Api);
             r.state = State::Unknown;
             r.reason = Some(format!("cannot_assess:{why}"));
             r.error = Some(ctx.redactor.redact_error(error));
@@ -191,7 +287,7 @@ fn row(
     svc: &ServiceConfig,
     model: &str,
     probe_name: &str,
-    checked_at: chrono::DateTime<Utc>,
+    kind: QueryKind,
 ) -> Record {
     Record {
         contract: CONTRACT.to_string(),
@@ -211,8 +307,8 @@ fn row(
             source: ProbeSource::Official,
         },
         error: None,
-        checked_at,
-        ttl_s: ctx.config.probe.ttl.as_secs(),
+        checked_at: ctx.now,
+        ttl_s: ctx.config.ttl_for(kind).as_secs(),
         observed_by: crate::observed_by(),
     }
 }
@@ -270,7 +366,6 @@ async fn probe_model(
         }
     };
 
-    let checked_at = Utc::now();
     let started = Instant::now();
     // `.json()` already sets the one `Content-Type: application/json`; adding another doubles it (xAI answers 415)
     let (outcome, transport_error) = match request.send().await {
@@ -304,7 +399,7 @@ async fn probe_model(
             degraded_latency_ms: ctx.config.probe.degraded_latency_ms,
         },
     );
-    let mut r = row(ctx, svc, model, probe_name, checked_at);
+    let mut r = row(ctx, svc, model, probe_name, QueryKind::Api);
     r.state = c.state;
     r.reason = c.reason.map(|s| ctx.redactor.redact(&s));
     r.headroom = c.headroom.map(|mut h| {

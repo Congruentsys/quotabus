@@ -108,7 +108,7 @@ async fn ok_stub() -> MockServer {
 
 fn services(stub: &str) -> String {
     format!(
-        "[probe]\nttl = \"2m\"\n\n\
+        "[ttl]\napi = \"2m\"\nbalance = \"2m\"\n\n\
          [[service]]\nid = \"good\"\nkind = \"api\"\nprovider = \"good\"\nfamily = \"good\"\naccount = \"acct\"\n\
          base_url = \"{stub}/good\"\nprotocol = \"anthropic\"\nmodels = [\"m1\"]\nsecret = \"QB_HAZ_KEY\"\n"
     )

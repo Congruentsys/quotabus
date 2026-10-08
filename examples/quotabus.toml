@@ -7,9 +7,15 @@
 url    = "nats://192.168.8.110:4222"    # Mini
 bucket = "ai_status"
 
+[intervals]                             # each query kind on its own schedule (DESIGN §3, SIG-004)
+api     = "12h"                         # messages / chat-completions probe: twice a day
+balance = "12h"                         # balance GET: twice a day
+
+# [ttl]                                 # a kind left out is 3 × its own interval (3 missed runs = UNKNOWN)
+# api     = "36h"
+# balance = "36h"
+
 [probe]
-interval   = "15m"
-ttl        = "45m"                      # 3 missed probes = UNKNOWN
 max_tokens = 20
 
 [[service]]

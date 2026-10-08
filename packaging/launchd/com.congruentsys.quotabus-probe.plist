@@ -19,7 +19,7 @@
         <string>/usr/local/etc/quotabus/quotabus.toml</string>
     </array>
     <key>StartInterval</key>
-    <integer>900</integer>
+    <integer>300</integer>
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>

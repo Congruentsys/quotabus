@@ -4,16 +4,18 @@
 use std::time::Duration;
 
 use quotabus::config::{BalanceSpec, Protocol};
-use quotabus::{Config, Kind};
+use quotabus::{Config, Kind, QueryKind};
 
 pub const DESIGN_S3: &str = r#"
 [bus]
 url     = "nats://192.168.8.110:4222"
 bucket  = "ai_status"
 
+[intervals]
+api     = "12h"
+balance = "12h"
+
 [probe]
-interval = "15m"
-ttl      = "45m"
 max_tokens = 20
 
 [[service]]
@@ -81,8 +83,14 @@ fn the_design_s3_config_loads() {
     let bus = c.bus.as_ref().expect("[bus]");
     assert_eq!(bus.url, "nats://192.168.8.110:4222");
     assert_eq!(bus.bucket, "ai_status");
-    assert_eq!(c.probe.interval, Duration::from_secs(15 * 60));
-    assert_eq!(c.probe.ttl, Duration::from_secs(45 * 60));
+    assert_eq!(
+        c.interval_for(QueryKind::Api),
+        Duration::from_secs(12 * 3600)
+    );
+    assert_eq!(
+        c.interval_for(QueryKind::Balance),
+        Duration::from_secs(12 * 3600)
+    );
     assert_eq!(c.probe.max_tokens, 20);
     let ids: Vec<&str> = c.services.iter().map(|s| s.id.as_str()).collect();
     assert_eq!(ids, ["glm", "deepseek", "claude-max", "copilot"]);
@@ -136,17 +144,35 @@ fn omitting_bus_selects_the_file_backend_and_bucket_defaults_to_ai_status() {
 #[test]
 fn probe_defaults_are_the_design_values() {
     let c = Config::from_toml_str("").unwrap();
-    assert_eq!(c.probe.interval, Duration::from_secs(15 * 60));
-    assert_eq!(c.probe.ttl, Duration::from_secs(45 * 60));
+    assert_eq!(
+        c.interval_for(QueryKind::Api),
+        Duration::from_secs(12 * 3600)
+    );
+    assert_eq!(
+        c.interval_for(QueryKind::Balance),
+        Duration::from_secs(12 * 3600)
+    );
+    assert_eq!(c.ttl_for(QueryKind::Api), Duration::from_secs(36 * 3600));
+    assert_eq!(
+        c.ttl_for(QueryKind::Balance),
+        Duration::from_secs(36 * 3600)
+    );
     assert_eq!(c.probe.max_tokens, 20);
     assert!(c.services.is_empty());
 }
 
 #[test]
 fn durations_parse_in_seconds_minutes_and_hours() {
-    let c = Config::from_toml_str("[probe]\ninterval = \"90s\"\nttl = \"2h\"\n").unwrap();
-    assert_eq!(c.probe.interval, Duration::from_secs(90));
-    assert_eq!(c.probe.ttl, Duration::from_secs(7200));
+    let c = Config::from_toml_str(
+        "[intervals]\napi = \"90s\"\nbalance = \"15m\"\n\n[ttl]\napi = \"2h\"\n",
+    )
+    .unwrap();
+    assert_eq!(c.interval_for(QueryKind::Api), Duration::from_secs(90));
+    assert_eq!(
+        c.interval_for(QueryKind::Balance),
+        Duration::from_secs(15 * 60)
+    );
+    assert_eq!(c.ttl_for(QueryKind::Api), Duration::from_secs(7200));
 }
 
 #[test]
@@ -165,7 +191,8 @@ fn control_bad_configs_are_refused() {
         )
         .is_err()
     );
-    assert!(Config::from_toml_str("[probe]\nttl = \"forever\"\n").is_err());
+    assert!(Config::from_toml_str("[ttl]\napi = \"forever\"\n").is_err());
+    assert!(Config::from_toml_str("[intervals]\nbalance = \"forever\"\n").is_err());
 }
 
 #[test]

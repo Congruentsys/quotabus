@@ -1,7 +1,9 @@
 # Packaging
 
-- `launchd/com.congruentsys.quotabus-probe.plist` — the central probe on Mini (DESIGN §3, §5): one `quotabus probe`
-  cycle every 900 s (the 15 min `[probe] interval`). The plist holds **no secret**: keys reach the binary only through
+- `launchd/com.congruentsys.quotabus-probe.plist` — the central probe on Mini (DESIGN §3, §5): a TICK, not an
+  interval: `StartInterval` 300 runs `quotabus probe` every 300 s, and each run makes only the calls that are due (each
+  query kind on its own `[intervals]` entry in the config, measured from that kind's last row in the store). The
+  intervals live only in the config; the tick bounds how late a due kind can run. The plist holds **no secret**: keys reach the binary only through
   the launcher it wraps — `doppler run --project … --config … --` as written, or replace the first arguments with
   `secretspec run --` — which injects the environment variables the config's `secret` names list. Adjust the
   launcher path, project, config and `--config` path to the host, and replace the user `admin` in the

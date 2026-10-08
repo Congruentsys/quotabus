@@ -15,7 +15,7 @@ const T: Duration = Duration::from_secs(60);
 
 fn services(stub: &str) -> String {
     format!(
-        "[probe]\nttl = \"2m\"\n\n\
+        "[ttl]\napi = \"2m\"\nbalance = \"2m\"\n\n\
          [[service]]\nid = \"glm\"\nkind = \"api\"\nprovider = \"zhipu\"\nfamily = \"zhipu\"\naccount = \"nusy-product-team\"\n\
          base_url = \"{stub}/glm\"\nprotocol = \"anthropic\"\nmodels = [\"glm-5.3\", \"glm-5.2\"]\nsecret = \"QB_GLM\"\n\n\
          [[service]]\nid = \"deepseek\"\nkind = \"api\"\nprovider = \"deepseek\"\nfamily = \"deepseek\"\n\

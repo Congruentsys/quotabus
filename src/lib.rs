@@ -11,6 +11,7 @@ pub mod freshness;
 pub mod probe;
 pub mod record;
 pub mod redact;
+pub mod schedule;
 pub mod secret;
 
 pub use backend::{Backend, BackendError, BusUrl, FileBackend, Listing, NatsKv};
@@ -22,6 +23,7 @@ pub use record::{
     Balance, CONTRACT, Headroom, Kind, Probe, ProbeSource, Record, State, record_key, slug,
 };
 pub use redact::{ERROR_CAP, Redactor};
+pub use schedule::QueryKind;
 pub use secret::Secret;
 
 /// The crate version, as written into `observed_by`.

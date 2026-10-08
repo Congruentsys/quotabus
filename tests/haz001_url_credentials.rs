@@ -121,7 +121,7 @@ fn write_cfg(dir: &Path, bus: &str, stub: &str) -> PathBuf {
     std::fs::write(
         &p,
         format!(
-            "{bus}\n[probe]\nttl = \"2m\"\n\n\
+            "{bus}\n[ttl]\napi = \"2m\"\nbalance = \"2m\"\n\n\
              [[service]]\nid = \"nokey\"\nkind = \"api\"\nprovider = \"nokey\"\nfamily = \"nokey\"\naccount = \"acct\"\n\
              base_url = \"{stub}/nokey\"\nprotocol = \"anthropic\"\nmodels = [\"m1\"]\nsecret = \"QB_HAZ_UNSET\"\n\n\
              [[service]]\nid = \"good\"\nkind = \"api\"\nprovider = \"good\"\nfamily = \"good\"\naccount = \"acct\"\n\
