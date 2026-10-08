@@ -2,7 +2,7 @@
 id: CHORE-009
 title: "DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind, cite CHORE-007 for TTL rules"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-08
@@ -60,6 +60,12 @@ distinct session (a DESIGN.md change) and merged.
     kb:status kb:in_progress ;
     kb:at "2026-10-08T19:42:00+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T19:51:24+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/11> ;
   ] .
 ```
 
