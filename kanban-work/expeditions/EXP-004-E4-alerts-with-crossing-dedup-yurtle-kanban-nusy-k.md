@@ -43,3 +43,7 @@ A model 404 files ONE signal across ten probe cycles; a measured `ok` re-arms it
 ### M5/s-b1fd4c67 (2026-10-08 17:22)
 
 Released with depends_on EXP-003. SIG-006 is built to the recommendation (alert = signal, one per crossing, never auto-closed; the item type is sink config), SIG-005's Yurtle twin lands here per the recommendation.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 21:13)
+
+Tests red at 0ea5162 (partner): tests/exp004_alert.rs (17) and exp004_config.rs (11). 27 of 28 red, each on a todo!() stub or an assertion; the one green is the fake-sink control. Noted: DESIGN §3's sample says yurtle-kanban item_type 'issue', but the Plan and SIG-006 say signal, and the tests follow signal. No Rust Yurtle reader exists (PRIOR-ART names only Python yurtle-rdflib), so the yurtle-table reader is written here.
