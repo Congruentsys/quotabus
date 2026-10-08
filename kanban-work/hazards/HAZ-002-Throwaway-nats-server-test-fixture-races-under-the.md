@@ -2,7 +2,7 @@
 id: HAZ-002
 title: "Throwaway nats-server test fixture races under the parallel suite (connection reset at startup)"
 type: hazard
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -17,3 +17,14 @@ A flaky gate trains sessions to re-run until green, and a real failure then gets
 
 ## Done when
 The throwaway-server helper waits until the server really accepts a connection (or retries a refused or reset first connect within a bound), and keeps a port it hands out. The full `cargo test --locked` passes 10 runs in a row on M5. This is a test-only change, made by a test partner and reviewed like code.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T19:03:35+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
