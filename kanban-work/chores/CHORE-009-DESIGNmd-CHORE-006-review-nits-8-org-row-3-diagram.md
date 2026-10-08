@@ -25,7 +25,7 @@ corrections:
 3. **F3:** two rules in §3/§4 (each kind's TTL is 3 × its interval; an API probe never triggers a balance read) come
    from CHORE-007's Definition of Done, not from a Captain ruling; cite CHORE-007 for them rather than §10.
 
-Coordinate with CHORE-007, which also edits §3/§4: if CHORE-007 has landed, edit on top of it.
+CHORE-007 also edits §3/§4 and has LANDED (merged 71bebe7, done 4030bee; the bounce's reason no longer holds): edit on top of it. CHORE-008 (merged 5502e7d) also touched §5's packaging line and packaging/README.md. F3 re-check: CHORE-007's DESIGN.md may now cite itself for the TTL rules; amend only what is still uncited.
 
 ## Done when
 A PR amends DESIGN.md on F1, F2 and F3, each citing `reviews/CHORE-006-r1.md`; `make check` green; reviewed by a
