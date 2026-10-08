@@ -2,7 +2,7 @@
 id: CHORE-004
 title: "Amend DESIGN.md §4 with CHORE-002's measured facts (statusLine under claude -p; z.ai quota endpoint)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -33,5 +33,11 @@ A PR to `docs/DESIGN.md` §4 (and the §10 Q9 line) that:
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:30:27+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T18:35:14+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/4> ;
   ] .
 ```
