@@ -11,9 +11,14 @@ checked and expires on its own, so a reader never mistakes an old "ok" for a cur
 Humans read it with `quotabus status`. Agents read it with `quotabus select --role review --exclude-family anthropic`,
 to pick a healthy model before spending a long prompt on it.
 
-> **Status: design.** Nothing is built yet. The design is [`docs/DESIGN.md`](docs/DESIGN.md); the prior-art review
-> that found no existing tool doing the whole job is [`docs/PRIOR-ART.md`](docs/PRIOR-ART.md). Work is tracked on this
-> repo's own board under [`kanban-work/`](kanban-work/) (yurtle-kanban).
+> **Status: E1 landed — `probe` and `status` for the API services.** `quotabus probe --config quotabus.toml` runs one
+> probe cycle and writes one row per (service, model) to the NATS KV bucket of `[bus]` (created with per-key TTL), or
+> to `[file] dir` without one; run it under your key manager so keys arrive by environment only:
+> `doppler run -- quotabus probe` or `secretspec run -- quotabus probe`. `quotabus status [--json] [--kind api]
+> [--check <service>]` reads the rows with the freshness rule. See [`examples/quotabus.toml`](examples/quotabus.toml)
+> and [`packaging/`](packaging/). `agent`, `select`, `alert` and `serve` are not built yet. The design is
+> [`docs/DESIGN.md`](docs/DESIGN.md); the prior-art review is [`docs/PRIOR-ART.md`](docs/PRIOR-ART.md). Work is
+> tracked on this repo's own board under [`kanban-work/`](kanban-work/) (yurtle-kanban).
 
 ## Planned shape (v1.0)
 
