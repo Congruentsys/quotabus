@@ -2,7 +2,7 @@
 id: HAZ-001
 title: "nats:// URL credentials are dropped, and could leak into a connection error (found in EXP-001)"
 type: hazard
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -17,3 +17,14 @@ Mini's bus needs no credentials today, so nothing is broken in the fleet; an out
 
 ## Done when
 Credentials in a nats:// URL reach the connection (or are refused with a clear config error telling the user to use `--creds` / env), and no error, log or row ever contains the password: a test against a throwaway nats-server with a user/password that goes red without the fix.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T18:40:20+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
