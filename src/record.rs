@@ -87,12 +87,61 @@ pub struct Record {
 
 /// A KV-key-safe slug: every char outside `[A-Za-z0-9_-]` becomes `-`.
 pub fn slug(s: &str) -> String {
-    let _ = s;
-    todo!("slug")
+    s.chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+                c
+            } else {
+                '-'
+            }
+        })
+        .collect()
 }
 
 /// `<kind>.<provider>.<account>.<model>`, each part a slug.
 pub fn record_key(kind: Kind, provider: &str, account: &str, model: &str) -> String {
-    let _ = (kind, provider, account, model);
-    todo!("record_key")
+    format!(
+        "{}.{}.{}.{}",
+        kind.as_str(),
+        slug(provider),
+        slug(account),
+        slug(model)
+    )
+}
+
+impl State {
+    /// The snake_case name, as serialised.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            State::Ok => "ok",
+            State::AuthFailed => "auth_failed",
+            State::ModelMissing => "model_missing",
+            State::QuotaExhausted => "quota_exhausted",
+            State::RateLimited => "rate_limited",
+            State::Degraded => "degraded",
+            State::Unknown => "unknown",
+        }
+    }
+}
+
+impl Kind {
+    /// The snake_case name, as serialised and as the first token of a key.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Kind::Api => "api",
+            Kind::Subscription => "subscription",
+            Kind::Local => "local",
+        }
+    }
+}
+
+impl ProbeSource {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ProbeSource::Official => "official",
+            ProbeSource::Undocumented => "undocumented",
+            ProbeSource::File => "file",
+            ProbeSource::Header => "header",
+        }
+    }
 }
