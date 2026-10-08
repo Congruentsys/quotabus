@@ -7,7 +7,7 @@ priority: medium
 assignee: null
 created: 2026-10-08
 tags: [v1.0, VOY-001]
-depends_on: []
+depends_on: [EXP-001]
 ---
 
 # C1: nusy-product-team docs/external-review.md §1a — replace the hand probe with 'run quotabus status'
