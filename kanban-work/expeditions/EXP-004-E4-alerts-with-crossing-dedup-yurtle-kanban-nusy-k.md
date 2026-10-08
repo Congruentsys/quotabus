@@ -2,7 +2,7 @@
 id: EXP-004
 title: "E4: alerts with crossing-dedup (yurtle-kanban, nusy-kanban, webhook) and the Yurtle config front-end"
 type: expedition
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -34,6 +34,12 @@ A model 404 files ONE signal across ten probe cycles; a measured `ok` re-arms it
     kb:status kb:in_progress ;
     kb:at "2026-10-08T21:03:58+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T21:40:35+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/15> ;
   ] .
 ```
 
