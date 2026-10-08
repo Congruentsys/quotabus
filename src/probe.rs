@@ -51,8 +51,6 @@ pub(crate) struct Ctx<'a> {
     /// The `claude` binary for the stream-json fallback: `QUOTABUS_CLAUDE_BIN` through the env lookup, else None
     /// (then `claude` on PATH).
     pub(crate) claude_bin: Option<String>,
-    /// Every configured secret NAME: stripped from a child process's environment.
-    pub(crate) secret_names: Vec<String>,
 }
 
 /// What is due for one service this cycle.
@@ -128,12 +126,6 @@ impl Runner {
             config: &self.config,
             now,
             claude_bin: (self.env)("QUOTABUS_CLAUDE_BIN").filter(|b| !b.is_empty()),
-            secret_names: self
-                .config
-                .services
-                .iter()
-                .filter_map(|s| s.secret.clone())
-                .collect(),
         };
         let stored: HashMap<&str, &Record> =
             store_rows.iter().map(|r| (r.key.as_str(), r)).collect();

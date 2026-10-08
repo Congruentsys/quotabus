@@ -43,6 +43,8 @@ const ANTHROPIC_VERSION: &str = "2023-06-01";
 const PROMPT: &str = "Reply with exactly: OK";
 const FIVE_HOUR_S: i64 = 18_000;
 const SEVEN_DAY_S: i64 = 604_800;
+/// The only variables the fallback child inherits from the probe's environment (r1 F1), each only if set.
+const CHILD_ENV: [&str; 6] = ["PATH", "HOME", "TMPDIR", "USER", "LANG", "TERM"];
 /// The fallback `claude -p` run is killed after this long.
 const CLAUDE_TIMEOUT: Duration = Duration::from_secs(120);
 
@@ -317,14 +319,14 @@ async fn claude_stream_json(
     .stdout(Stdio::piped())
     .stderr(Stdio::null())
     .kill_on_drop(true);
-    // the child sees only this account's token: no API key, no other configured secret
-    for n in ctx
-        .secret_names
-        .iter()
-        .map(String::as_str)
-        .chain(["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"])
-    {
-        cmd.env_remove(n);
+    // r1 F1: the child gets an allowlist only, never the probe's environment (under `doppler run` that holds every
+    // Doppler secret, configured or not), plus this account's token. HOME still carries the user-level ~/.claude
+    // settings (and its login), which `claude` reads; the token in CLAUDE_CODE_OAUTH_TOKEN takes precedence.
+    cmd.env_clear();
+    for n in CHILD_ENV {
+        if let Some(v) = std::env::var_os(n) {
+            cmd.env(n, v);
+        }
     }
     cmd.env("CLAUDE_CODE_OAUTH_TOKEN", token.expose());
     let started = Instant::now();
