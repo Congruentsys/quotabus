@@ -206,11 +206,14 @@ pub struct NatsKv {
 
 /// A bus URL split into the address async-nats connects to (no userinfo) and the credentials it carried
 /// (`nats://user:pass@host` or a token-only `nats://token@host`; HAZ-001). A comma-separated server list is split per
-/// server; the first server with userinfo supplies the credentials.
+/// server and handed to async-nats as a list; the connection has one set of credentials, so the FIRST server with
+/// userinfo supplies them (every server's userinfo is still registered as a secret).
 #[derive(Clone)]
 pub struct BusUrl {
-    /// The server address(es) with any userinfo removed: what we connect to and the only form we may print.
+    /// The server address(es) with any userinfo removed, comma-joined: the only form we may print.
     pub address: String,
+    /// The same, one per server: what we connect to.
+    pub servers: Vec<String>,
     pub user: Option<String>,
     pub password: Option<Secret>,
     pub token: Option<Secret>,
@@ -228,6 +231,7 @@ impl BusUrl {
     pub fn parse(url: &str) -> BusUrl {
         let mut out = BusUrl {
             address: String::new(),
+            servers: Vec::new(),
             user: None,
             password: None,
             token: None,
@@ -265,6 +269,7 @@ impl BusUrl {
             }
         }
         out.address = servers.join(",");
+        out.servers = servers;
         out
     }
 
@@ -335,7 +340,7 @@ async fn connect(url: &str) -> Result<jetstream::Context, BackendError> {
     let client = options
         .connection_timeout(BUS_TIMEOUT)
         .request_timeout(Some(BUS_TIMEOUT))
-        .connect(bus.address.as_str())
+        .connect(bus.servers.as_slice())
         .await
         .map_err(|e| BackendError::Unreachable(scrub(&bus, &e.to_string())))?;
     Ok(jetstream::new(client))
@@ -502,6 +507,7 @@ mod bus_url_tests {
     fn a_token_url_and_a_plain_url() {
         let b = BusUrl::parse("nats://tok123@h:4222,nats://h2:4222");
         assert_eq!(b.address, "nats://h:4222,nats://h2:4222");
+        assert_eq!(b.servers, ["nats://h:4222", "nats://h2:4222"]);
         assert_eq!(b.token.as_ref().map(|t| t.expose()), Some("tok123"));
         assert_eq!(b.display(), "nats://***@h:4222,nats://h2:4222");
         let p = BusUrl::parse("nats://127.0.0.1:4222");
