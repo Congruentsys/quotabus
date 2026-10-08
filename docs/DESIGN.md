@@ -77,7 +77,7 @@ alarm and a staleness flag only a parsing reader can see (both `nats kv get flee
            keys (never on argv, never in a row)                      per-host, local reads only
    secretspec run -- / doppler run -- / env  ─┐             ┌─ statusline hook file · ~/.claude.json
                                               v             │   gh token -> copilot_internal/user
-   [central host]  quotabus probe  (API 12 h · balance 12 h)        [every host] quotabus agent (subscription 5 min)
+   [central host]  quotabus probe  (API 12 h · balance 12 h · local) [every host] quotabus agent (subscription 5 min)
                  │  one row per (kind,provider,account,model)              │  rows keyed by its own host
                  └──────────────► NATS KV  ai_status  (per-key TTL)  ◄─────┘   + $SRV registration
                                      │ change subject ai.status.changed.<key>
@@ -92,16 +92,16 @@ this host, or a named other host (§10 Q2; the install step is CHORE-008). The f
 a build, so the bus host's no-build rule holds. **Each query kind has its own interval**, set on its own (§10 Q5): API
 (messages) probes and balance reads default to every 12 h, subscription reads to every 5 min; no interval is shared, and
 a later kind (e.g. a quota-window read) gets its own. Every interval in this document is a default, not a constant. The
-rulings name no default for the `local` kind's probe (DGX1 Qwen); that is not decided here. `agent` is the per-host reader of subscription state, which must run locally: `claude auth
+rulings name no default for the `local` kind's probe (DGX1 Qwen); that is not decided here. The central probe still runs that kind — every service but `subscription` (`src/probe.rs:136-153`; `local-qwen` in `examples/quotabus.toml:111-122`) — so the diagram shows `local` beside API and balance (`reviews/CHORE-006-r1.md:101-107`). `agent` is the per-host reader of subscription state, which must run locally: `claude auth
 status` over SSH on macOS returns a confident, false "not logged in" (`f8b7f2f531^:scripts/fleet/account-util-publish.sh:7-17`;
 memory `feedback_claude_auth_probe_fails_over_ssh_on_macos`). `status`, `select`, `alert`, `serve` are readers.
 
 **Scheduling — a tick, and what is due.** The intervals live only in the config: `[intervals]` (one key per kind)
-and `[ttl]` (one per kind; a kind left out is 3 × its own interval). The launchd unit (§5) only ticks — `quotabus probe`
+and `[ttl]` (one per kind; a kind left out is 3 × its own interval — CHORE-007's Definition of Done, `kanban-work/chores/CHORE-007-*.md:22`, not a Captain ruling). The launchd unit (§5) only ticks — `quotabus probe`
 every 300 s — and each run makes a kind's calls only when that kind is **due**: its interval has elapsed since its last
 row in the store (no row = due; a row written without a call, such as `secret_unset`, is not a run). Due-ness is per
 row: each (service, model) for the API probe, and each service's balance row (§2) for the balance read, so a due API
-probe never triggers a balance read and vice versa. An API probe applies the floor and carries the balance from the
+probe never triggers a balance read and vice versa (CHORE-007, `kanban-work/chores/CHORE-007-*.md:23`; both citations per `reviews/CHORE-006-r1.md:109-117`). An API probe applies the floor and carries the balance from the
 last fresh balance row. Until a `local` default is decided, a `local` service's probe runs on `[intervals] api`.
 `quotabus probe --force` runs every kind now.
 
@@ -125,7 +125,7 @@ api          = "12h"       # messages probe, per model
 balance      = "12h"       # balance GETs
 # subscription = "5m"      # per-host reads by `agent` (E2); the key arrives with EXP-002
 
-[ttl]            # optional, per kind; each defaults to 3 x its own interval (3 missed = UNKNOWN)
+[ttl]            # optional, per kind; each defaults to 3 x its own interval (3 missed = UNKNOWN; CHORE-007)
 # api     = "36h"
 # balance = "36h"
 
@@ -238,7 +238,7 @@ The cheapest probe for an Anthropic-protocol provider is the 8-token call alread
 `POST <base>/v1/messages`, `max_tokens: 20`, thinking disabled; status → state, headers → headroom. Cost at the 12 h API default (`[intervals] api`, §10 Q5):
 ≤ 2 calls × ~30 tokens per model per day (24 h ÷ 12 h = 2; the 15 min default this line first named was 96; each
 `--force` adds one). Balance endpoints are GETs, on their own `[intervals] balance` (12 h default), never triggered by a
-messages probe or the reverse.
+messages probe or the reverse (CHORE-007, `kanban-work/chores/CHORE-007-*.md:23`, not §10 Q5; `reviews/CHORE-006-r1.md:109-117`).
 
 | service | cheapest probe | reads | UNKNOWN by design |
 |---|---|---|---|
@@ -307,7 +307,7 @@ wants it); a persistent history store (the bus keeps `history = 1`; trends are `
 | | |
 |---|---|
 | **name candidates** | **`quotabus`** (recommended, and chosen by the Captain 2026-10-08, §10 Q1: free on a GitHub exact-name search and `crates.io` 404, 2026-10-08; says bus + quota) · `llm-keywatch` (free) · `ai-status` [unverified]. Taken: `modelwatch` (wkwan, 28★), `keypulse`, `keystatus`, `provider-pulse` (`gh search repos --match name`) |
-| **org** | `Congruentsys` (where `arrow-kanban` lives, MIT "Copyright (c) 2026 Congruentsys") or `hankh95` (yurtle, yurtle-kanban, nusy-kanban) — §10 Q1 |
+| **org** | **`Congruentsys`** (where `arrow-kanban` lives, MIT "Copyright (c) 2026 Congruentsys"; recommended, and chosen by the Captain 2026-10-08, §10 Q1 — on file as paraphrase only, `kanban-work/voyages/VOY-001-*.md:19`). The other option offered was `hankh95` (yurtle, yurtle-kanban, nusy-kanban). Amended per `reviews/CHORE-006-r1.md:93-99` |
 | **licence** | **MIT**, matching nusy-kanban, yurtle, yurtle-kanban, nusy-nano (`LICENSE` files read locally); every dependency is MIT or Apache-2.0 (async-nats, secretspec, Gatus-class references) — LIT §11; the copyleft items LIT found are excluded. Shipping/licence stays a separate question from this R&D (Captain 2026-09-23) |
 | **layout** | mirror `arrow-kanban`: `Cargo.toml` (`edition = "2024"`, `license = "MIT"`), `LICENSE`, `README.md`, `CONTRIBUTING.md`, `.github/workflows/ci.yml`; add `SECURITY.md` and `CODE_OF_CONDUCT.md` from yurtle-kanban; `packaging/`, `examples/quotabus.toml`, `examples/quotabus.yurtle.md`, `secretspec.toml` |
 | **dual-track** | `CLAUDE.md:673`: a standalone FOSS repo uses GitHub issues + PRs and dual-tracks an `nk` item. Per piece: a public gh issue, an nk chore recording issue # and PR #, the gh PR `Closes #n`; the nk item is `done` only when the **gh PR is merged**, and the resident's own loop reviews open FOSS PRs with a distinct session (memory `feedback_foss_repo_dual_tracking`). The campaign for this work is the IDEA's own refine output, not CA-13266 |
