@@ -2,9 +2,9 @@
 id: CHORE-007
 title: "Separate probe interval per query kind (API 12 h, balance 12 h), each with its own TTL — Captain Q5"
 type: chore
-status: provisioning
+status: underway
 priority: high
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001, config]
 depends_on: []
@@ -32,6 +32,11 @@ This chore blocks EXP-002, which adds a third kind (subscription reads, 5 min) i
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T18:58:26+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T18:58:34+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
