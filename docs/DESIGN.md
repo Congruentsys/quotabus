@@ -248,7 +248,7 @@ prior art (agent-quota) is a catalogue to read, not a base.
 **Crates:** `clap`, `serde`/`serde_json`, `toml`, `reqwest` (rustls), `async-nats` (feature `server_2_11`), `tokio`,
 `tracing`; optional features `serve` (axum, one page), `yurtle` (the table reader), `secretspec` (in-process SDK).
 
-**Packaging:** `packaging/launchd/com.congruentsys.quotabus-probe.plist` (the central host, chosen at install: this host or a named one, §10 Q2; the fleet's is Mini), `…-agent.plist` (M5, Air),
+**Packaging:** `packaging/install.sh` renders `com.congruentsys.quotabus-probe.plist` (the central host, chosen at install: this host or a named one, §10 Q2; the fleet's is Mini), `…-agent.plist` (M5, Air),
 `packaging/systemd/quotabus-agent.service` + `.timer` (DGX1/2) — the fleet's existing shapes
 (`scripts/com.nusy.kanban-snapshot.plist`, `scripts/backup/t9-backup.timer`); GitHub release binaries for
 `aarch64-apple-darwin`, `aarch64-unknown-linux-gnu`, `x86_64-unknown-linux-gnu`. CI mirrors
