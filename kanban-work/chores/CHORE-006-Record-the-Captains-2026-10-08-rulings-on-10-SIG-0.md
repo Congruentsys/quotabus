@@ -2,7 +2,7 @@
 id: CHORE-006
 title: "Record the Captain's 2026-10-08 rulings on §10 (SIG-001…008) in DESIGN.md"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -22,3 +22,14 @@ A PR to `docs/DESIGN.md` that, for each of Q2, Q3, Q4, Q5, Q7, Q8, Q9 and Q10 in
 1. Records the ruling verbatim as `Captain 2026-10-08: "…"`, citing its SIG, and says whether it was the recommended default.
 2. Updates every other sentence it makes stale (e.g. §4's cadence and cost line, the Claude Max row's "pending SIG-008", the GLM row's "pending SIG-003", §3's host for the central probe).
 3. `make check` is green. A distinct session reviews it (a DESIGN.md change).
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T18:53:23+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
