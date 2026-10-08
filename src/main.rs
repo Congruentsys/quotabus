@@ -50,6 +50,21 @@ enum Command {
         #[arg(long)]
         check: Option<String>,
     },
+    /// EXP-002 STUB. Read THIS host's subscription state (Claude capture / ~/.claude.json, Copilot via `gh`) for
+    /// what is due on [intervals] subscription, and write one row per subscription service.
+    Agent {
+        /// Read every subscription now, due or not.
+        #[arg(long)]
+        force: bool,
+    },
+    /// EXP-002 STUB. The Claude Code `statusLine` command: stdin JSON -> ~/.cache/quotabus/claude-rate-limits.json
+    /// (only when it carries `rate_limits`), and one line printed for the bar. Needs no config.
+    Statusline,
+    /// EXP-002 STUB. Pass stdin to stdout unchanged; a stream-json `rate_limit_event` is captured into the same
+    /// cache. For `claude -p --output-format stream-json … | quotabus tee`. Needs no config.
+    Tee,
+    /// EXP-002 STUB. Add the `statusLine` entry running `quotabus statusline` to ~/.claude/settings.json.
+    InstallStatusline,
 }
 
 /// Exit codes of `probe`: a bad config or a backend that cannot be written.
@@ -59,6 +74,13 @@ const UNKNOWN: u8 = 3;
 
 fn main() -> ExitCode {
     let cli = Cli::parse();
+    // EXP-002 stubs: these three need no config, so they are dispatched before it is loaded
+    match cli.command {
+        Command::Statusline => todo!("EXP-002: quotabus statusline"),
+        Command::Tee => todo!("EXP-002: quotabus tee"),
+        Command::InstallStatusline => todo!("EXP-002: quotabus install-statusline"),
+        _ => {}
+    }
     let path = cli
         .config
         .or_else(|| std::env::var_os("QUOTABUS_CONFIG").map(PathBuf::from))
@@ -101,6 +123,10 @@ fn main() -> ExitCode {
     };
     let code = match cli.command {
         Command::Probe { force } => rt.block_on(probe(&config, &runner, &redactor, force)),
+        Command::Agent { force: _ } => todo!("EXP-002: quotabus agent"),
+        Command::Statusline | Command::Tee | Command::InstallStatusline => {
+            unreachable!("dispatched before the config is loaded")
+        }
         Command::Status {
             json,
             kind,

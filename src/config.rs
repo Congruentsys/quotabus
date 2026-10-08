@@ -134,6 +134,7 @@ impl PerKind {
         match kind {
             QueryKind::Api => self.api,
             QueryKind::Balance => self.balance,
+            QueryKind::Subscription => todo!("EXP-002: [intervals] subscription (default 5m)"),
         }
     }
 }
@@ -143,6 +144,9 @@ impl PerKindTtl {
         match kind {
             QueryKind::Api => self.api,
             QueryKind::Balance => self.balance,
+            QueryKind::Subscription => {
+                todo!("EXP-002: [ttl] subscription (default 3 x its interval)")
+            }
         }
     }
 }
