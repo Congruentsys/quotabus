@@ -2,9 +2,9 @@
 id: CHORE-008
 title: "Choose where the central probe runs at install time: locally or on a named host (Mini for the fleet) — Captain Q2"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-08
 tags: [v1.0, VOY-001, packaging]
 depends_on: []
@@ -28,5 +28,10 @@ Part of VOY-001. The Captain's ruling on 2026-10-08, verbatim on SIG-001: "If th
     kb:status kb:ready ;
     kb:at "2026-10-08T18:58:28+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T19:17:53+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
