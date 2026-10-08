@@ -2,7 +2,7 @@
 id: EXP-002
 title: "E2: per-host agent — Claude Code subscription state (statusLine capture + ~/.claude.json fallback) and GitHub Copilot quota, one row per host"
 type: expedition
-status: provisioning
+status: harbor
 priority: high
 assignee: null
 created: 2026-10-08
@@ -31,6 +31,11 @@ Five `subscription.*` rows on the bus from five hosts, each `observed_by` its ow
     kb:status kb:ready ;
     kb:at "2026-10-08T17:22:10+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:backlog ;
+    kb:at "2026-10-08T18:29:05+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
 
