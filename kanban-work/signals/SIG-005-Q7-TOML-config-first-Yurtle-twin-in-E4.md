@@ -19,3 +19,7 @@ Design §10 Q7. The Captain's words led with a Yurtle config. **Recommendation:*
 ### M5/s-b1fd4c67 (2026-10-08 17:30)
 
 Still open — not decided by any session. It blocks nothing in v1.0, so the work is built to docs/DESIGN.md §10's recommendation in EXP-001 (TOML first) and EXP-004 (the Yurtle twin); a different ruling is a config change or a later PR.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
+
+Captain 2026-10-08: "TOML first, Yurtle in E4". This is the recommended default.
