@@ -51,6 +51,23 @@ enum Command {
         #[arg(long)]
         check: Option<String>,
     },
+    /// A healthy model for a role, excluding families: `provider model` on line 1 (one line per `--n`), the ranked
+    /// list with reasons under `--json`; exit 0 chosen · 2 CANNOT-ASSESS (store unreadable) · 3 nothing qualifies.
+    Select {
+        #[arg(long)]
+        role: String,
+        /// A family never chosen (the author's); repeatable.
+        #[arg(long = "exclude-family")]
+        exclude_family: Vec<String>,
+        /// cheapest, fastest or largest-context.
+        #[arg(long)]
+        prefer: Option<String>,
+        /// How many to print.
+        #[arg(long, default_value_t = 1)]
+        n: usize,
+        #[arg(long)]
+        json: bool,
+    },
 }
 
 /// Exit codes of `probe`: a bad config or a backend that cannot be written.
@@ -115,6 +132,23 @@ fn main() -> ExitCode {
                 kind,
                 stale,
                 check,
+            },
+        )),
+        Command::Select {
+            role,
+            exclude_family,
+            prefer,
+            n,
+            json,
+        } => rt.block_on(select(
+            &config,
+            &redactor,
+            &SelectArgs {
+                role,
+                exclude_family,
+                prefer,
+                n,
+                json,
             },
         )),
     };
@@ -412,6 +446,70 @@ async fn status(config: &Config, redactor: &Redactor, args: &StatusArgs) -> u8 {
         return u8::try_from(worst.unwrap_or(3)).unwrap_or(UNKNOWN);
     }
     if failure.is_some() { CANNOT_ASSESS } else { 0 }
+}
+
+struct SelectArgs {
+    role: String,
+    exclude_family: Vec<String>,
+    prefer: Option<String>,
+    n: usize,
+    json: bool,
+}
+
+/// `quotabus select`: read the store (never write it, DESIGN §10 Q6) and print the first `--n` candidates. Exit 0
+/// chosen · 2 CANNOT-ASSESS (the store cannot be read, or `--prefer` is not a known word) · 3 nothing qualifies.
+/// Whenever the rc is not 0, stdout names no model, so `$(quotabus select …)` never yields a usable pick.
+async fn select(config: &Config, redactor: &Redactor, args: &SelectArgs) -> u8 {
+    let prefer = match args.prefer.as_deref().map(quotabus::Prefer::from_str) {
+        None => None,
+        Some(Ok(p)) => Some(p),
+        Some(Err(e)) => {
+            eprintln!("quotabus: CANNOT-ASSESS: {}", redactor.redact(&e));
+            return CANNOT_ASSESS;
+        }
+    };
+    let listing = match read_rows(config).await {
+        Ok(l) => l,
+        Err(e) => {
+            eprintln!(
+                "quotabus: CANNOT-ASSESS: {}; nothing selected",
+                redactor.redact(&e.to_string())
+            );
+            return CANNOT_ASSESS;
+        }
+    };
+    let query = quotabus::Query {
+        role: args.role.clone(),
+        exclude_families: args.exclude_family.clone(),
+        prefer,
+        now: Utc::now(),
+    };
+    let mut chosen = quotabus::select(&listing.rows, &query, config);
+    chosen.truncate(args.n.max(1));
+    let out = if args.json {
+        let mut s = serde_json::to_string_pretty(&chosen).unwrap_or_else(|_| "[]".to_string());
+        s.push('\n');
+        s
+    } else {
+        chosen
+            .iter()
+            .map(|c| format!("{} {}\n", c.provider, c.model))
+            .collect()
+    };
+    print!("{}", redactor.redact(&out));
+    if chosen.is_empty() {
+        let excluding = if args.exclude_family.is_empty() {
+            String::new()
+        } else {
+            format!(" excluding {}", args.exclude_family.join(", "))
+        };
+        eprintln!(
+            "quotabus: nothing qualifies for role {:?}{excluding}: no configured model with the role has a fresh ok row",
+            args.role
+        );
+        return UNKNOWN;
+    }
+    0
 }
 
 fn age_s(row: Option<&Record>, now: chrono::DateTime<Utc>) -> Option<i64> {

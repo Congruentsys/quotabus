@@ -232,11 +232,37 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
 | output | shape |
 |---|---|
 | KV bucket `ai_status` | created with per-key TTL — natscli `nats kv add --marker-ttl=<d>` (bucket) and `nats kv create --ttl=<d>` (key) — in natscli 0.3.1 the per-key `--ttl` is on `kv create` ("Sets a TTL for the key"), `kv put --help` lists no TTL flag, and `kv add --ttl` is the bucket-wide max age, not a per-key TTL (`--help` of each, natscli 0.3.1 on M5 and Mini; `docs/findings/EXP-001-per-key-ttl.md:38-41`). `kv create` writes only a new or deleted key, so a hand-written TTL row over an existing key is a delete, then a create; the binary writes rows through the client library, not natscli; async-nats 0.50 `kv::Config.limit_markers: Duration` behind the `server_2_11` feature (https://docs.rs/async-nats/latest/async_nats/jetstream/kv/struct.Config.html). ⚠ Mini runs 2.12.4 but every existing bucket reports `Per-Key TTL Supported: false` (LIT §6; `kv info fleet_alert_state` today) — a NEW bucket, created with the option, is required. Measured by EXP-001: a new bucket made with `--marker-ttl` reports `Per-Key TTL Supported: true` and a 5 s key is absent at +8 s on Mini's 2.12.4 (`docs/findings/EXP-001-per-key-ttl.md:3-4,22-29`) |
-| change subject | `ai.status.changed.<key>` published only when `state` differs from the previous row (a flapping latency does not spam the bus) |
+| change subject | `ai.status.changed.<key>` published only when `state` differs from the previous row (a flapping latency does not spam the bus); the payload is the new row as JSON, on core NATS (no stream captures it). Built by EXP-003 in the bus backend's write, so every row `quotabus probe` writes goes through it. A key with no previous row (never written, or expired out of the bucket) or an unreadable one counts as a change [INFERENCE: the design is silent on the first row]; a failed announcement does not fail the write, the row is already stored [INFERENCE]. The write is conditional on the revision it read (`Nats-Expected-Last-Subject-Sequence`, 0 for an absent key, as async-nats's `Store::update` does): a concurrent writer that moved the key makes the server refuse it (`WrongLastSequence`), and the write re-reads and retries, up to 5 times, so the announce is decided against the row actually replaced and a concurrent change is never left unannounced (review r1 F2). After 5 refusals, or when the last revision cannot be read, the row is written unconditionally and announced: a duplicate announce is harmless, a missing one is not. The announce's flush is bounded at 2 s; past that a warning is logged and the write still returns ok (review r1 F4). The subject is a hint: a subscriber re-reads the row |
 | CLI | `quotabus status [--json] [--kind api] [--stale]` — a one-screen table with AGE and SOURCE columns; `quotabus status --check <service>` exits 0 ok · 1 not ok · 2 CANNOT-ASSESS · 3 UNKNOWN, for pre-flight checks in scripts (LIT §10) |
 | selector | `quotabus select --role review --exclude-family anthropic [--prefer cheapest|fastest|largest-context] [--n 1]` prints `provider model` on line 1 (for `$(…)`), the ranked list with reasons under `--json`; rc 3 when nothing qualifies. Library: `quotabus::select(&rows, &Query, &Config) -> Vec<Candidate>` — a pure function over rows + the static model table (family, cost class, roles, context), unit-testable without a bus. Vocabulary copied from LiteLLM's cooldown (`allowed_fails`, `cooldown`), applied per model not per group (LIT §1) |
 | alert | `quotabus alert` runs after each probe cycle: **crossing-dedup** — one alert per state crossing, keyed `alert.<key>` in the same bucket holding the last alerted state; **only a measured `ok` clears it, a CANNOT-ASSESS never does** (the dead script's rule, `provider-balance-scan.sh:289-295`). Sinks: `nusy-kanban create --tags … --body-file - signal "<title>"` (flags before positionals; `nusy-kanban create --help`), `yurtle-kanban create issue "<title>" --push --body-file -` (`yurtle-kanban/src/yurtle_kanban/cli.py:767-776`) — or, inside a yurtle-kanban repo, its own `create_item` hook action (`hooks.py:372-373, 473-495`) — a JSON webhook, and stdout |
 | web | `quotabus serve` on `127.0.0.1` by default: `GET /v1/status`, `GET /v1/select?…`, and one HTML page; feature-gated, off by default |
+
+**Selector — what EXP-003 fixed** (`src/select.rs`, `tests/exp003_select.rs`, `tests/exp003_cli_select.rs`). The
+pick is over the configured (service, model slot) pairs, each matched to its row by key; the model table is the config
+(`family`, `cost_class`, `roles`, and `[service.context]`, `"<model>" = <tokens>`, for `largest-context`).
+- **Only a fresh measured `ok` is chosen.** The freshness rule (§2) is applied at the query's `now`; an absent or
+  expired row, a CANNOT-ASSESS (`unknown`) row, and every other state are refused, **`degraded` included**
+  [INFERENCE: the design asks for "a healthy model" and says nothing that admits `degraded`].
+- **A subscription seat is never a candidate** (`kind = "subscription"`, a Claude account or the Copilot seat), even
+  fresh, `ok` and listing the role. This is the interim rule pending the Captain's SIG-009 (open: can a seat be a
+  candidate, and as which model?): a seat's row is per ACCOUNT with the service id in the model slot (§2), so there is
+  no model to print as `provider model` (review r1 F1, `reviews/EXP-003-r1.md`). A healthy model that a seat serves
+  is chosen only when it is configured as its own API service.
+- **The role must be listed** on the service. A family is refused when it is the service's or the row's `family`, compared without case; any number
+  of `--exclude-family` may be given; a refused family is refused even when it is the only healthy one.
+- **Ordering.** `--prefer` sets the first key, the other two break ties, then the row key, so the answer is total
+  and repeatable: `fastest` is the row's `latency_ms`, lowest first; `largest-context` is `[service.context]`, largest
+  first; `cheapest` is `cost_class` in the order `local`, then `subscription`/`free`, then `metered`, then anything
+  else or unset [INFERENCE: the design names the classes, not their order]. An unmeasured latency or an unset context
+  sorts last. With no `--prefer`, `cheapest` [INFERENCE].
+- **Exit codes:** 0 chosen (`provider model` per line, `--n` lines, default 1; `--json` a JSON array of the first
+  `--n` candidates, each `{service, provider, model, family, key, reason}`) · **2 CANNOT-ASSESS** when the store cannot
+  be read (bus down, bucket or row directory missing) or `--prefer` is not one of the three words — never a pick
+  (§2) · **3 nothing qualifies**, including when every candidate is `unknown`. On rc 2 and 3 stdout names no model
+  (`[]` under `--json`), so `$(quotabus select …)` never yields a usable pick; the reason goes to stderr. It never
+  writes the store (§10 Q6). nusy-product-team's wiring is `docs/wiring/nusy-product-team.md` (a separate item in
+  that repo).
 
 ## 4. Probe catalogue — our providers
 

@@ -85,6 +85,8 @@ pub struct ServiceConfig {
     pub sources: Vec<String>,
     /// Put the balance on the row (DESIGN §6). Default true; false still reads it and applies the floor.
     pub publish_balance: bool,
+    /// `[service.context]`: each model's context window in tokens (the selector's `--prefer largest-context`).
+    pub context: std::collections::BTreeMap<String, u64>,
 }
 
 impl ServiceConfig {
@@ -294,6 +296,8 @@ mod raw {
         #[serde(default)]
         pub sources: Vec<String>,
         pub publish_balance: Option<bool>,
+        #[serde(default)]
+        pub context: std::collections::BTreeMap<String, u64>,
     }
 }
 
@@ -413,6 +417,7 @@ impl Config {
                 balance,
                 sources: s.sources,
                 publish_balance: s.publish_balance.unwrap_or(true),
+                context: s.context,
             });
         }
 
