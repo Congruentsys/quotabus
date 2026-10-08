@@ -2,7 +2,7 @@
 id: EXP-002
 title: "E2: per-host agent — Claude Code subscription state (statusLine capture + ~/.claude.json fallback) and GitHub Copilot quota, one row per host"
 type: expedition
-status: backlog
+status: provisioning
 priority: high
 assignee: null
 created: 2026-10-08
@@ -22,3 +22,14 @@ Part of VOY-001; after E1 and CHORE-002 (C2). Design §3 (agent), §4 (Claude Ma
 
 ## Definition of Done
 Five `subscription.*` rows on the bus from five hosts, each `observed_by` its own host, with ages; the token-login case reads `cannot_assess`, never `ok`.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T17:22:10+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
