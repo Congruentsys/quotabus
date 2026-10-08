@@ -29,7 +29,7 @@ fn service(id: &str, provider: &str, base_url: &str, protocol: &str, model: &str
 
 fn config(services: &[String]) -> Config {
     let text = format!(
-        "[probe]\nttl = \"2m\"\nmax_tokens = 20\n\n{}",
+        "[ttl]\napi = \"2m\"\nbalance = \"2m\"\n\n[probe]\nmax_tokens = 20\n\n{}",
         services.join("\n")
     );
     Config::from_toml_str(&text).unwrap_or_else(|e| panic!("test config must parse: {e}\n{text}"))

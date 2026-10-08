@@ -2,7 +2,7 @@
 //! a leak checker. No helper ever reads a real key or reaches a non-loopback host.
 #![allow(dead_code)]
 
-use std::net::{TcpListener, TcpStream};
+use std::net::TcpStream;
 use std::path::Path;
 use std::process::{Child, Command, Output, Stdio};
 use std::time::{Duration, Instant};
@@ -99,16 +99,8 @@ pub fn leaks(text: &str, secrets: &[&str]) -> Vec<String> {
     out
 }
 
-pub fn free_port() -> u16 {
-    TcpListener::bind("127.0.0.1:0")
-        .unwrap()
-        .local_addr()
-        .unwrap()
-        .port()
-}
-
 /// A loopback port that REFUSES connections, deterministically: port 1 (tcpmux, never served on a dev or CI box)
-/// is privileged, so no non-root test process can bind it, and `free_port()` only hands out ephemeral ports. The
+/// is privileged, so no non-root test process can bind it, and every throwaway nats-server gets a port nats-server itself chose (`-p -1`). The
 /// previous bind-drop-reuse of a free port raced with parallel tests that were handed the same port. The check
 /// below proves it is a prompt "connection refused" (not a timeout) every time it is used.
 pub fn closed_port() -> u16 {
@@ -129,6 +121,98 @@ pub fn closed_port() -> u16 {
     P
 }
 
+/// Fail with a clear message when no `nats-server` binary is on PATH.
+pub fn require_nats_server() {
+    match Command::new("nats-server").arg("--version").output() {
+        Ok(o) if o.status.success() => {}
+        _ => panic!(
+            "nats-server is not on PATH: these tests need a local nats-server (2.11+) binary to start a \
+             throwaway JetStream server on 127.0.0.1. Install it (e.g. `brew install nats-server`)."
+        ),
+    }
+}
+
+/// How long a throwaway nats-server may take to bind and greet a client before the test fails.
+pub const NATS_READY_BOUND: Duration = Duration::from_secs(10);
+
+/// Spawn `cmd` (a `nats-server` command carrying its own options, e.g. `-js -sd <dir>` or `-c <conf>`) on loopback
+/// and return it only once it ACCEPTS a client: a TCP connect to its port is answered with the NATS `INFO` line.
+///
+/// HAZ-002: the port is chosen by nats-server itself (`-p -1`, read back from `--ports_file_dir`), never by a
+/// bind-drop-reuse of a "free" port, so two servers are never handed one port and a port a test holds is the one
+/// its own server listens on. These flags override any `listen:` in a config file. Within `NATS_READY_BOUND` the
+/// server is ready, or the test panics with what the server logged.
+pub fn spawn_nats(mut cmd: Command, what: &str, dir: &Path) -> (Child, u16) {
+    let ports_dir = dir.join("ports");
+    std::fs::create_dir_all(&ports_dir).unwrap();
+    let log_path = dir.join("nats-server.log");
+    let log = std::fs::File::create(&log_path).unwrap();
+    let mut child = cmd
+        .args(["-a", "127.0.0.1", "-p", "-1", "--ports_file_dir"])
+        .arg(&ports_dir)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(log)
+        .spawn()
+        .expect("spawn nats-server");
+    let deadline = Instant::now() + NATS_READY_BOUND;
+    let fail = |child: &mut Child, why: String| -> ! {
+        let _ = child.kill();
+        let _ = child.wait();
+        let logged = std::fs::read_to_string(&log_path).unwrap_or_default();
+        panic!("{what} nats-server not ready: {why}\n--- its log ---\n{logged}");
+    };
+    let ports_file = ports_dir.join(format!("nats-server_{}.ports", child.id()));
+    let mut port = None;
+    let mut last = String::from("no ports file yet");
+    while Instant::now() < deadline {
+        if let Ok(Some(st)) = child.try_wait() {
+            fail(&mut child, format!("it exited early: {st}"));
+        }
+        if port.is_none() {
+            port = read_ports_file(&ports_file);
+        }
+        if let Some(p) = port {
+            match greets(p) {
+                Ok(()) => return (child, p),
+                Err(e) => last = format!("127.0.0.1:{p}: {e}"),
+            }
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    fail(
+        &mut child,
+        format!("not within {NATS_READY_BOUND:?} ({last})"),
+    )
+}
+
+/// The client port in a nats-server ports file (`{"nats":["nats://127.0.0.1:<port>"]}`), once it is fully written.
+fn read_ports_file(path: &Path) -> Option<u16> {
+    let text = std::fs::read_to_string(path).ok()?;
+    let v: serde_json::Value = serde_json::from_str(&text).ok()?;
+    let url = v.get("nats")?.as_array()?.first()?.as_str()?;
+    url.rsplit(':').next()?.parse().ok()
+}
+
+/// A TCP connect to `127.0.0.1:port` is answered with the NATS `INFO {...}` greeting.
+fn greets(port: u16) -> std::io::Result<()> {
+    use std::io::{BufRead, BufReader};
+    let s = TcpStream::connect_timeout(
+        &(std::net::Ipv4Addr::LOCALHOST, port).into(),
+        Duration::from_secs(1),
+    )?;
+    s.set_read_timeout(Some(Duration::from_secs(2)))?;
+    let mut line = String::new();
+    BufReader::new(s).read_line(&mut line)?;
+    if line.starts_with("INFO ") {
+        Ok(())
+    } else {
+        Err(std::io::Error::other(format!(
+            "no INFO greeting, got {line:?}"
+        )))
+    }
+}
+
 /// A throwaway `nats-server -js` on loopback, killed on drop.
 pub struct NatsServer {
     child: Child,
@@ -138,40 +222,16 @@ pub struct NatsServer {
 
 impl NatsServer {
     pub fn start() -> NatsServer {
-        match Command::new("nats-server").arg("--version").output() {
-            Ok(o) if o.status.success() => {}
-            _ => panic!(
-                "nats-server is not on PATH: these tests need a local nats-server (2.11+) binary to start a \
-                 throwaway JetStream server on 127.0.0.1. Install it (e.g. `brew install nats-server`)."
-            ),
-        }
+        require_nats_server();
         let dir = tempfile::tempdir().unwrap();
-        let port = free_port();
-        let child = Command::new("nats-server")
-            .args(["-js", "-a", "127.0.0.1", "-p", &port.to_string(), "-sd"])
-            .arg(dir.path())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .expect("spawn nats-server");
-        let mut srv = NatsServer {
+        let mut cmd = Command::new("nats-server");
+        cmd.arg("-js").arg("-sd").arg(dir.path().join("js"));
+        let (child, port) = spawn_nats(cmd, "throwaway", dir.path());
+        NatsServer {
             child,
             port,
             _dir: dir,
-        };
-        let deadline = Instant::now() + Duration::from_secs(10);
-        while TcpStream::connect(("127.0.0.1", port)).is_err() {
-            if Instant::now() > deadline {
-                let _ = srv.child.kill();
-                panic!("throwaway nats-server did not listen on 127.0.0.1:{port} within 10s");
-            }
-            if let Ok(Some(st)) = srv.child.try_wait() {
-                panic!("throwaway nats-server exited early: {st}");
-            }
-            std::thread::sleep(Duration::from_millis(50));
         }
-        std::thread::sleep(Duration::from_millis(200));
-        srv
     }
 
     pub fn url(&self) -> String {

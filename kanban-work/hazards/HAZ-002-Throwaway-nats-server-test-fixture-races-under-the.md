@@ -2,7 +2,7 @@
 id: HAZ-002
 title: "Throwaway nats-server test fixture races under the parallel suite (connection reset at startup)"
 type: hazard
-status: underway
+status: arrived
 priority: medium
 assignee: M5/s-b1fd4c67
 created: 2026-10-08
@@ -31,5 +31,11 @@ The throwaway-server helper waits until the server really accepts a connection (
     kb:status kb:in_progress ;
     kb:at "2026-10-08T19:03:52+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T19:20:35+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/7> ;
   ] .
 ```

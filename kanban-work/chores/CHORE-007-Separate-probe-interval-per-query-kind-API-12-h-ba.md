@@ -2,7 +2,7 @@
 id: CHORE-007
 title: "Separate probe interval per query kind (API 12 h, balance 12 h), each with its own TTL — Captain Q5"
 type: chore
-status: underway
+status: arrived
 priority: high
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -38,6 +38,12 @@ This chore blocks EXP-002, which adds a third kind (subscription reads, 5 min) i
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:58:34+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T19:27:54+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/9> ;
   ] .
 ```
 

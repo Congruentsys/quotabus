@@ -35,3 +35,10 @@ Part of VOY-001. The Captain's ruling on 2026-10-08, verbatim on SIG-001: "If th
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-08 19:21)
+
+tests red at 8edf666 (branch chore/CHORE-008-install-target): tests/test_install_target.py — 18 fail on the packaging/install.sh stub or an assertion (local macos/linux render, named host without connecting, stdin prompt, bad-flag errors, README records Mini, Mini render == EXP-001 plist fixture, no secret in units/argv, no /Users/admin outside README); 6 controls pass, each shown able to fail. Interface: packaging/install.sh (--where local | --host <h>) [--user] [--home] [--os macos|linux] [--render-to <dir>].

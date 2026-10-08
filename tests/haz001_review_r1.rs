@@ -16,10 +16,10 @@
 mod common;
 
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Output, Stdio};
-use std::time::{Duration, Instant};
+use std::process::{Child, Command, Output};
+use std::time::Duration;
 
-use common::{FAKE_PLAIN, NatsServer, closed_port, leaks, rc, run_cli, text};
+use common::{FAKE_PLAIN, closed_port, leaks, rc, run_cli, text};
 use quotabus::{BackendError, BusUrl, Config, NatsKv};
 use serde_json::Value;
 use wiremock::matchers::method;
@@ -51,44 +51,26 @@ struct AuthNats {
 
 impl AuthNats {
     fn start() -> AuthNats {
-        drop(NatsServer::start()); // fails with a clear message when nats-server is missing
+        common::require_nats_server();
         let dir = tempfile::tempdir().unwrap();
-        let port = common::free_port();
         let conf = dir.path().join("nats.conf");
         std::fs::write(
             &conf,
             format!(
-                "listen: 127.0.0.1:{port}\njetstream {{ store_dir: {:?} }}\n\
+                "jetstream {{ store_dir: {:?} }}\n\
                  authorization {{ users = [ {{ user: {USER}, password: {PASS} }} ] }}\n",
                 dir.path().join("js").display().to_string()
             ),
         )
         .unwrap();
-        let child = Command::new("nats-server")
-            .arg("-c")
-            .arg(&conf)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .expect("spawn nats-server");
-        let mut s = AuthNats {
+        let mut cmd = Command::new("nats-server");
+        cmd.arg("-c").arg(&conf);
+        let (child, port) = common::spawn_nats(cmd, "auth", dir.path());
+        AuthNats {
             child,
             port,
             _dir: dir,
-        };
-        let deadline = Instant::now() + Duration::from_secs(10);
-        while std::net::TcpStream::connect(("127.0.0.1", port)).is_err() {
-            if let Ok(Some(st)) = s.child.try_wait() {
-                panic!("auth nats-server exited: {st}");
-            }
-            assert!(
-                Instant::now() < deadline,
-                "auth nats-server did not listen on 127.0.0.1:{port}"
-            );
-            std::thread::sleep(Duration::from_millis(50));
         }
-        std::thread::sleep(Duration::from_millis(200));
-        s
     }
 
     async fn raw_row(&self, bucket: &str, key: &str) -> Option<String> {
@@ -126,7 +108,7 @@ async fn ok_stub() -> MockServer {
 
 fn services(stub: &str) -> String {
     format!(
-        "[probe]\nttl = \"2m\"\n\n\
+        "[ttl]\napi = \"2m\"\nbalance = \"2m\"\n\n\
          [[service]]\nid = \"good\"\nkind = \"api\"\nprovider = \"good\"\nfamily = \"good\"\naccount = \"acct\"\n\
          base_url = \"{stub}/good\"\nprotocol = \"anthropic\"\nmodels = [\"m1\"]\nsecret = \"QB_HAZ_KEY\"\n"
     )

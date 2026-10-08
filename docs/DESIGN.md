@@ -30,6 +30,13 @@ dated 2026-09-24 (`:35-50`).
 
 One record per **(kind, provider, account, model)**. JSON on the bus; the same struct in the library and the CLI.
 
+**The balance row is not a model.** Each service with a balance endpoint also writes one row per (kind, provider,
+account) under `<kind>.<provider>.<account>.balance`, with `probe.name = "balance"`: the balance read's own record, so
+that kind has a last row to be due from (§3). Its `state` is `ok`, `quota_exhausted` at or below the floor, or
+`unknown` (`cannot_assess:balance_unreadable`); its `balance` is set unless `publish_balance = false`; its `ttl_s` is
+the balance kind's. A reader choosing or listing models skips it (`probe.name == "balance"`); the floor reaches the
+model rows themselves as `quota_exhausted`. Config refuses a model whose slug is `balance` on such a service.
+
 | field | type | notes |
 |---|---|---|
 | `contract` | `"ai-status/1"` | versioned like the dead rows (`provider_balance/1.0`, `account-util/1.0`, LIT §6) |
@@ -89,6 +96,15 @@ rulings name no default for the `local` kind's probe (DGX1 Qwen); that is not de
 status` over SSH on macOS returns a confident, false "not logged in" (`f8b7f2f531^:scripts/fleet/account-util-publish.sh:7-17`;
 memory `feedback_claude_auth_probe_fails_over_ssh_on_macos`). `status`, `select`, `alert`, `serve` are readers.
 
+**Scheduling — a tick, and what is due.** The intervals live only in the config: `[intervals]` (one key per kind)
+and `[ttl]` (one per kind; a kind left out is 3 × its own interval). The launchd unit (§5) only ticks — `quotabus probe`
+every 300 s — and each run makes a kind's calls only when that kind is **due**: its interval has elapsed since its last
+row in the store (no row = due; a row written without a call, such as `secret_unset`, is not a run). Due-ness is per
+row: each (service, model) for the API probe, and each service's balance row (§2) for the balance read, so a due API
+probe never triggers a balance read and vice versa. An API probe applies the floor and carries the balance from the
+last fresh balance row. Until a `local` default is decided, a `local` service's probe runs on `[intervals] api`.
+`quotabus probe --force` runs every kind now.
+
 **Config — one model, two front-ends.** The binary's canonical format is TOML (outsiders; secretspec's `secretspec.toml`
 is the model, LIT §8.7). The Yurtle twin is the same rows as a `yurtle-table` block (Yurtle v2.1,
 `/Users/hankh95/Projects/yurtle/yurtle-spec.md:137-157`): the binary reads **only that block type** (fence + markdown
@@ -101,15 +117,17 @@ table + `@type`), ~150 lines, and ignores the rest of the file — the full Yurt
 url     = "nats://192.168.8.110:4222"   # or env QUOTABUS_NATS_URL
 bucket  = "ai_status"
 
-[probe]
+[probe]          # `interval` / `ttl` here are retired and refused, naming [intervals] / [ttl]
 max_tokens = 20            # the 8-token smoke of docs/external-review.md:33
 
 [intervals]      # one per query kind, each set on its own; none is shared (§10 Q5)
 api          = "12h"       # messages probe, per model
 balance      = "12h"       # balance GETs
-subscription = "5m"        # per-host reads by `agent` (E2)
+# subscription = "5m"      # per-host reads by `agent` (E2); the key arrives with EXP-002
 
 [ttl]            # optional, per kind; each defaults to 3 x its own interval (3 missed = UNKNOWN)
+# api     = "36h"
+# balance = "36h"
 
 [[service]]
 id         = "glm"
@@ -170,7 +188,7 @@ item_type = "issue"
 url = "https://example.invalid/hook"
 ```
 
-One key per line: TOML has no `;` separator, so a line of `;`-separated keys does not parse; the block above loads with Python's `tomllib`. The `[intervals]` / `[ttl]` tables are the per-kind shape of §10 Q5, built by CHORE-007: E1's binary and `examples/quotabus.toml` still carry one shared `[probe] interval = "15m"` / `ttl = "45m"` until it lands, and otherwise use the same layout.
+One key per line: TOML has no `;` separator, so a line of `;`-separated keys does not parse; the block above loads with Python's `tomllib`. The `[intervals]` / `[ttl]` tables are the per-kind shape of §10 Q5, built by CHORE-007 for `api` and `balance` (the binary refuses any other key there until EXP-002 adds `subscription`); `examples/quotabus.toml` uses the same layout.
 
 `quotabus.yurtle.md` — the same rows, readable in Obsidian and queryable by `yurtle-rdflib` (one block; the rest is prose):
 
@@ -217,9 +235,10 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
 ## 4. Probe catalogue — our providers
 
 The cheapest probe for an Anthropic-protocol provider is the 8-token call already prescribed (`external-review.md:33,37`):
-`POST <base>/v1/messages`, `max_tokens: 20`, thinking disabled; status → state, headers → headroom. Cost at the 12 h API default (§10 Q5):
-≤ 2 calls × ~30 tokens per model per day (24 h ÷ 12 h = 2; the 15 min default this line first named was 96). Balance
-endpoints are GETs, on their own interval (12 h default), never triggered by a messages probe or the reverse.
+`POST <base>/v1/messages`, `max_tokens: 20`, thinking disabled; status → state, headers → headroom. Cost at the 12 h API default (`[intervals] api`, §10 Q5):
+≤ 2 calls × ~30 tokens per model per day (24 h ÷ 12 h = 2; the 15 min default this line first named was 96; each
+`--force` adds one). Balance endpoints are GETs, on their own `[intervals] balance` (12 h default), never triggered by a
+messages probe or the reverse.
 
 | service | cheapest probe | reads | UNKNOWN by design |
 |---|---|---|---|

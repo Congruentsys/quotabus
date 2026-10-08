@@ -31,7 +31,7 @@ fn service(
 
 fn config(services: &[String]) -> Config {
     let text = format!(
-        "[probe]\ninterval = \"1m\"\nttl = \"2m\"\nmax_tokens = 20\n\n{}",
+        "[intervals]\napi = \"1m\"\nbalance = \"1m\"\n\n[ttl]\napi = \"2m\"\nbalance = \"2m\"\n\n[probe]\nmax_tokens = 20\n\n{}",
         services.join("\n")
     );
     Config::from_toml_str(&text).unwrap_or_else(|e| panic!("test config must parse: {e}\n{text}"))
@@ -101,7 +101,7 @@ async fn anthropic_probe_posts_v1_messages_with_max_tokens_20_and_the_key_in_a_h
     assert_eq!(r.state, State::Ok, "{r:?}");
     assert_eq!(r.key, "api.zhipu.nusy-product-team.glm-5-3");
     assert_eq!(r.contract, "ai-status/1");
-    assert_eq!(r.ttl_s, 120, "ttl_s comes from [probe] ttl");
+    assert_eq!(r.ttl_s, 120, "ttl_s comes from [ttl] api");
     assert_eq!(r.probe.source, ProbeSource::Official);
     assert_eq!(r.observed_by, quotabus::observed_by());
     assert!(r.latency_ms.is_some());
