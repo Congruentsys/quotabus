@@ -2,7 +2,7 @@
 id: EXP-004
 title: "E4: alerts with crossing-dedup (yurtle-kanban, nusy-kanban, webhook) and the Yurtle config front-end"
 type: expedition
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -20,3 +20,14 @@ Part of VOY-001. Design §3 (alert, config), §9 row E4. The dead balance scanne
 
 ## Definition of Done
 A model 404 files ONE signal across ten probe cycles; a measured `ok` re-arms it; a CANNOT-ASSESS does not; the Yurtle and TOML examples load to identical configs.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T17:22:14+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
