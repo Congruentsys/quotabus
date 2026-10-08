@@ -43,8 +43,10 @@ const ANTHROPIC_VERSION: &str = "2023-06-01";
 const PROMPT: &str = "Reply with exactly: OK";
 const FIVE_HOUR_S: i64 = 18_000;
 const SEVEN_DAY_S: i64 = 604_800;
-/// The only variables the fallback child inherits from the probe's environment (r1 F1), each only if set.
-const CHILD_ENV: [&str; 6] = ["PATH", "HOME", "TMPDIR", "USER", "LANG", "TERM"];
+/// The only variables a child process inherits from quotabus's environment, each only if set: the `claude` fallback
+/// (EXP-002 r1 F1) and `quotabus alert`'s kanban sinks (EXP-004 r1 F3). Under `doppler run` the environment holds
+/// every secret of the project, configured or not; none of it reaches a child.
+pub const CHILD_ENV: [&str; 6] = ["PATH", "HOME", "TMPDIR", "USER", "LANG", "TERM"];
 /// The fallback `claude -p` run is killed after this long.
 const CLAUDE_TIMEOUT: Duration = Duration::from_secs(120);
 

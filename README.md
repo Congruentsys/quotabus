@@ -15,8 +15,12 @@ to pick a healthy model before spending a long prompt on it.
 > probe cycle and writes one row per (service, model) to the NATS KV bucket of `[bus]` (created with per-key TTL), or
 > to `[file] dir` without one; run it under your key manager so keys arrive by environment only:
 > `doppler run -- quotabus probe` or `secretspec run -- quotabus probe`. `quotabus status [--json] [--kind api]
-> [--check <service>]` reads the rows with the freshness rule. See [`examples/quotabus.toml`](examples/quotabus.toml)
-> and [`packaging/`](packaging/). `agent`, `select`, `alert` and `serve` are not built yet. The design is
+> [--check <service>]` reads the rows with the freshness rule. `quotabus alert` (EXP-004), run after each probe
+> cycle, files one `signal` per crossing (a service going bad) to nusy-kanban, yurtle-kanban, a webhook and stdout,
+> deduplicated at `alert.<key>`; only a measured `ok` re-arms it, and it never closes anything. The config is TOML or
+> its Yurtle twin: see [`examples/quotabus.toml`](examples/quotabus.toml),
+> [`examples/quotabus.yurtle.md`](examples/quotabus.yurtle.md) and [`packaging/`](packaging/). `serve` is not built
+> yet. The design is
 > [`docs/DESIGN.md`](docs/DESIGN.md); the prior-art review is [`docs/PRIOR-ART.md`](docs/PRIOR-ART.md). Work is
 > tracked on this repo's own board under [`kanban-work/`](kanban-work/) (yurtle-kanban).
 

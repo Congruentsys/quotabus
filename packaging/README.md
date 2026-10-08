@@ -38,3 +38,31 @@ packaging/install.sh --host mini --user admin --home /Users/admin --os macos --l
 ```
 
 Add `--render-to <dir>` to see the plist and the plan without touching Mini.
+
+## Alerts: `quotabus alert` after each probe cycle
+
+`quotabus alert` (DESIGN §3 alert; EXP-004) runs **after each probe cycle, in the same unit**, so it reads the rows
+the cycle just wrote and runs under the same launcher (the redactor then knows every key, and the kanban CLIs get the
+environment they need). `install.sh` renders `<launcher> <quotabus> probe --config <file>`; chain the alert by
+pointing `--quotabus` at a two-line wrapper, which receives `probe --config <file>`:
+
+```sh
+#!/bin/sh
+# /usr/local/bin/quotabus-cycle — one probe cycle, then the alert over its rows; exits non-zero if either failed
+shift                                   # drop "probe"; "$@" is now --config <file>
+/usr/local/bin/quotabus probe "$@"; rc=$?
+/usr/local/bin/quotabus alert "$@" || rc=$?
+exit $rc
+```
+
+and install with `--quotabus /usr/local/bin/quotabus-cycle` (every other flag as above). Running the alert on every
+tick, including ticks where nothing was due, is cheap and safe: it reads the store, files only a crossing (a service
+going bad), keeps its dedup state at `alert.<key>` in the same bucket, and writes nothing else. A sink that fails
+leaves the crossing unrecorded, so the next tick retries it; its rc is 1 and its line is in the unit's error log.
+
+In `[alert.*]`, give each `command` as an **absolute path**: launchd and systemd units run with a minimal `PATH`.
+`yurtle-kanban create … --push` files on the board of the directory it runs in (the unit's working directory), so
+point its `command` at a wrapper that `cd`s into the board's repo first. A sink's environment is an allowlist only
+(`PATH`, `HOME`, `TMPDIR`, `USER`, `LANG`, `TERM`, each if set): none of the launcher's secrets reach it, and neither
+does anything else, so the same wrapper sets what the CLI needs (nusy-kanban's `--server`, `SSH_AUTH_SOCK` for a
+`git push` over SSH).

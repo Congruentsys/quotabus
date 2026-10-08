@@ -111,6 +111,36 @@ pub struct Config {
     pub ttl: PerKindTtl,
     /// The `[[service]]` array.
     pub services: Vec<ServiceConfig>,
+    /// `[alert.*]`: where `quotabus alert` files a crossing (DESIGN §3 alert; EXP-004).
+    pub alert: AlertConfig,
+}
+
+/// `[alert.*]`: the sinks `quotabus alert` files one item per crossing to (DESIGN §3 alert, §10 Q8; EXP-004). A sink
+/// left out is not used; stdout is always written.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct AlertConfig {
+    /// `[alert.nusy-kanban]`.
+    pub nusy_kanban: Option<KanbanSink>,
+    /// `[alert.yurtle-kanban]`.
+    pub yurtle_kanban: Option<KanbanSink>,
+    /// `[alert.webhook]`.
+    pub webhook: Option<WebhookSink>,
+}
+
+/// `[alert.nusy-kanban]` / `[alert.yurtle-kanban]`: the command run, the item type it creates and the tags it carries.
+#[derive(Debug, Clone, PartialEq)]
+pub struct KanbanSink {
+    /// The executable: a bare name looked up on PATH, or a path.
+    pub command: String,
+    /// The item type created (`signal`, SIG-006 / §10 Q8).
+    pub item_type: String,
+    pub tags: Vec<String>,
+}
+
+/// `[alert.webhook]`: a JSON POST per crossing.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WebhookSink {
+    pub url: String,
 }
 
 /// One duration per query kind (`[intervals]`).
@@ -180,6 +210,50 @@ impl Default for ProbeConfig {
 /// The default bucket name.
 pub const DEFAULT_BUCKET: &str = "ai_status";
 
+/// `[alert.*]` as written to [`AlertConfig`]. A kanban sink's `command` defaults to its own name and its
+/// `item_type` to `signal` (SIG-006, §10 Q8); `tags` default to none.
+fn alert_config(raw: Option<raw::Alert>) -> Result<AlertConfig, ConfigError> {
+    let Some(a) = raw else {
+        return Ok(AlertConfig::default());
+    };
+    let kanban = |name: &str, k: Option<raw::Kanban>| -> Result<Option<KanbanSink>, ConfigError> {
+        let Some(k) = k else { return Ok(None) };
+        let command = k.command.unwrap_or_else(|| name.to_string());
+        let item_type = k.item_type.unwrap_or_else(|| "signal".to_string());
+        if command.trim().is_empty() || item_type.trim().is_empty() {
+            return Err(ConfigError(format!(
+                "[alert.{name}] command and item_type must not be empty"
+            )));
+        }
+        if k.tags
+            .iter()
+            .any(|t| t.trim().is_empty() || t.contains(','))
+        {
+            return Err(ConfigError(format!(
+                "[alert.{name}] tags: each tag is one non-empty word without a comma"
+            )));
+        }
+        Ok(Some(KanbanSink {
+            command,
+            item_type,
+            tags: k.tags,
+        }))
+    };
+    let webhook = match a.webhook {
+        Some(w) if !(w.url.starts_with("http://") || w.url.starts_with("https://")) => {
+            return Err(ConfigError(
+                "[alert.webhook] url must be http:// or https://".into(),
+            ));
+        }
+        w => w.map(|w| WebhookSink { url: w.url }),
+    };
+    Ok(AlertConfig {
+        nusy_kanban: kanban("nusy-kanban", a.nusy_kanban)?,
+        yurtle_kanban: kanban("yurtle-kanban", a.yurtle_kanban)?,
+        webhook,
+    })
+}
+
 /// `<n><unit>` with unit `ms`, `s`, `m`, `h` or `d` (e.g. `90s`, `15m`, `2h`).
 pub fn parse_duration(text: &str) -> Result<Duration, ConfigError> {
     let t = text.trim();
@@ -222,6 +296,35 @@ mod raw {
         pub ttl: Option<PerKind>,
         #[serde(default)]
         pub service: Vec<Service>,
+        pub alert: Option<Alert>,
+    }
+
+    /// `[alert.*]`.
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub struct Alert {
+        #[serde(rename = "nusy-kanban")]
+        pub nusy_kanban: Option<Kanban>,
+        #[serde(rename = "yurtle-kanban")]
+        pub yurtle_kanban: Option<Kanban>,
+        pub webhook: Option<Webhook>,
+    }
+
+    /// `[alert.nusy-kanban]` / `[alert.yurtle-kanban]`.
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub struct Kanban {
+        pub command: Option<String>,
+        pub item_type: Option<String>,
+        #[serde(default)]
+        pub tags: Vec<String>,
+    }
+
+    /// `[alert.webhook]`.
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub struct Webhook {
+        pub url: String,
     }
 
     #[derive(Deserialize)]
@@ -305,7 +408,11 @@ impl Config {
     pub fn from_toml_str(text: &str) -> Result<Config, ConfigError> {
         let raw: raw::File =
             toml::from_str(text).map_err(|e| ConfigError(format!("invalid config: {e}")))?;
+        Config::from_raw(raw)
+    }
 
+    /// The parsed file (from either front-end) checked and converted.
+    fn from_raw(raw: raw::File) -> Result<Config, ConfigError> {
         let mut probe = ProbeConfig::default();
         if let Some(p) = raw.probe {
             // one interval for every call was EXP-001's; each kind now has its own (SIG-004, CHORE-007)
@@ -433,7 +540,20 @@ impl Config {
             intervals,
             ttl,
             services,
+            alert: alert_config(raw.alert)?,
         })
+    }
+
+    /// The Yurtle front-end (DESIGN §3 "Config — one model, two front-ends"): the same rows as the TOML, read from the
+    /// `yurtle-table` block(s) of a Yurtle v2.1 markdown file; the rest of the file is ignored. EXP-004. The reader
+    /// ([`crate::yurtle`]) turns the blocks into the same tables the TOML front-end parses, so both are checked by
+    /// one path.
+    pub fn from_yurtle_str(text: &str) -> Result<Config, ConfigError> {
+        let table = crate::yurtle::config_table(text)?;
+        let raw: raw::File = toml::Value::Table(table)
+            .try_into()
+            .map_err(|e| ConfigError(format!("invalid Yurtle config: {e}")))?;
+        Config::from_raw(raw)
     }
 
     /// How often `kind` is queried: `[intervals] <kind>` (default 12h; subscription 1h).
@@ -451,7 +571,12 @@ impl Config {
     pub fn load(path: &Path) -> Result<Config, ConfigError> {
         let text = std::fs::read_to_string(path)
             .map_err(|e| ConfigError(format!("cannot read {}: {e}", path.display())))?;
-        Config::from_toml_str(&text)
-            .map_err(|e| ConfigError(format!("{}: {}", path.display(), e.0)))
+        // a `.md` path is the Yurtle twin (`quotabus.yurtle.md`); anything else is TOML
+        let parsed = if path.extension().is_some_and(|e| e == "md") {
+            Config::from_yurtle_str(&text)
+        } else {
+            Config::from_toml_str(&text)
+        };
+        parsed.map_err(|e| ConfigError(format!("{}: {}", path.display(), e.0)))
     }
 }

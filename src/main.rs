@@ -68,6 +68,9 @@ enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// File one item per crossing (a service going bad) to every configured `[alert.*]` sink and stdout; the last
+    /// alerted state is kept at `alert.<key>` in the store, and only a measured `ok` clears it (DESIGN §3; EXP-004).
+    Alert,
 }
 
 /// Exit codes of `probe`: a bad config or a backend that cannot be written.
@@ -151,8 +154,309 @@ fn main() -> ExitCode {
                 json,
             },
         )),
+        Command::Alert => rt.block_on(alert(&config, &redactor)),
     };
     ExitCode::from(code)
+}
+
+/// Exit code of `alert` when a sink (or the dedup write) failed: the crossing is retried on the next run.
+const ALERT_SINK_FAILED: u8 = 1;
+/// How long one kanban create may take (`yurtle-kanban --push` fetches, commits and pushes).
+const KANBAN_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(120);
+/// How long the webhook POST may take.
+const WEBHOOK_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(15);
+
+/// `quotabus alert` (DESIGN §3 alert; EXP-004): read the configured keys with the freshness rule, file each crossing
+/// to every `[alert.*]` sink and stdout, keep the dedup state at `alert.<key>`. Exit 0 when every sink it called
+/// succeeded (or nothing crossed) · 1 a sink or a dedup write failed (retried next run) · 2 CANNOT-ASSESS (the store
+/// cannot be read; nothing is filed).
+async fn alert(config: &Config, redactor: &Redactor) -> u8 {
+    let result = match nats_url(config) {
+        Some((url, bucket)) => match NatsKv::connect_reader(&url, &bucket).await {
+            Ok(kv) => Ok(alert_with(&kv, config, redactor).await),
+            Err(e) => Err(e),
+        },
+        None => match file_dir(config) {
+            Ok(dir) => Ok(alert_with(&FileBackend::new(dir), config, redactor).await),
+            Err(e) => Err(BackendError::Other(e)),
+        },
+    };
+    match result {
+        Ok(Ok(rc)) => rc,
+        Ok(Err(e)) | Err(e) => {
+            eprintln!(
+                "quotabus: CANNOT-ASSESS: {}; nothing filed",
+                redactor.redact(&e.to_string())
+            );
+            CANNOT_ASSESS
+        }
+    }
+}
+
+async fn alert_with(
+    backend: &impl Backend,
+    config: &Config,
+    redactor: &Redactor,
+) -> Result<u8, BackendError> {
+    use quotabus::alert::{AlertEntry, Crossing, Decision, Pending, alert_key, decide};
+    let listing = backend.scan().await?;
+    let by_key: HashMap<&str, &Record> = listing.rows.iter().map(|r| (r.key.as_str(), r)).collect();
+    let unreadable: HashSet<&str> = listing.unreadable.iter().map(|(k, _)| k.as_str()).collect();
+    let now = Utc::now();
+    let client = reqwest::Client::builder()
+        .timeout(WEBHOOK_TIMEOUT)
+        .build()
+        .map_err(|e| BackendError::Other(format!("cannot build the HTTP client: {e}")))?;
+    let mut rc = 0;
+    let (mut filed, mut cleared, mut checked) = (0usize, 0usize, 0usize);
+    let mut out = std::io::stdout();
+    for svc in &config.services {
+        for model in &svc.slots() {
+            checked += 1;
+            let key = quotabus::record_key(svc.kind, &svc.provider, &svc.account, model);
+            let row = by_key.get(key.as_str()).copied();
+            let verdict = if unreadable.contains(key.as_str()) {
+                Verdict::CannotAssess {
+                    reason: "cannot_assess:unreadable_row".to_string(),
+                }
+            } else {
+                freshness(row, now)
+            };
+            let akey = alert_key(&key);
+            let entry = match backend.get_entry(&akey).await {
+                Ok(None) => None,
+                Ok(Some(bytes)) => match serde_json::from_slice::<AlertEntry>(&bytes) {
+                    Ok(e) => Some(e),
+                    Err(e) => {
+                        // unknown whether it was filed: neither file (a duplicate) nor clear; the operator decides
+                        eprintln!(
+                            "quotabus: {akey} is not an alert entry ({e}); {key} skipped until it is fixed or removed"
+                        );
+                        rc = ALERT_SINK_FAILED;
+                        continue;
+                    }
+                },
+                Err(e) => {
+                    eprintln!(
+                        "quotabus: cannot read {akey}: {}; {key} skipped",
+                        redactor.redact(&e.to_string())
+                    );
+                    rc = ALERT_SINK_FAILED;
+                    continue;
+                }
+            };
+            let write = |e: AlertEntry| async move {
+                let bytes =
+                    serde_json::to_vec(&e).map_err(|x| BackendError::Other(x.to_string()))?;
+                backend.put_entry(&alert_key(&e.key), bytes).await
+            };
+            match decide(&verdict, entry.as_ref()) {
+                Decision::Nothing => {}
+                Decision::Clear => {
+                    match write(AlertEntry::new(&key, quotabus::State::Ok, None, now)).await {
+                        Ok(()) => {
+                            cleared += 1;
+                            let line = format!(
+                                "CLEARED {key} ok ({} {model}): a measured ok re-armed it; nothing was closed\n",
+                                svc.id
+                            );
+                            let _ = out.write_all(redactor.redact(&line).as_bytes());
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "quotabus: cannot clear {key}: {}",
+                                redactor.redact(&e.to_string())
+                            );
+                            rc = ALERT_SINK_FAILED;
+                        }
+                    }
+                }
+                Decision::File { state, skip } => {
+                    let Some(row) = row else { continue };
+                    let crossing = Crossing::new(&svc.id, model, row, |t| redactor.redact_error(t));
+                    let (done, failed) =
+                        file_crossing(config, redactor, &client, &crossing, &skip).await;
+                    let mut line = format!(
+                        "ALERT {key} {} ({} {model}): {}",
+                        state.as_str(),
+                        svc.id,
+                        crossing.title
+                    );
+                    let mut all_done: Vec<String> = skip.clone();
+                    all_done.extend(done.iter().map(|(n, _)| n.clone()));
+                    let named: Vec<String> = done
+                        .iter()
+                        .map(|(n, id)| match id {
+                            Some(id) => format!("{n} ({id})"),
+                            None => n.clone(),
+                        })
+                        .collect();
+                    if !named.is_empty() {
+                        line.push_str(&format!("; filed to {}", named.join(", ")));
+                    }
+                    if !skip.is_empty() {
+                        line.push_str(&format!("; already filed to {}", skip.join(", ")));
+                    }
+                    let previous = entry
+                        .as_ref()
+                        .map(|e| e.state)
+                        .unwrap_or(quotabus::State::Ok);
+                    let next = if failed.is_empty() {
+                        AlertEntry::new(&key, state, None, now)
+                    } else {
+                        rc = ALERT_SINK_FAILED;
+                        let why: Vec<String> =
+                            failed.iter().map(|(n, e)| format!("{n}: {e}")).collect();
+                        line.push_str(&format!("; FAILED {} (retried next run)", why.join("; ")));
+                        AlertEntry::new(
+                            &key,
+                            previous,
+                            Some(Pending {
+                                state,
+                                filed: all_done,
+                            }),
+                            now,
+                        )
+                    };
+                    line.push('\n');
+                    let _ = out.write_all(redactor.redact(&line).as_bytes());
+                    let wrote_pending = next.pending.is_some();
+                    if let Err(e) = write(next).await {
+                        eprintln!(
+                            "quotabus: cannot record {akey}: {}; the crossing may be filed again next run",
+                            redactor.redact(&e.to_string())
+                        );
+                        rc = ALERT_SINK_FAILED;
+                    } else if !wrote_pending {
+                        filed += 1;
+                    }
+                }
+            }
+        }
+    }
+    let _ = out.write_all(
+        format!("alert: {checked} keys checked, {filed} crossings filed, {cleared} re-armed\n")
+            .as_bytes(),
+    );
+    Ok(rc)
+}
+
+/// File one crossing to every configured sink not in `skip`: the sinks that succeeded (with the item id a kanban
+/// sink printed, when it printed one) and those that failed (with why, redacted).
+async fn file_crossing(
+    config: &Config,
+    redactor: &Redactor,
+    client: &reqwest::Client,
+    crossing: &quotabus::alert::Crossing,
+    skip: &[String],
+) -> (Vec<(String, Option<String>)>, Vec<(String, String)>) {
+    use quotabus::alert::{Board, WEBHOOK, kanban_args};
+    let mut done = Vec::new();
+    let mut failed = Vec::new();
+    let body = redactor.redact(&crossing.body());
+    for (board, sink) in [
+        (Board::NusyKanban, &config.alert.nusy_kanban),
+        (Board::YurtleKanban, &config.alert.yurtle_kanban),
+    ] {
+        let Some(sink) = sink else { continue };
+        if skip.iter().any(|s| s == board.name()) {
+            continue;
+        }
+        let args = kanban_args(board, &sink.item_type, &sink.tags, &crossing.title);
+        match run_kanban(&sink.command, &args, &body).await {
+            Ok(id) => done.push((board.name().to_string(), id.map(|i| redactor.redact(&i)))),
+            Err(e) => failed.push((board.name().to_string(), redactor.redact_error(&e))),
+        }
+    }
+    if let Some(hook) = &config.alert.webhook
+        && !skip.iter().any(|s| s == WEBHOOK)
+    {
+        // every text field was redacted when the crossing was built; the JSON is redacted again as a whole
+        let json = serde_json::to_string(crossing).unwrap_or_default();
+        let json = redactor.redact(&json);
+        let sent = client
+            .post(&hook.url)
+            .header(reqwest::header::CONTENT_TYPE, "application/json")
+            .body(json)
+            .send()
+            .await;
+        match sent {
+            Ok(r) if r.status().is_success() => done.push((WEBHOOK.to_string(), None)),
+            // the URL is never printed: a webhook URL is often itself a credential
+            Ok(r) => failed.push((WEBHOOK.to_string(), format!("HTTP {}", r.status().as_u16()))),
+            Err(e) => failed.push((
+                WEBHOOK.to_string(),
+                redactor.redact_error(&e.without_url().to_string()),
+            )),
+        }
+    }
+    (done, failed)
+}
+
+/// Run one kanban create with the body on stdin. The child's environment is `CHILD_ENV` only (PATH, HOME, TMPDIR,
+/// USER, LANG, TERM, each if set); a sink that needs more (a kanban server, an SSH agent) is a wrapper script that
+/// sets it. Ok with the first `SIG-…`-shaped id it printed, if any.
+async fn run_kanban(command: &str, args: &[String], body: &str) -> Result<Option<String>, String> {
+    use tokio::io::AsyncWriteExt;
+    let mut cmd = tokio::process::Command::new(command);
+    cmd.args(args)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .kill_on_drop(true);
+    // r1 F3: an allowlist only, as the `claude` fallback has: under `doppler run` the environment holds every secret
+    // of the project, configured or not, and none of it reaches a sink
+    cmd.env_clear();
+    for n in quotabus::subscription::CHILD_ENV {
+        if let Some(v) = std::env::var_os(n) {
+            cmd.env(n, v);
+        }
+    }
+    let mut child = cmd
+        .spawn()
+        .map_err(|e| format!("cannot run {command}: {e}"))?;
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin
+            .write_all(body.as_bytes())
+            .await
+            .map_err(|e| format!("cannot write the body to {command}: {e}"))?;
+    }
+    let out = tokio::time::timeout(KANBAN_TIMEOUT, child.wait_with_output())
+        .await
+        .map_err(|_| {
+            format!(
+                "{command} did not finish within {}s",
+                KANBAN_TIMEOUT.as_secs()
+            )
+        })?
+        .map_err(|e| format!("{command}: {e}"))?;
+    if !out.status.success() {
+        let err = String::from_utf8_lossy(&out.stderr);
+        let last = err
+            .lines()
+            .rev()
+            .find(|l| !l.trim().is_empty())
+            .unwrap_or("");
+        return Err(format!(
+            "{command} exited {}: {}",
+            out.status
+                .code()
+                .map_or("by a signal".to_string(), |c| c.to_string()),
+            last.trim()
+        ));
+    }
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let id = stdout
+        .split(|c: char| !(c.is_ascii_alphanumeric() || c == '-'))
+        .find(|w| {
+            w.split_once('-').is_some_and(|(p, n)| {
+                !p.is_empty()
+                    && p.chars().all(|c| c.is_ascii_uppercase())
+                    && !n.is_empty()
+                    && n.chars().all(|c| c.is_ascii_digit())
+            })
+        });
+    Ok(id.map(str::to_string))
 }
 
 /// tracing to stderr, every line through the redactor. `RUST_LOG` uses the `target=level,…` form.

@@ -3,6 +3,7 @@
 //! The record and the freshness rule are `docs/DESIGN.md` §2; the architecture, config and outputs §3; the probe
 //! catalogue §4; security §6.
 
+pub mod alert;
 pub mod backend;
 pub mod balance;
 pub mod classify;
@@ -15,6 +16,7 @@ pub mod schedule;
 pub mod secret;
 pub mod select;
 pub mod subscription;
+pub mod yurtle;
 
 pub use backend::{Backend, BackendError, BusUrl, FileBackend, Listing, NatsKv};
 pub use classify::{Classification, HttpOutcome, Outcome, Thresholds, classify};
