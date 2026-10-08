@@ -29,9 +29,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Run one probe cycle and write one row per (service, model) to the backend.
+    /// Run what is due (each query kind on its own [intervals] entry) and write its rows to the backend.
     Probe {
-        /// Run every query kind now, due or not. (CHORE-007 stub: accepted, not yet acted on.)
+        /// Run every query kind now, due or not.
         #[arg(long)]
         force: bool,
     },
@@ -92,7 +92,7 @@ fn main() -> ExitCode {
         }
     };
     let code = match cli.command {
-        Command::Probe { force: _ } => rt.block_on(probe(&config, &runner, &redactor)),
+        Command::Probe { force } => rt.block_on(probe(&config, &runner, &redactor, force)),
         Command::Status {
             json,
             kind,
@@ -187,23 +187,53 @@ fn file_dir(config: &Config) -> Result<PathBuf, String> {
     }
 }
 
-async fn probe(config: &Config, runner: &Runner, redactor: &Redactor) -> u8 {
-    let rows = runner.run_once().await;
-    let result = match nats_url(config) {
+/// The rows already in the store: what is due is read from them. A store never written to is empty.
+async fn stored(backend: &impl Backend) -> Result<Vec<Record>, String> {
+    match backend.list().await {
+        Ok(rows) => Ok(rows),
+        Err(BackendError::BucketMissing(_)) => Ok(Vec::new()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
+/// Read the store, run what is due (everything with `force`), write the rows back: the rows, and how many were
+/// written or why they were not.
+async fn cycle(
+    backend: &impl Backend,
+    runner: &Runner,
+    force: bool,
+) -> (Vec<Record>, Result<usize, String>) {
+    let existing = match stored(backend).await {
+        Ok(rows) => rows,
+        // probing blind would make every kind due on every tick: refuse rather than spend the calls
+        Err(e) if !force => {
+            let why = format!(
+                "cannot read the store to tell what is due ({e}); `quotabus probe --force` probes anyway"
+            );
+            return (Vec::new(), Err(why));
+        }
+        Err(_) => Vec::new(),
+    };
+    let rows = runner.run_due(&existing, Utc::now(), force).await;
+    let written = publish(backend, &rows).await;
+    (rows, written)
+}
+
+async fn probe(config: &Config, runner: &Runner, redactor: &Redactor, force: bool) -> u8 {
+    let (rows, result) = match nats_url(config) {
         Some((url, bucket)) => match NatsKv::connect_publisher(&url, &bucket).await {
-            Ok(kv) => publish(&kv, &rows)
-                .await
-                .map(|n| format!("{n} rows to bucket {bucket}")),
-            Err(e) => Err(e.to_string()),
+            Ok(kv) => {
+                let (rows, n) = cycle(&kv, runner, force).await;
+                (rows, n.map(|n| format!("{n} rows to bucket {bucket}")))
+            }
+            Err(e) => (Vec::new(), Err(e.to_string())),
         },
         None => match file_dir(config) {
             Ok(dir) => {
-                let fb = FileBackend::new(&dir);
-                publish(&fb, &rows)
-                    .await
-                    .map(|n| format!("{n} rows to {}", dir.display()))
+                let (rows, n) = cycle(&FileBackend::new(&dir), runner, force).await;
+                (rows, n.map(|n| format!("{n} rows to {}", dir.display())))
             }
-            Err(e) => Err(e),
+            Err(e) => (Vec::new(), Err(e)),
         },
     };
     let mut out = String::new();
@@ -217,6 +247,9 @@ async fn probe(config: &Config, runner: &Runner, redactor: &Redactor) -> u8 {
                 .map(|s| format!(" ({s})"))
                 .unwrap_or_default()
         ));
+    }
+    if rows.is_empty() && result.is_ok() {
+        out.push_str("nothing due\n");
     }
     print!("{}", redactor.redact(&out));
     match result {

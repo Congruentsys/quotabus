@@ -70,7 +70,7 @@ alarm and a staleness flag only a parsing reader can see (both `nats kv get flee
            keys (never on argv, never in a row)                      per-host, local reads only
    secretspec run -- / doppler run -- / env  ─┐             ┌─ statusline hook file · ~/.claude.json
                                               v             │   gh token -> copilot_internal/user
-   [Mini]  quotabus probe   (API + local kinds, every 15 min)        [every host] quotabus agent (every 5 min)
+   [Mini]  quotabus probe   (API + local kinds, what is due)         [every host] quotabus agent (every 5 min)
                  │  one row per (kind,provider,account,model)              │  rows keyed by its own host
                  └──────────────► NATS KV  ai_status  (per-key TTL)  ◄─────┘   + $SRV registration
                                      │ change subject ai.status.changed.<key>
@@ -79,6 +79,17 @@ alarm and a staleness flag only a parsing reader can see (both `nats kv get flee
      (table, --json,   (CLI + library)   → nusy-kanban signal · yurtle-     (127.0.0.1, JSON + one page)
       --check rc)                           kanban issue · webhook · stdout
 ```
+
+**Cadence (SIG-004, Captain 2026-10-08).** "Slower - twice a day, but make it a config setting" (scope: "API + balance
+only"), and "for how often to query, make sure there are separate times for the different types of queries." So every
+query kind has its own interval in `[intervals]` and its own TTL in `[ttl]`, with no shared value: API probes and
+balance reads default to every 12 h; subscription reads (EXP-002) stay at every 5 min. The launchd unit (§5) only
+ticks — `quotabus probe` every 300 s — and each run makes a kind's calls only when that kind is **due**: its interval
+has elapsed since its last row in the store (no row = due; a row written without a call, such as `secret_unset`, is
+not a run). Due-ness is per row: each (service, model) for the API probe, and each service's **balance row**
+(`<kind>.<provider>.<account>.balance`, `probe.name = "balance"`, `state` `ok` or `quota_exhausted` at the floor) for
+the balance read, so a due API probe never triggers a balance read and vice versa. An API probe applies the floor and
+carries the balance from the last fresh balance row. `quotabus probe --force` runs every kind now.
 
 **One binary, five subcommands.** `probe` is the central runner (Mini: a prebuilt binary is not a build, so the bus
 host's no-build rule holds). `agent` is the per-host reader of subscription state, which must run locally: `claude auth
@@ -97,9 +108,14 @@ table + `@type`), ~150 lines, and ignores the rest of the file — the full Yurt
 url     = "nats://192.168.8.110:4222"   # or env QUOTABUS_NATS_URL
 bucket  = "ai_status"
 
-[probe]
-interval = "15m"
-ttl      = "45m"           # 3 missed probes = UNKNOWN
+[intervals]      # how often each query kind runs, each on its own key (SIG-004)
+api     = "12h"            # the messages / chat-completions probe
+balance = "12h"            # the balance GET; EXP-002 adds subscription = "5m"
+
+[ttl]            # each kind's row TTL; a kind left out is 3 × its own interval (3 missed runs = UNKNOWN)
+# api = "36h"; balance = "36h"
+
+[probe]          # `interval` / `ttl` here are retired and refused, naming [intervals] / [ttl]
 max_tokens = 20            # the 8-token smoke of docs/external-review.md:33
 
 [[service]]
@@ -178,8 +194,9 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
 ## 4. Probe catalogue — our providers
 
 The cheapest probe for an Anthropic-protocol provider is the 8-token call already prescribed (`external-review.md:33,37`):
-`POST <base>/v1/messages`, `max_tokens: 20`, thinking disabled; status → state, headers → headroom. Cost at 15 min:
-≤ 96 calls × ~30 tokens per model per day. Balance endpoints are GETs.
+`POST <base>/v1/messages`, `max_tokens: 20`, thinking disabled; status → state, headers → headroom. Cost at the 12 h
+default `[intervals] api` (SIG-004): about 2 calls × ~30 tokens per model per day (`--force` adds one each). Balance
+endpoints are GETs, on their own `[intervals] balance`.
 
 | service | cheapest probe | reads | UNKNOWN by design |
 |---|---|---|---|
@@ -276,7 +293,7 @@ bus that holds no rows. E2 before E3: the selector is only as honest as the subs
 2. **Where the central probe runs.** Mini, as a prebuilt binary under launchd (no build on the bus host) — *recommend yes*; M5 runs `agent` + the hub's `status`/`serve`.
 3. **Publish balances and account labels to the bus.** Numbers yes, labels as configured slugs, never emails — *recommend yes*; `publish_balance` stays a per-service switch for outsiders.
 4. **Undocumented sources** (Anthropic `oauth/usage`, Copilot `copilot_internal/user`, z.ai biz endpoints and `/api/monitor/usage/quota/limit`). Off by default in the FOSS config; **on in our fleet config**, every row labelled `source = undocumented` — *recommend that split*.
-5. **Cadence and spend.** API probes every 15 min (≤ 96 × ~30 tokens per model per day), subscription reads every 5 min (free), balance GETs every 15 min — *recommend these; make them config*.
+5. **Cadence and spend.** API probes every 15 min (≤ 96 × ~30 tokens per model per day), subscription reads every 5 min (free), balance GETs every 15 min — *recommend these; make them config*. **Captain 2026-10-08 (SIG-004):** "Slower - twice a day, but make it a config setting" (scope "API + balance only"), and "for how often to query, make sure there are separate times for the different types of queries." — API and balance default to 12 h each, subscriptions stay 5 min, each kind its own `[intervals]` key (§3; CHORE-007).
 6. **Does it act?** The dead script paused a provider at a measured zero. *Recommend no*: publish + alert only; the loop skills and `select` are the actuator, which keeps the tool safe to FOSS.
 7. **TOML first, Yurtle in E4** (the Captain's words lead with Yurtle). *Recommend TOML first*: it lands E1 fastest and is what outsiders expect; Yurtle follows as the same rows in a `yurtle-table` block, which Obsidian and `yurtle-rdflib` read today.
 8. **Alert item type.** nusy-kanban `signal` with tag `provider-status`, one per crossing, never auto-closed — *recommend signal*; `hazard` only if the Captain wants a crossing to block work.

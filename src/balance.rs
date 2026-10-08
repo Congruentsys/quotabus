@@ -34,11 +34,21 @@ pub fn extract_amount(json: &serde_json::Value, path: &str) -> Option<f64> {
 /// `quota_exhausted`. It never replaces a measured failure (auth_failed, model_missing, unknown): that state stands,
 /// as it does above the floor (DESIGN §2, the EXP-001 real-run ruling).
 pub fn apply_floor(probe_state: State, amount: f64, floor: f64) -> State {
+    if amount <= floor {
+        exhaust(probe_state)
+    } else {
+        probe_state
+    }
+}
+
+/// What a balance at or below its floor does to a model's state: a working one reads `quota_exhausted`, any other
+/// stands.
+pub fn exhaust(probe_state: State) -> State {
     let working = matches!(
         probe_state,
         State::Ok | State::Degraded | State::RateLimited
     );
-    if working && amount <= floor {
+    if working {
         State::QuotaExhausted
     } else {
         probe_state

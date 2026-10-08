@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::record::Kind;
+use crate::schedule::{BALANCE, QueryKind};
 
 #[derive(Debug)]
 pub struct ConfigError(pub String);
@@ -30,13 +31,9 @@ pub struct FileConfig {
     pub dir: PathBuf,
 }
 
-/// `[probe]`.
+/// `[probe]`. How often each kind of query runs is `[intervals]`, not here (CHORE-007).
 #[derive(Debug, Clone, PartialEq)]
 pub struct ProbeConfig {
-    /// Default 15m.
-    pub interval: Duration,
-    /// Default 45m; written to each row as `ttl_s`.
-    pub ttl: Duration,
     /// Default 20.
     pub max_tokens: u32,
     /// A 200 slower than this reads `degraded`. Default 10000.
@@ -95,15 +92,64 @@ pub struct Config {
     pub bus: Option<BusConfig>,
     pub file: Option<FileConfig>,
     pub probe: ProbeConfig,
+    /// `[intervals]`: how often each query kind runs.
+    pub intervals: PerKind,
+    /// `[ttl]`: each kind's row TTL; unset ⇒ 3 × that kind's own interval.
+    pub ttl: PerKindTtl,
     /// The `[[service]]` array.
     pub services: Vec<ServiceConfig>,
+}
+
+/// One duration per query kind (`[intervals]`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct PerKind {
+    pub api: Duration,
+    pub balance: Duration,
+}
+
+/// `[ttl]`: a kind left out takes 3 × its own interval.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct PerKindTtl {
+    pub api: Option<Duration>,
+    pub balance: Option<Duration>,
+}
+
+/// The default interval of every kind: twice a day (the Captain on SIG-004, 2026-10-08).
+pub const DEFAULT_INTERVAL: Duration = Duration::from_secs(12 * 3600);
+
+/// A kind's default TTL is this many of its own intervals: 3 missed runs = UNKNOWN.
+pub const TTL_INTERVALS: u32 = 3;
+
+impl Default for PerKind {
+    fn default() -> Self {
+        PerKind {
+            api: DEFAULT_INTERVAL,
+            balance: DEFAULT_INTERVAL,
+        }
+    }
+}
+
+impl PerKind {
+    pub fn get(&self, kind: QueryKind) -> Duration {
+        match kind {
+            QueryKind::Api => self.api,
+            QueryKind::Balance => self.balance,
+        }
+    }
+}
+
+impl PerKindTtl {
+    pub fn get(&self, kind: QueryKind) -> Option<Duration> {
+        match kind {
+            QueryKind::Api => self.api,
+            QueryKind::Balance => self.balance,
+        }
+    }
 }
 
 impl Default for ProbeConfig {
     fn default() -> Self {
         ProbeConfig {
-            interval: Duration::from_secs(15 * 60),
-            ttl: Duration::from_secs(45 * 60),
             max_tokens: 20,
             degraded_latency_ms: 10_000,
         }
@@ -151,6 +197,8 @@ mod raw {
         pub bus: Option<Bus>,
         pub file: Option<FileTable>,
         pub probe: Option<Probe>,
+        pub intervals: Option<PerKind>,
+        pub ttl: Option<PerKind>,
         #[serde(default)]
         pub service: Vec<Service>,
     }
@@ -171,10 +219,20 @@ mod raw {
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
     pub struct Probe {
-        pub interval: Option<String>,
-        pub ttl: Option<String>,
+        /// Retired by CHORE-007: read only to refuse it with a pointer to `[intervals]`.
+        pub interval: Option<toml::Value>,
+        /// Retired by CHORE-007: read only to refuse it with a pointer to `[ttl]`.
+        pub ttl: Option<toml::Value>,
         pub max_tokens: Option<u32>,
         pub degraded_latency_ms: Option<u64>,
+    }
+
+    /// `[intervals]` / `[ttl]`: one duration per query kind.
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    pub struct PerKind {
+        pub api: Option<String>,
+        pub balance: Option<String>,
     }
 
     #[derive(Deserialize, Clone, Copy)]
@@ -226,11 +284,20 @@ impl Config {
 
         let mut probe = ProbeConfig::default();
         if let Some(p) = raw.probe {
-            if let Some(i) = p.interval {
-                probe.interval = parse_duration(&i)?;
+            // one interval for every call was EXP-001's; each kind now has its own (SIG-004, CHORE-007)
+            if p.interval.is_some() {
+                return Err(ConfigError(
+                    "[probe] interval is retired: set each kind's own in [intervals] (api = \"12h\", \
+                     balance = \"12h\")"
+                        .into(),
+                ));
             }
-            if let Some(t) = p.ttl {
-                probe.ttl = parse_duration(&t)?;
+            if p.ttl.is_some() {
+                return Err(ConfigError(
+                    "[probe] ttl is retired: set each kind's own in [ttl] (api, balance; default 3 × \
+                     its interval)"
+                        .into(),
+                ));
             }
             if let Some(m) = p.max_tokens {
                 probe.max_tokens = m;
@@ -239,8 +306,27 @@ impl Config {
                 probe.degraded_latency_ms = d;
             }
         }
-        if probe.ttl.as_secs() == 0 {
-            return Err(ConfigError("[probe] ttl must be at least 1s".into()));
+        let mut intervals = PerKind::default();
+        if let Some(i) = raw.intervals {
+            if let Some(a) = i.api {
+                intervals.api = parse_duration(&a)?;
+            }
+            if let Some(b) = i.balance {
+                intervals.balance = parse_duration(&b)?;
+            }
+        }
+        let mut ttl = PerKindTtl::default();
+        if let Some(t) = raw.ttl {
+            ttl.api = t.api.as_deref().map(parse_duration).transpose()?;
+            ttl.balance = t.balance.as_deref().map(parse_duration).transpose()?;
+        }
+        for (name, kind) in [("api", QueryKind::Api), ("balance", QueryKind::Balance)] {
+            let t = ttl
+                .get(kind)
+                .unwrap_or_else(|| intervals.get(kind).saturating_mul(TTL_INTERVALS));
+            if t.as_secs() == 0 {
+                return Err(ConfigError(format!("[ttl] {name} must be at least 1s")));
+            }
         }
 
         let mut services = Vec::with_capacity(raw.service.len());
@@ -272,6 +358,15 @@ impl Config {
                     floor: floor.unwrap_or(0.0),
                 }),
             };
+            // the balance read writes its own row under the model slot `balance` (schedule::BALANCE)
+            if matches!(balance, BalanceSpec::Endpoint(_))
+                && s.models.iter().any(|m| crate::record::slug(m) == BALANCE)
+            {
+                return Err(ConfigError(format!(
+                    "service {:?}: a model named {BALANCE:?} would share the balance row's key",
+                    s.id
+                )));
+            }
             services.push(ServiceConfig {
                 id: s.id,
                 kind: s.kind,
@@ -302,21 +397,22 @@ impl Config {
                 dir: PathBuf::from(f.dir),
             }),
             probe,
+            intervals,
+            ttl,
             services,
         })
     }
 
-    /// How often `kind` is queried: `[intervals] <kind>` (default 12h). CHORE-007 seam: stub.
-    pub fn interval_for(&self, kind: crate::schedule::QueryKind) -> Duration {
-        let _ = kind;
-        todo!("CHORE-007: [intervals]")
+    /// How often `kind` is queried: `[intervals] <kind>` (default 12h).
+    pub fn interval_for(&self, kind: QueryKind) -> Duration {
+        self.intervals.get(kind)
     }
 
     /// How long a `kind` row is trustworthy (its `ttl_s`): `[ttl] <kind>`, default 3 × that kind's own interval.
-    /// CHORE-007 seam: stub.
-    pub fn ttl_for(&self, kind: crate::schedule::QueryKind) -> Duration {
-        let _ = kind;
-        todo!("CHORE-007: [ttl]")
+    pub fn ttl_for(&self, kind: QueryKind) -> Duration {
+        self.ttl
+            .get(kind)
+            .unwrap_or_else(|| self.interval_for(kind).saturating_mul(TTL_INTERVALS))
     }
 
     pub fn load(path: &Path) -> Result<Config, ConfigError> {
