@@ -12,7 +12,7 @@ pub enum QueryKind {
     Api,
     /// The balance endpoint GET (`[intervals] balance`).
     Balance,
-    /// EXP-002: a per-host subscription read by `quotabus agent` (`[intervals] subscription`, default 5 min; its TTL
+    /// EXP-002: a subscription account read by the central probe (`[intervals] subscription`, default 1 h; its TTL
     /// `[ttl] subscription`, default 3 × its own interval). STUB: not yet wired into config.
     Subscription,
 }
