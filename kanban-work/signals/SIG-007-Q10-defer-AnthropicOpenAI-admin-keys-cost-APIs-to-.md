@@ -2,12 +2,13 @@
 id: SIG-007
 title: "Q10: defer Anthropic/OpenAI admin keys (cost APIs) to E5?"
 type: signal
-status: backlog
+status: arrived
 priority: medium
 assignee: null
 created: 2026-10-08
 tags: [captain-decision, design]
 depends_on: []
+resolution: completed
 ---
 
 # Q10: defer Anthropic/OpenAI admin keys (cost APIs) to E5?
@@ -23,3 +24,16 @@ Still open — not decided by any session. It blocks nothing in v1.0, so the wor
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
 
 Captain 2026-10-08: "Defer to E5". This is the recommended default: no admin keys in v1.0, the probe result is the status for these two providers, and this is revisited with E5.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:done ;
+    kb:at "2026-10-08T18:52:52+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:forcedMove "true"^^xsd:boolean ;
+    kb:resolution "completed" ;
+  ] .
+```
