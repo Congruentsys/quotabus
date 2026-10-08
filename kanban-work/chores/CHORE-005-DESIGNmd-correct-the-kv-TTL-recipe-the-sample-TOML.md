@@ -2,9 +2,9 @@
 id: CHORE-005
 title: "DESIGN.md: correct the kv TTL recipe, the sample TOML and the OpenAI probe route (found in EXP-001)"
 type: chore
-status: provisioning
+status: arrived
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-08
 depends_on: []
 ---
@@ -28,5 +28,16 @@ A PR amends DESIGN.md §3 and §4 on those three points, each citing its evidenc
     kb:status kb:ready ;
     kb:at "2026-10-08T18:40:16+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T18:59:03+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T19:07:53+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/6> ;
   ] .
 ```

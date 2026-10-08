@@ -40,3 +40,10 @@ This chore blocks EXP-002, which adds a third kind (subscription reads, 5 min) i
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 19:04)
+
+tests red at 0acfc02 (partner sub-agent): new tests/per_kind_config.rs, per_kind_schedule.rs, cli_probe_due.rs and tick_and_docs.rs. Every failure is a todo!() stub (interval_for, ttl_for, Runner::run_due) or an assertion (old [probe] interval/ttl keys accepted, ttl_s 2700 not 120, second probe still calls, plist 900 not 300, docs). None is a compile error. Controls: the reference-schedule known answer and the plist-parser known answer pass. Pre-existing tests edited to match the DoD: config_toml, probe_runner, cli_probe, real_run_defects, review_r1.

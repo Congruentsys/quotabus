@@ -2,7 +2,7 @@
 id: HAZ-001
 title: "nats:// URL credentials are dropped, and could leak into a connection error (found in EXP-001)"
 type: hazard
-status: underway
+status: arrived
 priority: medium
 assignee: M5/s-b1fd4c67
 created: 2026-10-08
@@ -31,6 +31,12 @@ Credentials in a nats:// URL reach the connection (or are refused with a clear c
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:40:47+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T19:03:29+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/5> ;
   ] .
 ```
 

@@ -2,9 +2,9 @@
 id: CHORE-006
 title: "Record the Captain's 2026-10-08 rulings on §10 (SIG-001…008) in DESIGN.md"
 type: chore
-status: provisioning
+status: arrived
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-08
 tags: [v1.0, VOY-001, design]
 depends_on: []
@@ -31,6 +31,17 @@ A PR to `docs/DESIGN.md` that, for each of Q2, Q3, Q4, Q5, Q7, Q8, Q9 and Q10 in
     kb:status kb:ready ;
     kb:at "2026-10-08T18:53:23+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T19:08:02+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T19:17:40+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/8> ;
   ] .
 ```
 
