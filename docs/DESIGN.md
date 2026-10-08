@@ -301,6 +301,13 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
   nothing is filed. An `alert.<key>` that is not an alert entry skips that key with rc 1 (whether it was filed is
   unknown, so it neither files nor clears).
 - **When it runs:** after each probe cycle, in the same unit (`packaging/README.md`).
+- **One writer, and entries that outlive their service** (review r1 F4). `alert` assumes it is the only writer of
+  `alert.*`: it runs once per probe cycle, on the probe host, and `put_entry` is a plain put, not the
+  revision-conditional write the rows have (EXP-003), so two `alert` runs at once could each read "not alerted" and
+  both file. Running it anywhere else, or twice per cycle, needs that conditional write first. An `alert.<key>` entry
+  is never removed: a service taken out of the config leaves its entry in the bucket, where every reader skips it,
+  so it is harmless; clean it with `nats kv del ai_status alert.<key>` (file backend: delete
+  `<dir>/alert.<key>.json`) if wanted. Re-adding the service then starts it armed.
 
 **Selector — what EXP-003 fixed** (`src/select.rs`, `tests/exp003_select.rs`, `tests/exp003_cli_select.rs`). The
 pick is over the configured (service, model slot) pairs, each matched to its row by key; the model table is the config
