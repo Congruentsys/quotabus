@@ -13,6 +13,44 @@ fn example() -> (String, Config) {
     (text, cfg)
 }
 
+/// The secret NAMES of the api/local services (subscription services are EXP-002's and are checked elsewhere).
+fn api_secret_names(c: &Config) -> BTreeSet<&str> {
+    c.services
+        .iter()
+        .filter(|s| s.kind != Kind::Subscription)
+        .filter_map(|s| s.secret.as_deref())
+        .collect()
+}
+
+/// The known answer: the six key-bearing API services plus the xai control and local-qwen.
+fn want_api_secrets() -> BTreeSet<&'static str> {
+    [
+        "NUSY_GLM",
+        "NUSY_DEEPSEEK",
+        "NUSY_KIMI",
+        "OPENAI_API_KEY",
+        "TOGETHER_API_KEY",
+        "XAI_API_KEY",
+        "NUSY_LOCAL_QWEN",
+    ]
+    .into_iter()
+    .collect()
+}
+
+#[test]
+fn control_a_missing_api_service_still_fails_the_secret_check() {
+    // drop one API service from the parsed example: the scoped set no longer equals the known answer
+    let (_, mut c) = example();
+    let before = c.services.len();
+    c.services.retain(|s| s.id != "xai");
+    assert_eq!(
+        c.services.len(),
+        before - 1,
+        "the example has the xai service to drop"
+    );
+    assert_ne!(api_secret_names(&c), want_api_secrets());
+}
+
 #[test]
 fn example_lists_the_six_key_bearing_services_and_the_xai_control() {
     let (_, c) = example();
@@ -31,24 +69,9 @@ fn example_lists_the_six_key_bearing_services_and_the_xai_control() {
             "examples/quotabus.toml lacks service `{id}`; has {ids:?}"
         );
     }
-    let names: BTreeSet<&str> = c
-        .services
-        .iter()
-        .filter_map(|s| s.secret.as_deref())
-        .collect();
-    let want: BTreeSet<&str> = [
-        "NUSY_GLM",
-        "NUSY_DEEPSEEK",
-        "NUSY_KIMI",
-        "OPENAI_API_KEY",
-        "TOGETHER_API_KEY",
-        "XAI_API_KEY",
-        "NUSY_LOCAL_QWEN",
-    ]
-    .into_iter()
-    .collect();
-    assert_eq!(names, want);
-    for s in &c.services {
+    assert_eq!(api_secret_names(&c), want_api_secrets());
+    // subscription services (EXP-002) carry token NAMES but no protocol: these checks are for api/local services
+    for s in c.services.iter().filter(|s| s.kind != Kind::Subscription) {
         if s.secret.is_some() {
             assert!(
                 s.base_url.is_some() && s.protocol.is_some(),
