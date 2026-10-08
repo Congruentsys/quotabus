@@ -13,7 +13,7 @@ pub mod record;
 pub mod redact;
 pub mod secret;
 
-pub use backend::{Backend, BackendError, FileBackend, Listing, NatsKv};
+pub use backend::{Backend, BackendError, BusUrl, FileBackend, Listing, NatsKv};
 pub use classify::{Classification, HttpOutcome, Outcome, Thresholds, classify};
 pub use config::{Config, ConfigError, ServiceConfig};
 pub use freshness::{UnknownReason, Verdict, freshness};

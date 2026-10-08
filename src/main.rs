@@ -9,8 +9,8 @@ use chrono::Utc;
 use clap::{Parser, Subcommand};
 use quotabus::config::DEFAULT_BUCKET;
 use quotabus::{
-    Backend, BackendError, Config, FileBackend, Kind, Listing, NatsKv, Record, Redactor, Runner,
-    Verdict, freshness,
+    Backend, BackendError, BusUrl, Config, FileBackend, Kind, Listing, NatsKv, Record, Redactor,
+    Runner, Verdict, freshness,
 };
 
 #[derive(Parser)]
@@ -74,7 +74,15 @@ fn main() -> ExitCode {
         }
     };
     let runner = Runner::from_process_env(config.clone());
-    let redactor = Arc::new(runner.redactor());
+    let mut redactor = runner.redactor();
+    // HAZ-001: credentials in the bus URL are secrets too, registered BEFORE the logger (and so before any
+    // connection): async-nats's own debug/trace lines may carry the server address with its password
+    if let Some((url, _)) = nats_url(&config) {
+        for s in BusUrl::parse(&url).secrets() {
+            redactor.add(s);
+        }
+    }
+    let redactor = Arc::new(redactor);
     init_logging(redactor.clone());
 
     let rt = match tokio::runtime::Builder::new_multi_thread()

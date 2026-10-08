@@ -8,6 +8,22 @@ use async_nats::jetstream::{self, kv};
 use futures::StreamExt;
 
 use crate::record::Record;
+use crate::secret::Secret;
+
+/// Remove every credential `bus` carried from `text` (an error from the client), whatever the redactor knows.
+fn scrub(bus: &BusUrl, text: &str) -> String {
+    let mut values: Vec<String> = bus
+        .secrets()
+        .iter()
+        .map(|s| s.expose().to_string())
+        .collect();
+    values.sort_by_key(|v| std::cmp::Reverse(v.len()));
+    let mut out = text.to_string();
+    for v in values {
+        out = out.replace(&v, "***");
+    }
+    out
+}
 
 #[derive(Debug)]
 pub enum BackendError {
@@ -188,13 +204,145 @@ pub struct NatsKv {
     store: kv::Store,
 }
 
+/// A bus URL split into the address async-nats connects to (no userinfo) and the credentials it carried
+/// (`nats://user:pass@host` or a token-only `nats://token@host`; HAZ-001). A comma-separated server list is split per
+/// server and handed to async-nats as a list; the connection has one set of credentials, so the FIRST server with
+/// userinfo supplies them (every server's userinfo is still registered as a secret).
+#[derive(Clone)]
+pub struct BusUrl {
+    /// The server address(es) with any userinfo removed, comma-joined: the only form we may print.
+    pub address: String,
+    /// The same, one per server: what we connect to.
+    pub servers: Vec<String>,
+    pub user: Option<String>,
+    pub password: Option<Secret>,
+    pub token: Option<Secret>,
+    /// Every userinfo value as written (percent-encoded or not) and decoded, for the redactor.
+    raw_secrets: Vec<Secret>,
+}
+
+impl std::fmt::Debug for BusUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "BusUrl({})", self.display())
+    }
+}
+
+impl BusUrl {
+    pub fn parse(url: &str) -> BusUrl {
+        let mut out = BusUrl {
+            address: String::new(),
+            servers: Vec::new(),
+            user: None,
+            password: None,
+            token: None,
+            raw_secrets: Vec::new(),
+        };
+        let mut servers = Vec::new();
+        for server in url.split(',') {
+            let server = server.trim();
+            let (scheme, rest) = match server.find("://") {
+                Some(i) => (&server[..i + 3], &server[i + 3..]),
+                None => ("", server),
+            };
+            let auth_end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
+            let (authority, tail) = rest.split_at(auth_end);
+            let Some(at) = authority.rfind('@') else {
+                servers.push(server.to_string());
+                continue;
+            };
+            let (userinfo, host) = (&authority[..at], &authority[at + 1..]);
+            servers.push(format!("{scheme}{host}{tail}"));
+            match userinfo.split_once(':') {
+                Some((u, p)) => {
+                    out.raw_secrets.push(Secret::new(p));
+                    if out.user.is_none() && out.token.is_none() {
+                        out.user = Some(percent_decode(u));
+                        out.password = Some(Secret::new(percent_decode(p)));
+                    }
+                }
+                None => {
+                    out.raw_secrets.push(Secret::new(userinfo));
+                    if out.user.is_none() && out.token.is_none() {
+                        out.token = Some(Secret::new(percent_decode(userinfo)));
+                    }
+                }
+            }
+        }
+        out.address = servers.join(",");
+        out.servers = servers;
+        out
+    }
+
+    /// Every secret value the URL carried (raw and decoded), to register with the [`crate::Redactor`] before any
+    /// connection is attempted: async-nats's own debug/trace logging may carry them.
+    pub fn secrets(&self) -> Vec<Secret> {
+        let mut v = self.raw_secrets.clone();
+        v.extend(self.password.iter().cloned());
+        v.extend(self.token.iter().cloned());
+        v.retain(|s| !s.expose().is_empty());
+        v
+    }
+
+    /// The URL safe to print: `nats://user:***@host` (or `nats://***@host` for a token).
+    pub fn display(&self) -> String {
+        let (first, rest) = match self.address.split_once(',') {
+            Some((a, b)) => (a, Some(b)),
+            None => (self.address.as_str(), None),
+        };
+        let who = match (&self.user, &self.token) {
+            (Some(u), _) => Some(format!("{u}:***@")),
+            (None, Some(_)) => Some("***@".to_string()),
+            _ => None,
+        };
+        let first = match (who, first.find("://")) {
+            (Some(w), Some(i)) => format!("{}{w}{}", &first[..i + 3], &first[i + 3..]),
+            (Some(w), None) => format!("{w}{first}"),
+            (None, _) => first.to_string(),
+        };
+        match rest {
+            Some(r) => format!("{first},{r}"),
+            None => first,
+        }
+    }
+}
+
+/// Decode `%XX` escapes (RFC 3986 userinfo); an invalid escape is kept as written.
+fn percent_decode(s: &str) -> String {
+    let b = s.as_bytes();
+    let mut out = Vec::with_capacity(b.len());
+    let mut i = 0;
+    while i < b.len() {
+        if b[i] == b'%'
+            && i + 2 < b.len()
+            && let Some(v) = std::str::from_utf8(&b[i + 1..i + 3])
+                .ok()
+                .and_then(|h| u8::from_str_radix(h, 16).ok())
+        {
+            out.push(v);
+            i += 3;
+        } else {
+            out.push(b[i]);
+            i += 1;
+        }
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
 async fn connect(url: &str) -> Result<jetstream::Context, BackendError> {
-    let client = async_nats::ConnectOptions::new()
+    let bus = BusUrl::parse(url);
+    let options = match (&bus.user, &bus.password, &bus.token) {
+        (Some(u), Some(p), _) => {
+            async_nats::ConnectOptions::with_user_and_password(u.clone(), p.expose().to_string())
+        }
+        (_, _, Some(t)) => async_nats::ConnectOptions::with_token(t.expose().to_string()),
+        _ => async_nats::ConnectOptions::new(),
+    };
+    let client = options
         .connection_timeout(BUS_TIMEOUT)
         .request_timeout(Some(BUS_TIMEOUT))
-        .connect(url)
+        .connect(bus.servers.as_slice())
         .await
-        .map_err(|e| BackendError::Unreachable(e.to_string()))?;
+        .map_err(|e| BackendError::Unreachable(scrub(&bus, &e.to_string())))?;
     Ok(jetstream::new(client))
 }
 
@@ -337,5 +485,34 @@ impl NatsKv {
             }
             Err(e) => Err(other(&format!("cannot read {key}"), e)),
         }
+    }
+}
+
+#[cfg(test)]
+mod bus_url_tests {
+    use super::BusUrl;
+
+    #[test]
+    fn user_and_password_are_split_out_and_never_displayed() {
+        let b = BusUrl::parse("nats://qb:p%40ss@127.0.0.1:4222");
+        assert_eq!(b.address, "nats://127.0.0.1:4222");
+        assert_eq!(b.user.as_deref(), Some("qb"));
+        assert_eq!(b.password.as_ref().map(|p| p.expose()), Some("p@ss"));
+        assert_eq!(b.display(), "nats://qb:***@127.0.0.1:4222");
+        let s: Vec<String> = b.secrets().iter().map(|s| s.expose().to_string()).collect();
+        assert!(s.contains(&"p%40ss".to_string()) && s.contains(&"p@ss".to_string()));
+    }
+
+    #[test]
+    fn a_token_url_and_a_plain_url() {
+        let b = BusUrl::parse("nats://tok123@h:4222,nats://h2:4222");
+        assert_eq!(b.address, "nats://h:4222,nats://h2:4222");
+        assert_eq!(b.servers, ["nats://h:4222", "nats://h2:4222"]);
+        assert_eq!(b.token.as_ref().map(|t| t.expose()), Some("tok123"));
+        assert_eq!(b.display(), "nats://***@h:4222,nats://h2:4222");
+        let p = BusUrl::parse("nats://127.0.0.1:4222");
+        assert_eq!(p.address, "nats://127.0.0.1:4222");
+        assert!(p.user.is_none() && p.token.is_none() && p.secrets().is_empty());
+        assert_eq!(p.display(), "nats://127.0.0.1:4222");
     }
 }
