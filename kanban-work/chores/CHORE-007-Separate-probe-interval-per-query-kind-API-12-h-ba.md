@@ -2,7 +2,7 @@
 id: CHORE-007
 title: "Separate probe interval per query kind (API 12 h, balance 12 h), each with its own TTL — Captain Q5"
 type: chore
-status: backlog
+status: provisioning
 priority: high
 assignee: null
 created: 2026-10-08
@@ -24,3 +24,14 @@ This chore blocks EXP-002, which adds a third kind (subscription reads, 5 min) i
 3. Each row's `ttl_s` is its own kind's TTL.
 4. The launchd plist's `StartInterval` becomes a TICK (default 300 s): how often it checks what is due, documented as such in `packaging/README.md`. No interval is duplicated outside the config.
 5. `examples/quotabus.toml` and `docs/DESIGN.md` §3/§4 (the cadence and the "≤ 96 calls" cost line) match. `make check` is green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T18:58:26+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
