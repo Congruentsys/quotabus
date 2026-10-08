@@ -37,3 +37,7 @@ Captain 2026-10-08: "Slower - twice a day, but make it a config setting"; on sco
     kb:resolution "completed" ;
   ] .
 ```
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 18:56)
+
+Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure there are separate times for the different types of queries." So each query kind has its OWN config interval, set independently: API (messages) probe, balance read, and subscription read (and any later kind, e.g. a quota-window read). There is no shared interval. Defaults per the SIG-004 ruling: API 12 h, balance 12 h, subscription 5 min.
