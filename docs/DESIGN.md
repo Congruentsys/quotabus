@@ -267,9 +267,10 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
   is the last alerted state. It is written with no per-key TTL (an expired dedup entry would file the same crossing
   again) and announces no change subject; every listing (`status`, `select`, `probe`'s due check) leaves `alert.*`
   keys out, so it never reads as a broken row.
-- **A crossing** is a fresh measured state that is not `ok` and differs from the entry's `state` (no entry reads as
+- **A crossing** is a fresh measured state that is not `ok` while the key is armed (no entry, or an entry holding
   `ok`). It is filed to every configured sink and printed on stdout (`ALERT <key> <state> (<service> <model>): …`,
-  plain text), then recorded. The same bad state across any number of cycles files once.
+  plain text), then recorded. Once the key is alerted, every later bad reading — the same state or a different one —
+  is the same outage and files nothing, across any number of cycles.
 - **Only a measured `ok` clears it:** a fresh `ok` rewrites the entry as `state: "ok"` (re-armed; stdout says
   `CLEARED`) and files and closes nothing. A CANNOT-ASSESS (`unknown` row, unreadable row) and an UNKNOWN (absent,
   expired — an expired `ok` included) leave the entry as it is and file nothing.
@@ -286,9 +287,12 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
   **[INFERENCE] partial failure:** the crossing is recorded only when every sink succeeded; the sinks that did are kept
   in the entry's `pending: {state, filed: [...]}` (its `state` stays the previous one), so the next run retries only
   the sinks that failed and a failed webhook never files a second kanban item.
-- **[INFERENCE] a bad→bad move** (`model_missing` → `auth_failed`) is a new crossing and files again: the entry holds
-  the last alerted *state*, and the fix differs per state. `degraded` and `rate_limited` are not `ok`, so each is a
-  crossing too.
+- **A bad→bad move files nothing** (`rate_limited` ↔ `quota_exhausted`, `model_missing` → `auth_failed`): the
+  entry is left as it is, and only a measured `ok` re-arms the key — one item per crossing, "a service going bad"
+  (ruled by the driver on review r1 F1, `reviews/EXP-004-r1.md`; it replaces this section's first [INFERENCE], under
+  which a provider at its cap alternating between the two 429 readings filed a signal every cycle). A crossing still
+  pending on some sinks is completed on the others whatever bad state it reads now. `degraded` and `rate_limited` are
+  not `ok`, so each is a crossing too.
 - **Exit codes:** 0 every sink called succeeded (or nothing crossed) · 1 a sink, or a dedup read/write, failed
   (retried next run) · 2 CANNOT-ASSESS: the store cannot be read (bus down, bucket or row directory missing), and
   nothing is filed. An `alert.<key>` that is not an alert entry skips that key with rc 1 (whether it was filed is

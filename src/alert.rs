@@ -8,13 +8,14 @@
 //! never file. Nothing is ever closed, moved or updated on a board: the only call is `create`.
 //!
 //! [INFERENCE] decisions the design does not make, documented in `docs/DESIGN.md` §3 alert:
-//! - A move from one bad state to a different bad state (`model_missing` → `auth_failed`) is a new crossing and files
-//!   again: the entry holds "the last alerted STATE", and the operator's fix differs per state. The same bad state
-//!   across any number of cycles, with CANNOT-ASSESS or UNKNOWN in between, files once.
-//! - `degraded` and `rate_limited` are not `ok`, so they are crossings like any other bad state.
+//! - `degraded` and `rate_limited` are not `ok`, so they are crossings like any other bad state (open as the
+//!   Captain's SIG-010).
 //! - Partial sink failure: the crossing is recorded only when every sink succeeded. The sinks that did succeed are
 //!   remembered in the entry's `pending`, so the next run retries only the ones that failed — a failed webhook does
 //!   not file a second kanban item.
+//!
+//! Ruled by review r1 F1: once a key is alerted, a move to a different bad state (`rate_limited` ↔
+//! `quota_exhausted`) is the same outage and files nothing; only a measured `ok` re-arms the key.
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -86,13 +87,14 @@ pub fn decide(verdict: &Verdict, entry: Option<&AlertEntry>) -> Decision {
             _ => Decision::Nothing,
         };
     }
-    let last = entry.map(|e| e.state).unwrap_or(State::Ok);
-    if *state == last {
+    // r1 F1: one item per crossing. Once the key is alerted (its entry holds a bad state), any bad state, the same
+    // or a different one, is the same outage: nothing is filed and the entry is left as it is
+    if entry.is_some_and(|e| e.state != State::Ok) {
         return Decision::Nothing;
     }
+    // a crossing some sinks already filed (`pending`) is completed on the others, whatever bad state it reads now
     let skip = entry
         .and_then(|e| e.pending.as_ref())
-        .filter(|p| p.state == *state)
         .map(|p| p.filed.clone())
         .unwrap_or_default();
     Decision::File {
@@ -265,10 +267,10 @@ mod tests {
             decide(&fresh(ModelMissing), Some(&entry(ModelMissing, None))),
             Decision::Nothing
         );
-        // [INFERENCE] bad -> a different bad files again
+        // r1 F1: bad -> a different bad is the same outage: nothing is filed, the entry is left as it is
         assert_eq!(
             decide(&fresh(AuthFailed), Some(&entry(ModelMissing, None))),
-            file(AuthFailed)
+            Decision::Nothing
         );
         assert_eq!(
             decide(&fresh(Ok), Some(&entry(ModelMissing, None))),
@@ -308,12 +310,12 @@ mod tests {
                 skip: vec!["nusy-kanban".into()]
             }
         );
-        // a different bad state is a different crossing: every sink files it
+        // a different bad state is still the same crossing: it completes on the sinks that have not filed it
         assert_eq!(
             decide(&fresh(State::AuthFailed), Some(&e)),
             Decision::File {
                 state: State::AuthFailed,
-                skip: vec![]
+                skip: vec!["nusy-kanban".into()]
             }
         );
         // a measured ok drops the pending crossing
