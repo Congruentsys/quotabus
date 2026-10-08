@@ -7,7 +7,7 @@ priority: high
 assignee: null
 created: 2026-10-08
 tags: [v1.0, VOY-001]
-depends_on: []
+depends_on: [CHORE-003]
 ---
 
 # E1: probe runner + NATS KV publisher + status CLI for the API providers (replaces the hand probe)
