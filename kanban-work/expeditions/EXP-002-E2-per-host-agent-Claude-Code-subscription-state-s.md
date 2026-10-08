@@ -1,6 +1,6 @@
 ---
 id: EXP-002
-title: "E2: per-host agent — Claude Code subscription state (statusLine capture + ~/.claude.json fallback) and GitHub Copilot quota, one row per host"
+title: "E2: central subscription reads — every Claude account (Doppler setup-token) and Copilot, from the probe host; no per-host install"
 type: expedition
 status: underway
 priority: high
@@ -10,18 +10,33 @@ tags: [v1.0, VOY-001]
 depends_on: [EXP-001, CHORE-002, CHORE-007]
 ---
 
-# E2: per-host agent — Claude Code subscription state (statusLine capture + ~/.claude.json fallback) and GitHub Copilot quota, one row per host
+# E2: central subscription reads — every Claude account (Doppler setup-token) and Copilot, from the probe host; no per-host install
 
-Part of VOY-001; after E1 and CHORE-002 (C2). Design §3 (agent), §4 (Claude Max, Copilot rows), §9 row E2.
+Part of VOY-001; after E1, CHORE-002 and CHORE-007. Design §3 (probe), §4 (Claude Max and Copilot rows), §9 row E2.
+
+**Rescoped by the Captain, 2026-10-08:** "Doppler has the API keys for all agents (includeing all of the claude agents that run on each machine. We should not need to run anything else on the other machines (just Mini or M5 depending on where we host this)". The per-host agent, the statusLine install and the five-host units of the earlier plan are dropped. Everything runs in `quotabus probe` on the probe host (Mini for the fleet, §10 Q2 / CHORE-008).
+
+**Measured 2026-10-08 on M5** (raw artefacts in `~/.local/state/quotabus-work/EXP-002/`, never in git):
+- Doppler `nusy-product-team` holds `NUSY_CLAUDE_TOKEN_<ACCOUNT>` for six accounts. All six are setup-tokens (`oat` class).
+- `GET api.anthropic.com/api/oauth/usage` with such a token → **403 permission_error**, "OAuth token does not meet scope requirement user:profile" (fake-token control: 401). So this route cannot be used.
+- `POST /v1/messages` with the token (Bearer, `anthropic-beta: oauth-2025-04-20`, Haiku, `max_tokens` 1, ~35 input tokens) → 200, with headers `anthropic-ratelimit-unified-{5h,7d}-{utilization,reset,status}`, `-status` and `-overage-status`. All six accounts answered 200 with both windows (fake-token control: 401).
+- `claude -p --output-format stream-json` with `CLAUDE_CODE_OAUTH_TOKEN` set to the same token → `rate_limit_event` with the same numbers as the headers (0.3 / 0.12, the same resets).
+- Copilot: `GET api.github.com/copilot_internal/user` with Doppler `GITHUB_TOKEN` → 200, `quota_snapshots.premium_interactions.{entitlement, remaining, percent_remaining, unlimited}`, `quota_reset_date`.
+
+**Captain's rulings, 2026-10-08:**
+- Claude read: "Direct, stream-json fallback". The direct 1-token call comes first; if its unified headers are missing, `claude -p` stream-json runs once for that account.
+- Subscription cadence: "Hourly". `[intervals] subscription` defaults to 1 h, with its own key and its own TTL (§10 Q5).
+- Undocumented sources (SIG-003): the unified headers and `copilot_internal` are undocumented. They are on in the fleet config, off in the FOSS example, and every row is labelled `source = undocumented`. The stream-json fallback is Claude Code's own output (`source = official`).
 
 ## Plan
-1. `quotabus agent` runs on each host and reads its OWN subscription state locally (the `claude` auth probe gives wrong answers over SSH on macOS, so nothing central can read it).
-2. Claude Code: the official `statusLine` capture — **Captain 2026-10-08, §10 Q9: yes**, a `statusLine` entry in every host's `~/.claude/settings.json`, installed by this expedition's unit, only after CHORE-002 shows it fires under `claude -p`; fallback: `~/.claude.json` `cachedUsageUtilization`; a token-login host reads `unknown`, reason `cannot_assess:token_login_no_usage_panel`, never `ok`.
-3. GitHub Copilot: `gh api copilot_internal/user` (undocumented — labelled `source = undocumented`).
-4. Units for all five hosts (launchd on macOS, systemd user units on Linux), reset countdown and pace in the record.
+1. Config: `kind = "subscription"` services, each naming its `secret` (e.g. `NUSY_CLAUDE_TOKEN_HANKH95`) and its `account` slug, plus `sources`. `[intervals] subscription` defaults to `1h`, and `[ttl] subscription` to 3 × that.
+2. Claude: a direct read per account → one `subscription.anthropic.<account>.<service>` row: the 5 h and 7 d windows as `used_pct`, `reset_at`, `reset_in_s` and `pace`. Statuses: `allowed` → ok; `rejected` / exhausted → `quota_exhausted`; 401/403 → `auth_failed`. Missing headers → the stream-json fallback when `claude` is on PATH, else `unknown` with a `cannot_assess:` reason. A window that is absent is never written as 0 %.
+3. Copilot: `copilot_internal/user` with the configured token → a `monthly` window from `percent_remaining` and `quota_reset_date`, and `requests_remaining`. Remaining 0 or "exceeded your monthly quota" → `quota_exhausted`.
+4. Each kind runs on its own due-ness (CHORE-007's scheduler); `--force` reads now. Every key comes from the environment only and never appears on argv, in a row, a log or an error; output goes through the redactor.
+5. Docs: DESIGN §3/§4/§9 drop the per-host agent and statusLine, and record the measured routes above. `examples/quotabus.toml` gets the subscription services. `packaging/README.md` says nothing runs on the other hosts.
 
 ## Definition of Done
-Five `subscription.*` rows on the bus from five hosts, each `observed_by` its own host, with ages; the token-login case reads `cannot_assess`, never `ok`.
+Six `subscription.anthropic.*` rows and one `subscription.github.*` (Copilot) row on the bus, all `observed_by` the probe host, each with its windows, resets and age. A bad-token control reads `auth_failed`, never `ok`. Tests use a local HTTP stub and fake tokens. The real path runs once under `doppler run` from the probe host, and its redacted output goes in the PR.
 
 ```yurtle
 @prefix kb: <https://yurtle.dev/kanban/> .
@@ -71,3 +86,12 @@ Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure 
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:58)
 
 Now depends on CHORE-007 (per-kind intervals, Captain Q5): it lands first, and this item then adds its subscription interval (5 min) as a third key of the same [intervals] table. The claim is kept.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 19:40)
+
+tests red at bf1c9d6 (partner sub-agent): 75 new tests in tests/exp002_*.rs (subscription config, statusline capture and tee and install-statusline, agent for claude and copilot, schedule, units). 67 fail, every one on a todo!() stub or an assertion, none on a compile error. 8 controls pass, each shown able to fail.
+Measured 2026-10-08, key names and value shapes only: ~/.claude.json cachedUsageUtilization has {fetchedAtMs, accountUuid, utilization.{five_hour,seven_day}.{utilization %, resets_at ISO}}, which matches the test fixture. It is present on Mini (fetched ~2026-09-23, stale) and the Spark (~2026-10-06), and ABSENT on M5 and Air (Claude Code 2.1.294). So the fallback alone often reads unknown, which is why the statusLine plus stream-json sources matter (SIG-008).
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 19:50)
+
+Rescoped by the Captain 2026-10-08. The new body quotes the ruling and records the measurements: the setup-token read works centrally for all six accounts, oauth/usage is 403, and Copilot works with GITHUB_TOKEN. The red tests at bf1c9d6 targeted the per-host agent; most are obsolete and get rewritten on the same branch. Partial implementer work was stopped before any commit.

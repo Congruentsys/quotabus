@@ -2,9 +2,9 @@
 id: CHORE-009
 title: "DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind, cite CHORE-007 for TTL rules"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-08
 depends_on: [CHORE-007]
 bounce_sha: "5a1cbaad6b4c836010d50a64b4fd3e97455aceabb8de3c36ea141a6bf5dfaac8"
@@ -25,7 +25,7 @@ corrections:
 3. **F3:** two rules in §3/§4 (each kind's TTL is 3 × its interval; an API probe never triggers a balance read) come
    from CHORE-007's Definition of Done, not from a Captain ruling; cite CHORE-007 for them rather than §10.
 
-Coordinate with CHORE-007, which also edits §3/§4: if CHORE-007 has landed, edit on top of it.
+CHORE-007 also edits §3/§4 and has LANDED (merged 71bebe7, done 4030bee; the bounce's reason no longer holds): edit on top of it. CHORE-008 (merged 5502e7d) also touched §5's packaging line and packaging/README.md. F3 re-check: CHORE-007's DESIGN.md may now cite itself for the TTL rules; amend only what is still uncited.
 
 ## Done when
 A PR amends DESIGN.md on F1, F2 and F3, each citing `reviews/CHORE-006-r1.md`; `make check` green; reviewed by a
@@ -55,6 +55,11 @@ distinct session (a DESIGN.md change) and merged.
     kb:status kb:ready ;
     kb:at "2026-10-08T19:21:22+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T19:42:00+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
 

@@ -2,7 +2,7 @@
 id: CHORE-008
 title: "Choose where the central probe runs at install time: locally or on a named host (Mini for the fleet) — Captain Q2"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-08
@@ -33,6 +33,12 @@ Part of VOY-001. The Captain's ruling on 2026-10-08, verbatim on SIG-001: "If th
     kb:status kb:in_progress ;
     kb:at "2026-10-08T19:17:53+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T19:41:23+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/10> ;
   ] .
 ```
 
