@@ -1,6 +1,6 @@
 ---
 id: CHORE-010
-title: "Implement or drop §2's 'degraded at window ≥ warn %' — no warn % exists (EXP-002 r1 F2)"
+title: "Implement §2's 'degraded at window ≥ warn %': [probe] warn_pct = 90 (steer bucket 2)"
 type: chore
 status: backlog
 priority: medium
@@ -10,15 +10,17 @@ tags: [v1.0, VOY-001, design]
 depends_on: []
 ---
 
-# Implement or drop §2's 'degraded at window ≥ warn %' — no warn % exists (EXP-002 r1 F2)
+# Implement §2's 'degraded at window ≥ warn %': [probe] warn_pct = 90 (steer bucket 2)
 
-Found in the EXP-002 review (`reviews/EXP-002-r1.md` F2, PR #12). DESIGN.md §2's state table lists "a window ≥ warn %" under `degraded`, but no `warn %` config key or code exists, so a subscription window at 97 % reads `ok`. EXP-002 follows its own Plan (`allowed` → ok); the §2 clause predates it.
+Found in the EXP-004 review... correction: in the EXP-002 review (`reviews/EXP-002-r1.md` F2, PR #12). DESIGN.md §2's state table lists "a window ≥ warn %" under `degraded`, but no `warn %` config or code exists, so a subscription window at 97 % reads `ok`.
 
-## What it lacks (why it stays in harbor)
-A decision: either (a) add a per-kind or per-service `warn_pct` with a DEFAULT value, which no ruling names, or (b) drop the clause from §2 and leave the threshold to `alert` (E4). This is a Captain-level default, so it is not filed as a signal guess.
+**Decided by steer, bucket 2 (2026-10-08, open to the Captain's veto; basis in the comment):** option (a), `[probe] warn_pct`, default **90**.
 
-## Definition of Done (once the default is chosen)
-(a) a `warn_pct` config with the chosen default; a window at or above it reads `degraded`, with a test and a control; DESIGN §2 cites it. Or (b) §2 no longer claims it. `make check` green.
+## Definition of Done
+1. Config: `[probe] warn_pct` (a number, 0 < x ≤ 100), default 90. An out-of-range value is refused with an error that names the key.
+2. A row whose state would otherwise be `ok` reads `degraded` when ANY of its windows (`headroom.windows[].used_pct`, or `headroom.window_pct`) is ≥ `warn_pct`. Known answers: 89.9 → ok, 90 → degraded, 97 → degraded. A control: with `warn_pct = 100`, 97 reads ok. A worse state (quota_exhausted, rate_limited…) is never softened to degraded.
+3. `select` refuses such a row (it already refuses degraded; a test pins it). `alert` treats it as any bad state until SIG-010 is ruled.
+4. DESIGN §2/§3 and `examples/quotabus.toml` document `warn_pct`, citing this item and the steer decision. `make check` is green.
 
 ## Comments
 
