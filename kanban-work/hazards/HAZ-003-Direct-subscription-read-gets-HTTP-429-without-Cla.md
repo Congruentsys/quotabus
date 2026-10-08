@@ -2,7 +2,7 @@
 id: HAZ-003
 title: "Direct subscription read gets HTTP 429 without Claude Code's system prompt — every Claude row falls back to stream-json"
 type: hazard
-status: backlog
+status: provisioning
 priority: high
 assignee: null
 created: 2026-10-08
@@ -24,3 +24,14 @@ Found after EXP-002 merged (PR #12), while publishing its rows to Mini's `ai_sta
 2. A 429 with no unified headers is classified honestly: not `ok`, and not `quota_exhausted` unless a header says so. Its reason names the cause.
 3. Real path, from the probe host under `doppler run`: all six Claude rows read `probe=unified_headers`, `ok`, with both windows. The redacted output goes in the PR.
 4. DESIGN §4's Claude row records the requirement (citing this measurement). `make check` is green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T20:22:18+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
