@@ -1,5 +1,5 @@
-.venv/
-target/
+.venv
+target
 # per-item artefacts never belong in git; the clean step keeps a tree that holds them (scripts/qb_clean.sh)
 data/
 runs/

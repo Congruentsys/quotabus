@@ -25,6 +25,7 @@ git pull -q --rebase=merges || echo "STOP: pull failed — the board read below 
 git status -sb | head -1                                    # "[ahead N]" => commits in the shared checkout: STOP, report
 .venv/bin/yurtle-kanban control status                      # mode halt => STOP, report the reason
 .venv/bin/yurtle-kanban next --agent "$ME" --json           # {"kind":"resume",…} => that item is the answer
+#   nothing to resume or pick: it prints `null` and exits 7 — not an error; go on to the candidate list
 # else: the candidates, in pick order, WORK ITEMS ONLY (rule 2)
 .venv/bin/yurtle-kanban list --pickable --agent "$ME" --json | .venv/bin/python -c '
 import json, sys
