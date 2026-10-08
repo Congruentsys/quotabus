@@ -13,7 +13,8 @@ use crate::record::Record;
 pub enum BackendError {
     /// The bus could not be reached.
     Unreachable(String),
-    /// The bucket does not exist (a reader never creates it).
+    /// The bucket (or the file backend's row directory) does not exist; a reader never creates it. The payload
+    /// names it, e.g. `bucket ai_status` or `row directory /path`.
     BucketMissing(String),
     Other(String),
 }
@@ -22,7 +23,7 @@ impl std::fmt::Display for BackendError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BackendError::Unreachable(m) => write!(f, "bus unreachable: {m}"),
-            BackendError::BucketMissing(b) => write!(f, "bucket {b} does not exist"),
+            BackendError::BucketMissing(what) => write!(f, "{what} does not exist"),
             BackendError::Other(m) => f.write_str(m),
         }
     }
@@ -117,7 +118,13 @@ impl Backend for FileBackend {
     async fn scan(&self) -> Result<Listing, BackendError> {
         let mut rd = match tokio::fs::read_dir(&self.dir).await {
             Ok(rd) => rd,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Listing::default()),
+            // a missing directory is not "no rows": it may be a mistyped `[file] dir` (the probe creates it)
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                return Err(BackendError::BucketMissing(format!(
+                    "row directory {}",
+                    self.dir.display()
+                )));
+            }
             Err(e) => return Err(other(&format!("cannot read {}", self.dir.display()), e)),
         };
         let mut keys = Vec::new();
@@ -203,7 +210,7 @@ async fn bucket_stream(
             GetStreamErrorKind::JetStream(je)
                 if je.error_code() == jetstream::ErrorCode::STREAM_NOT_FOUND =>
             {
-                Err(BackendError::BucketMissing(bucket.to_string()))
+                Err(BackendError::BucketMissing(format!("bucket {bucket}")))
             }
             GetStreamErrorKind::Request => Err(BackendError::Unreachable(e.to_string())),
             _ => Err(other(&format!("bucket {bucket}"), e)),

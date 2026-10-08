@@ -330,9 +330,10 @@ async fn status(config: &Config, redactor: &Redactor, args: &StatusArgs) -> u8 {
     }
 
     if let Some(e) = &failure {
+        // our own message (a bucket or directory name, a client error), redacted but not capped: the path survives
         eprintln!(
             "quotabus: CANNOT-ASSESS: {}",
-            redactor.redact_error(&e.to_string())
+            redactor.redact(&e.to_string())
         );
     }
     let out = if args.json {
