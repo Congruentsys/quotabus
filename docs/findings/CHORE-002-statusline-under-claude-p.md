@@ -33,7 +33,7 @@ d="$HOME/.local/state/quotabus-work/CHORE-002"
 echo "qb-statusline-probe"
 ```
 
-`settings.json`:
+`settings.json` (the artefact holds the absolute path; the home directory is shown here as `$HOME`):
 
 ```json
 {"statusLine":{"type":"command","command":"$HOME/.local/state/quotabus-work/CHORE-002/hook.sh"}}
@@ -84,15 +84,14 @@ ls: ~/.local/state/quotabus-work/CHORE-002/statusline-calls.tsv: No such file or
 ```
 
 Run C (control): the hook was called twice and the status bar showed its line (`grep -c qb-statusline-probe
-run-interactive.tty` → `1`):
+$S/run-interactive.tty` → `1`). `cut -f1,2 $S/statusline-calls.tsv | sort | uniq -c`:
 
 ```
    1 2026-10-08T18:21:27Z	interactive
    1 2026-10-08T18:21:39Z	interactive
 ```
 
-So the probe fires when a statusLine is due, and `-p` never makes one due. The control would have failed (no
-file) had `--settings` not installed the hook.
+So the probe fires when a statusLine is due, and `-p` never makes one due.
 
 The JSON the hook received on its second call, strings of 30+ chars or containing `/` replaced by `<str>`
 (`session_id`, paths, `prompt_id`), the `prompt_cache` block cut to its point:
@@ -147,9 +146,13 @@ minute. (`session_id`, `uuid` dropped.) Command to see it: `grep rate_limit_even
 - Design §4, Claude Max row: "whether the hook fires under `claude -p` is **measure first**" → measured: **it does
   not**. The statusLine capture only sees hosts where someone runs an interactive session; a host that only runs
   `claude -p` reviewers never writes the cache.
-- §10 Q9 (statusLine in every host's settings, Captain: yes): still worth installing for interactive hosts, but it
-  is not sufficient alone. E2 should add a second official source: the `rate_limit_event` of any `claude -p
-  --output-format stream-json` run the fleet already makes (e.g. a reviewer launcher that tees that event to the same
-  cache file), in the same normalised shape (`utilization` × 100 = `used_percentage`, `resetsAt` = `resets_at`).
-  This is a design change → a chore to amend `docs/DESIGN.md` §4 is filed alongside this finding.
+- §10 Q9: the Captain's "yes" (2026-10-08) was **conditional**. EXP-002 step 2 installs the statusLine "only after
+  CHORE-002 shows it fires under `claude -p`", and **that precondition is now false**. This finding does not decide
+  what follows. The question is back with the Captain as **SIG-008 (open)**, and EXP-002 is back in `harbor` until it
+  is answered. The measured alternative is offered there as a *recommendation*, not a decision: the
+  `rate_limit_event` of a `claude -p --output-format stream-json` run (e.g. a reviewer launcher that tees that event
+  to the same cache file), in the same normalised shape (`utilization` × 100 = `used_percentage`, `resetsAt` =
+  `resets_at`), next to the statusLine for interactive hosts.
+- The measured facts are recorded in `docs/DESIGN.md` §4 by **CHORE-004** (filed, released behind CHORE-002), which
+  records them and decides nothing.
 - The hook must treat an absent `rate_limits` (the first render) as unknown, not zero.

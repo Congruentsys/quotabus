@@ -3,8 +3,8 @@
 **Answer:** with the `NUSY_GLM` API key, **`GET https://api.z.ai/api/monitor/usage/quota/limit`** answers with the
 Coding-Plan quota windows (cap, remaining, percent, next reset), and `GET /api/biz/subscription/list` answers with
 the plan record (name, status, renewal). Both are undocumented. The Anthropic-protocol messages probe and both model
-lists answer too. **None** returns a wallet balance or any rate-limit header. Watch out: on four of the seven
-endpoints **a bad key gets HTTP 200** with `{"code": 401, …}` in the body, so a reader that checks only the HTTP status
+lists answer too. **None** returns a wallet balance or any rate-limit header. Watch out: on three of the five
+endpoints (five of the seven probes) **a bad key gets HTTP 200** with `{"code": 401, …}` in the body, so a reader that checks only the HTTP status
 reads a dead key as `ok`.
 
 - Host: `M5-MBP-2`, macOS 27.0, Python 3.14.2 (`urllib`), doppler v3.76.0. Base: `https://api.z.ai`.
@@ -104,20 +104,23 @@ Control lines (verbatim, `zai-fake.jsonl`):
 {"probe": 5, … "status": 200, … "body_shape": {"code": 401, "msg": "token expired or incorrect", "success": false}}
 ```
 
-**Quota windows, probe 5** (verbatim body shape; nothing here identifies the account):
+**Quota windows, probe 5**: the raw body (`zai-real-5.raw`), key order kept, only line breaks added. Nothing here
+identifies the account:
 
 ```json
-{"code": 200, "msg": "Operation successful", "success": true,
- "data": {"level": "max", "limits": [
-   {"type": "CREDIT_LIMIT", "unit": 3, "number": 5, "usage": 28000,  "currentValue": 0, "remaining": 27999,  "percentage": 1, "nextResetTime": 1791500931454},
-   {"type": "CREDIT_LIMIT", "unit": 6, "number": 1, "usage": 140000, "currentValue": 0, "remaining": 139999, "percentage": 1, "nextResetTime": 1791990277960}]}}
+{"code": 200, "msg": "Operation successful", "data": {"limits": [
+  {"type": "CREDIT_LIMIT", "unit": 3, "number": 5, "usage": 28000, "currentValue": 0, "remaining": 27999, "percentage": 1, "nextResetTime": 1791500931454},
+  {"type": "CREDIT_LIMIT", "unit": 6, "number": 1, "usage": 140000, "currentValue": 0, "remaining": 139999, "percentage": 1, "nextResetTime": 1791990277960}],
+ "level": "max"}, "success": true}
 ```
 
-`nextResetTime` is epoch **milliseconds**: `1791500931454` = 2026-10-08T23:08:51Z (≈ 5 h after the window opened),
+`nextResetTime` is epoch **milliseconds**: `1791500931454` = 2026-10-08T23:08:51Z (≈ 5 h after 18:08:51Z, [inferred]: a back-calculation; when the window opened was not measured),
 `1791990277960` = 2026-10-14T15:04:37Z. Reading [inferred, from these two rows only, not documented]: `unit 3,
 number 5` = a 5-hour window and `unit 6, number 1` = a 1-week window; `usage` is the window's **cap** (not the amount
 used), `remaining` = cap − used, `percentage` = used %, rounded up (1 used of 28000 reads 1). `currentValue` was 0 in
-both rows; its meaning is unknown.
+both rows; its meaning is unknown. **Unconfirmed:** a further 35-token messages call (the reviewer's re-run,
+18:26Z) left `remaining` and `percentage` unchanged (`remaining 27999`, same `nextResetTime`). So the counter either
+lags or does not register a call that small, and an adapter must not treat `remaining` as a live per-call meter.
 
 **Subscription, probe 3** — field NAMES only, because the values are a billing record (ids, order and agreement
 numbers, purchase date, price, payment state) and this repo is public. Kept values: `productName: "GLM Coding Max"`,
@@ -130,12 +133,14 @@ inCurrentPeriod, paymentChannel, refundable, refundableReason, banExpireTime`.
 
 - Design §4, GLM row: "balance — no documented endpoint" stays true; there is still **no wallet balance** for an API
   key. But the Coding-Plan **quota** is readable: `/api/monitor/usage/quota/limit` gives two windows (5 h, weekly) with
-  remaining and reset, which is the GLM equivalent of Claude Max's `rate_limits`. It is undocumented, so under §10 Q4
-  it is off in the FOSS config and on, labelled `source = undocumented`, in the fleet's.
+  remaining and reset, which is the GLM equivalent of Claude Max's `rate_limits`. It is undocumented: per §10 Q4's
+  *recommendation* (SIG-003, **open**) it would be off in the FOSS config and on, labelled `source = undocumented`, in
+  the fleet's.
 - `/api/biz/subscription/list` is the plan check (`status: VALID`, renewal). It returns billing identifiers, so an
   adapter must keep only `productName`, `status` and the renewal date, and never publish the rest.
 - **Every z.ai adapter must read the body's `code`/`success`, not only the HTTP status**: a dead key gets HTTP 200 on
   the model list, the subscription list and the quota endpoint (control rows above). The messages probe and
   `/api/paas/v4/models` are the two that return a real HTTP 401.
 - No rate-limit headers: headroom for GLM comes from the quota endpoint, or not at all.
-- These changes are folded into the same §4 amendment chore as finding (1).
+- These facts go into `docs/DESIGN.md` §4 through **CHORE-004** (filed, released behind CHORE-002), along with
+  finding (1)'s. It records them and decides nothing.
