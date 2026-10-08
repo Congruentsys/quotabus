@@ -86,6 +86,8 @@ pub struct ServiceConfig {
     pub secret: Option<String>,
     pub balance: BalanceSpec,
     pub sources: Vec<String>,
+    /// Put the balance on the row (DESIGN §6). Default true; false still reads it and applies the floor.
+    pub publish_balance: bool,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -195,6 +197,7 @@ mod raw {
     }
 
     #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
     pub struct Service {
         pub id: String,
         pub kind: Kind,
@@ -212,6 +215,7 @@ mod raw {
         pub balance: Option<Balance>,
         #[serde(default)]
         pub sources: Vec<String>,
+        pub publish_balance: Option<bool>,
     }
 }
 
@@ -285,6 +289,7 @@ impl Config {
                 secret: s.secret.filter(|n| !n.is_empty()),
                 balance,
                 sources: s.sources,
+                publish_balance: s.publish_balance.unwrap_or(true),
             });
         }
 

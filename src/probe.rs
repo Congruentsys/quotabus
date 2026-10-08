@@ -153,9 +153,12 @@ async fn probe_service(ctx: &Ctx<'_>, svc: &ServiceConfig, auth: Auth) -> Vec<Re
 
     if let (Some((bal, floor)), true) = (balance, !rows.is_empty()) {
         for r in &mut rows {
-            // the floor only ever turns a working model into quota_exhausted; the balance is on every row
+            // the floor only ever turns a working model into quota_exhausted; the balance is on every row unless
+            // the service says `publish_balance = false`
             r.state = apply_floor(r.state, bal.amount, floor);
-            r.balance = Some(bal.clone());
+            if svc.publish_balance {
+                r.balance = Some(bal.clone());
+            }
         }
     }
     rows
