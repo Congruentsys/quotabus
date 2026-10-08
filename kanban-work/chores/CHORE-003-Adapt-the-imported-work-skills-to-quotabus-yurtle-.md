@@ -2,7 +2,7 @@
 id: CHORE-003
 title: "Adapt the imported work skills to quotabus — yurtle-kanban board, GitHub PRs, no fleet Layer-B tooling"
 type: chore
-status: backlog
+status: provisioning
 priority: high
 assignee: null
 created: 2026-10-08
@@ -27,3 +27,14 @@ Part of VOY-001; FIRST, before EXP-001 is landed through the loop. Captain 2026-
 
 ## Definition of Done
 `quotabus-next` run as written prints a pick from this board; no skill or script names nusy-replicant-24, LUM, `research/LUM`, or `r24`; the PR lists what was kept, adapted or cut.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T17:13:52+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
