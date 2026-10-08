@@ -91,3 +91,7 @@ Now depends on CHORE-007 (per-kind intervals, Captain Q5): it lands first, and t
 
 tests red at bf1c9d6 (partner sub-agent): 75 new tests in tests/exp002_*.rs (subscription config, statusline capture and tee and install-statusline, agent for claude and copilot, schedule, units). 67 fail, every one on a todo!() stub or an assertion, none on a compile error. 8 controls pass, each shown able to fail.
 Measured 2026-10-08, key names and value shapes only: ~/.claude.json cachedUsageUtilization has {fetchedAtMs, accountUuid, utilization.{five_hour,seven_day}.{utilization %, resets_at ISO}}, which matches the test fixture. It is present on Mini (fetched ~2026-09-23, stale) and the Spark (~2026-10-06), and ABSENT on M5 and Air (Claude Code 2.1.294). So the fallback alone often reads unknown, which is why the statusLine plus stream-json sources matter (SIG-008).
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 19:50)
+
+Rescoped by the Captain 2026-10-08. The new body quotes the ruling and records the measurements: the setup-token read works centrally for all six accounts, oauth/usage is 403, and Copilot works with GITHUB_TOKEN. The red tests at bf1c9d6 targeted the per-host agent; most are obsolete and get rewritten on the same branch. Partial implementer work was stopped before any commit.
