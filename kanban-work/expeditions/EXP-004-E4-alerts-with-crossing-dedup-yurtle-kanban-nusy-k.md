@@ -7,7 +7,7 @@ priority: medium
 assignee: null
 created: 2026-10-08
 tags: [v1.0, VOY-001]
-depends_on: []
+depends_on: [EXP-003]
 ---
 
 # E4: alerts with crossing-dedup (yurtle-kanban, nusy-kanban, webhook) and the Yurtle config front-end
