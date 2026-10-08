@@ -13,8 +13,9 @@
 #        <home>/Library/Logs/quotabus/; Linux -> a systemd user unit + timer in <home>/.config/systemd/user/.
 # --launcher is the command that injects the keys into the probe's environment, split on whitespace and placed
 #   before the quotabus binary, e.g. "/opt/homebrew/bin/doppler run --project P --config C --" or
-#   "secretspec run --". Default: none. No secret is ever written into a unit or put on argv: keys arrive only
-#   through the launcher's environment.
+#   "secretspec run --". Default: none. The launcher is stored in the unit and printed in the plan, so it must
+#   carry NO secret: a word like KEY=…, TOKEN=…, SECRET=…, PASSWORD=…, --token or sk-… is refused. Keys arrive only
+#   through the launcher's environment, never a unit or argv.
 # --render-to <dir> is a dry run: it writes the unit(s) into <dir> and prints the plan; it connects to nothing,
 #   loads nothing and writes nothing under the target home.
 # Portable bash (3.2+).
@@ -43,7 +44,7 @@ while [ $# -gt 0 ]; do
         --quotabus) need "$@"; qb_bin="$2"; shift 2 ;;
         --probe-config) need "$@"; probe_config="$2"; shift 2 ;;
         --interval) need "$@"; interval="$2"; shift 2 ;;
-        -h|--help) sed -n '2,22p' "$0"; exit 0 ;;
+        -h|--help) sed -n '2,/^[^#]/{/^#/p;}' "$0"; exit 0 ;;
         *) die "unknown argument: $1" ;;
     esac
 done
@@ -58,6 +59,14 @@ case "$os" in
     ""|macos|linux) ;;
     *) die "unknown --os value: $os (macos or linux)" ;;
 esac
+set -f
+for w in $launcher; do
+    case "$(printf '%s' "$w" | tr '[:lower:]' '[:upper:]')" in
+        *KEY=*|*TOKEN=*|*SECRET=*|*PASSWORD=*|--TOKEN|--TOKEN=*|SK-*)
+            die "--launcher carries a word that looks like a credential (KEY=, TOKEN=, SECRET=, PASSWORD=, --token or sk-…); it is stored in the unit and printed, so keys must come from the launcher's environment, never its argv" ;;
+    esac
+done
+set +f
 case "$interval" in
     ""|*[!0-9]*) die "--interval must be a whole number of seconds: $interval" ;;
 esac
@@ -135,10 +144,13 @@ EOF
 EOF
 }
 
+# systemd expands %specifiers and $VARS in ExecStart=: write them as %% and $$, then quote what needs it.
 systemd_quote() {
-    case "$1" in
-        *[[:space:]\"\\]*) printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')" ;;
-        *) printf '%s' "$1" ;;
+    local w
+    w=$(printf '%s' "$1" | sed -e 's/%/%%/g' -e 's/\$/$$/g')
+    case "$w" in
+        *[[:space:]\"\\]*) printf '"%s"' "$(printf '%s' "$w" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')" ;;
+        *) printf '%s' "$w" ;;
     esac
 }
 

@@ -15,7 +15,9 @@ path, and connects to, loads and writes under nothing else. `install.sh --help` 
 
 **No secret is in any unit or on argv.** Keys reach the binary only through the launcher that wraps it, given as
 `--launcher "<command and args>"` — e.g. `doppler run --project … --config … --` or `secretspec run --` — which
-injects the environment variables the config's `secret` names list. Logs are redacted before they are written.
+injects the environment variables the config's `secret` names list.
+The launcher string is stored in the unit and printed in the plan, so it must carry **no secret**: `install.sh`
+refuses a launcher word that looks like one (`KEY=…`, `TOKEN=…`, `SECRET=…`, `PASSWORD=…`, `--token`, `sk-…`). Logs are redacted before they are written.
 
 ## The fleet: Mini
 
