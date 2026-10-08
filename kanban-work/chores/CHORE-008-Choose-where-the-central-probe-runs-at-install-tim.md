@@ -2,7 +2,7 @@
 id: CHORE-008
 title: "Choose where the central probe runs at install time: locally or on a named host (Mini for the fleet) — Captain Q2"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -19,3 +19,14 @@ Part of VOY-001. The Captain's ruling on 2026-10-08, verbatim on SIG-001: "If th
 2. The fleet's choice is recorded in config or packaging docs as Mini. Installing for Mini produces a unit equivalent to today's plist.
 3. No secret is in any unit or argv (keys still arrive only through the launcher's environment).
 4. Tests: rendering for `local` and for a named host gives the right paths and target, plus a control showing the hard-coded `/Users/admin` path is gone. `make check` is green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T18:58:28+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
