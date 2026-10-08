@@ -2,9 +2,9 @@
 id: EXP-003
 title: "E3: the selector — 'a healthy model for this role, excluding this family' as a library call and a CLI"
 type: expedition
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001]
 depends_on: [EXP-002]
@@ -28,6 +28,11 @@ The selector refuses a family the author uses; rc 3 when every candidate is `unk
     kb:status kb:ready ;
     kb:at "2026-10-08T17:22:12+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T20:34:03+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
 
