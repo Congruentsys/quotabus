@@ -40,3 +40,7 @@ Five `subscription.*` rows on the bus from five hosts, each `observed_by` its ow
 ### M5/s-b1fd4c67 (2026-10-08 17:22)
 
 Released with depends_on EXP-001, CHORE-002 (statusLine install waits on CHORE-002's measurement, Captain Q9). SIG-003 is built to the recommendation (undocumented sources off by default in the FOSS config, on in the fleet config, every row labelled source=undocumented); SIG-004's 5-min subscription cadence is config.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 18:29)
+
+CHORE-002 (PR #3): the statusLine hook does NOT fire under claude -p. Step 2's precondition ('only after CHORE-002 shows it fires under claude -p') is therefore false, and the Captain's conditional Q9 yes goes back as SIG-008 (open). That signal also names a measured alternative: stream-json rate_limit_event. Back to harbor until SIG-008 is answered; the Copilot and ~/.claude.json fallback steps do not depend on it.
