@@ -1,0 +1,37 @@
+[package]
+name = "quotabus"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Does each LLM key and coding subscription work right now, and how much is left? Published on a NATS KV bucket with a freshness rule."
+repository = "https://github.com/Congruentsys/quotabus"
+readme = "README.md"
+publish = false
+
+[lib]
+name = "quotabus"
+path = "src/lib.rs"
+
+[[bin]]
+name = "quotabus"
+path = "src/main.rs"
+
+[dependencies]
+async-nats = { version = "0.50", features = ["server_2_11"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+clap = { version = "4", features = ["derive"] }
+futures = "0.3"
+libc = "0.2"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "net", "fs"] }
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt", "std"] }
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "net", "process", "fs"] }
+wiremock = "0.6"
