@@ -49,3 +49,7 @@ Part of VOY-001. Design: `docs/DESIGN.md` §2 (the record), §3, §4 (probe cata
 ### M5/s-b1fd4c67 (2026-10-08 17:22)
 
 Released with depends_on CHORE-003. Open signals it touches are built to docs/DESIGN.md §10's recommendation, none blocking: SIG-001 (central probe on Mini as a prebuilt binary → the launchd plist targets Mini), SIG-002 (balances and account labels published as slugs, publish_balance per service), SIG-004 (cadence 15 min API / balances, as config), SIG-005 (TOML first), SIG-007 (no admin keys; the probe is the status). Any of them can be reversed by config or a later PR if the Captain rules otherwise.
+
+### M5/s-b1fd4c67 (2026-10-08 17:33)
+
+Measure-first step done: a per-key TTL put EXPIRES on Mini's nats-server 2.12.4 (5 s key present at +2 s, absent at +8 s; plain key survives; bucket reports Per-Key TTL Supported: true). Only a temporary bucket qb_measure_exp001 was created and then deleted. natscli 0.3.1 has the TTL flag on 'kv create', not 'kv put' (design §3 recipe corrected in the finding). Finding: docs/findings/EXP-001-per-key-ttl.md on branch exp/EXP-001-probe-kv-status.
