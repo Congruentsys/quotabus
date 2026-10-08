@@ -2,7 +2,7 @@
 id: HAZ-003
 title: "Direct subscription read gets HTTP 429 without Claude Code's system prompt — every Claude row falls back to stream-json"
 type: hazard
-status: underway
+status: arrived
 priority: high
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -38,6 +38,12 @@ Found after EXP-002 merged (PR #12), while publishing its rows to Mini's `ai_sta
     kb:status kb:in_progress ;
     kb:at "2026-10-08T20:22:33+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T20:33:40+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/13> ;
   ] .
 ```
 
