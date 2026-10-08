@@ -58,3 +58,7 @@ CHORE-002 (PR #3): the statusLine hook does NOT fire under claude -p. Step 2's p
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:53)
 
 SIG-008 ruled (Captain 2026-10-08, 'Both + fallback'). Step 2 becomes: install the statusLine for interactive hosts, ALSO tee the stream-json rate_limit_event from claude -p runs into the same cache, and keep the ~/.claude.json fallback. A missing rate_limits reads as unknown, never 0 % (docs/findings/CHORE-002-statusline-under-claude-p.md). SIG-004/Q5: subscription reads stay at 5 min. SIG-003/Q4: Copilot copilot_internal is on in the fleet, off in FOSS, labelled. Released again to provisioning.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 18:56)
+
+Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure there are separate times for the different types of queries." So each query kind has its OWN config interval, set independently: API (messages) probe, balance read, and subscription read (and any later kind, e.g. a quota-window read). There is no shared interval. Defaults per the SIG-004 ruling: API 12 h, balance 12 h, subscription 5 min.
