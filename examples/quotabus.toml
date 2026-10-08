@@ -163,7 +163,8 @@ sources    = []                         # off: the only source is undocumented
 # on the board of the directory it runs in, so run `quotabus alert` from that repo, or point `command` at a wrapper.
 
 [alert.nusy-kanban]
-command   = "nusy-kanban"               # its server comes from its own environment (NUSY_FLEET_KANBAN_SERVER)
+command   = "nusy-kanban"               # the sink gets PATH, HOME, TMPDIR, USER, LANG, TERM only: to name a
+                                        # server, point this at a wrapper (`exec nusy-kanban --server … "$@"`)
 item_type = "signal"                    # SIG-006: "Signal per crossing"
 tags      = ["provider-status", "infra"]
 

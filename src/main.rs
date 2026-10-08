@@ -363,7 +363,7 @@ async fn file_crossing(
             continue;
         }
         let args = kanban_args(board, &sink.item_type, &sink.tags, &crossing.title);
-        match run_kanban(config, &sink.command, &args, &body).await {
+        match run_kanban(&sink.command, &args, &body).await {
             Ok(id) => done.push((board.name().to_string(), id.map(|i| redactor.redact(&i)))),
             Err(e) => failed.push((board.name().to_string(), redactor.redact_error(&e))),
         }
@@ -393,14 +393,10 @@ async fn file_crossing(
     (done, failed)
 }
 
-/// Run one kanban create with the body on stdin. The configured secrets' variables are removed from the child's
-/// environment (it needs none of them). Ok with the first `SIG-…`-shaped id it printed, if any.
-async fn run_kanban(
-    config: &Config,
-    command: &str,
-    args: &[String],
-    body: &str,
-) -> Result<Option<String>, String> {
+/// Run one kanban create with the body on stdin. The child's environment is `CHILD_ENV` only (PATH, HOME, TMPDIR,
+/// USER, LANG, TERM, each if set); a sink that needs more (a kanban server, an SSH agent) is a wrapper script that
+/// sets it. Ok with the first `SIG-…`-shaped id it printed, if any.
+async fn run_kanban(command: &str, args: &[String], body: &str) -> Result<Option<String>, String> {
     use tokio::io::AsyncWriteExt;
     let mut cmd = tokio::process::Command::new(command);
     cmd.args(args)
@@ -408,9 +404,12 @@ async fn run_kanban(
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .kill_on_drop(true);
-    for svc in &config.services {
-        if let Some(name) = &svc.secret {
-            cmd.env_remove(name);
+    // r1 F3: an allowlist only, as the `claude` fallback has: under `doppler run` the environment holds every secret
+    // of the project, configured or not, and none of it reaches a sink
+    cmd.env_clear();
+    for n in quotabus::subscription::CHILD_ENV {
+        if let Some(v) = std::env::var_os(n) {
+            cmd.env(n, v);
         }
     }
     let mut child = cmd

@@ -279,8 +279,11 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
 - **Sinks.** `[alert.nusy-kanban]` runs `<command> create --tags <tags> --body-file - <item_type> "<title>"`;
   `[alert.yurtle-kanban]` runs `<command> create <item_type> "<title>" --push --tags <tags> --body-file -` (never
   `--no-push`, never `--assign`); the body (key, state, reason, error, `checked_at`, `observed_by`) is on stdin.
-  `command` defaults to the sink's name, `item_type` to `signal`. The child's environment loses every configured
-  `secret` variable. `[alert.webhook]` is a JSON POST of the crossing (key, service, model, state, reason, error,
+  `command` defaults to the sink's name, `item_type` to `signal`. The child's environment is an allowlist only —
+  `PATH`, `HOME`, `TMPDIR`, `USER`, `LANG`, `TERM`, each if set, the `claude` fallback's rule (`src/subscription.rs`
+  `CHILD_ENV`; review r1 F3) — so nothing `doppler run` injects, configured `secret` or not, reaches a sink. A sink
+  that needs more (nusy-kanban's server, an SSH agent for `git push`) is a wrapper script given as `command` that
+  sets it. `[alert.webhook]` is a JSON POST of the crossing (key, service, model, state, reason, error,
   title …); a 2xx is success, and the URL is never printed (a webhook URL is often itself a credential). Title, body,
   JSON and stdout all pass the redactor.
 - **A sink failure means retry:** the crossing is not recorded, rc is 1, and the next run files it again.

@@ -62,4 +62,7 @@ leaves the crossing unrecorded, so the next tick retries it; its rc is 1 and its
 
 In `[alert.*]`, give each `command` as an **absolute path**: launchd and systemd units run with a minimal `PATH`.
 `yurtle-kanban create … --push` files on the board of the directory it runs in (the unit's working directory), so
-point its `command` at a wrapper that `cd`s into the board's repo first.
+point its `command` at a wrapper that `cd`s into the board's repo first. A sink's environment is an allowlist only
+(`PATH`, `HOME`, `TMPDIR`, `USER`, `LANG`, `TERM`, each if set): none of the launcher's secrets reach it, and neither
+does anything else, so the same wrapper sets what the CLI needs (nusy-kanban's `--server`, `SSH_AUTH_SOCK` for a
+`git push` over SSH).
