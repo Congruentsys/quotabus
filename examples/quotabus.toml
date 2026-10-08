@@ -1,0 +1,116 @@
+# quotabus.toml — the fleet's API services (docs/DESIGN.md §3, §4; EXP-001).
+# `secret` is the NAME of an environment variable; the value is injected by the launcher
+# (`doppler run -- quotabus probe` / `secretspec run -- quotabus probe`) and never written here.
+# Model ids marked [unverified] were not confirmed against the provider when this file was written.
+
+[bus]                                   # omit the whole table to use the file backend (§8)
+url    = "nats://192.168.8.110:4222"    # Mini
+bucket = "ai_status"
+
+[probe]
+interval   = "15m"
+ttl        = "45m"                      # 3 missed probes = UNKNOWN
+max_tokens = 20
+
+[[service]]
+id         = "glm"
+kind       = "api"
+provider   = "zhipu"
+family     = "zhipu"
+account    = "nusy-product-team"
+base_url   = "https://api.z.ai/api/anthropic"
+protocol   = "anthropic"
+models     = ["glm-5.3", "glm-5.2"]
+roles      = ["review", "work"]
+cost_class = "metered"
+secret     = "NUSY_GLM"
+balance    = "none"                     # no documented endpoint: UNKNOWN by design
+
+[[service]]
+id         = "deepseek"
+kind       = "api"
+provider   = "deepseek"
+family     = "deepseek"
+account    = "nusy-product-team"
+base_url   = "https://api.deepseek.com/anthropic"
+protocol   = "anthropic"
+models     = ["deepseek-v4-pro", "deepseek-v4-flash"]
+roles      = ["review"]
+cost_class = "metered"
+secret     = "NUSY_DEEPSEEK"
+[service.balance]
+url      = "https://api.deepseek.com/user/balance"
+path     = "balance_infos[0].total_balance"
+currency = "CNY"
+floor    = 150
+
+[[service]]
+id         = "kimi"
+kind       = "api"
+provider   = "moonshot"
+family     = "moonshot"
+account    = "nusy-product-team"
+base_url   = "https://api.moonshot.ai/anthropic"
+protocol   = "anthropic"
+models     = ["kimi-k3"]
+roles      = ["review"]
+cost_class = "metered"
+secret     = "NUSY_KIMI"
+[service.balance]
+url      = "https://api.moonshot.ai/v1/users/me/balance"
+path     = "data.available_balance"
+currency = "USD"
+floor    = 100
+
+[[service]]
+id         = "openai"
+kind       = "api"
+provider   = "openai"
+family     = "openai"
+account    = "nusy-product-team"
+base_url   = "https://api.openai.com/v1"
+protocol   = "openai"
+models     = ["gpt-5.6-sol"]
+roles      = ["review"]
+cost_class = "metered"
+secret     = "OPENAI_API_KEY"
+balance    = "none"                     # no balance endpoint exists
+
+[[service]]
+id         = "together"
+kind       = "api"
+provider   = "together"
+family     = "meta"
+account    = "nusy-product-team"
+base_url   = "https://api.together.xyz/v1"
+protocol   = "openai"
+models     = ["meta-llama/Llama-3.3-70B-Instruct-Turbo"]   # [unverified]
+roles      = ["review"]
+cost_class = "metered"
+secret     = "TOGETHER_API_KEY"
+
+[[service]]
+id         = "xai"                      # the standing NEGATIVE CONTROL: its key is disabled, it must read auth_failed
+kind       = "api"
+provider   = "xai"
+family     = "xai"
+account    = "nusy-product-team"
+base_url   = "https://api.x.ai/v1"
+protocol   = "openai"
+models     = ["grok-4"]                 # [unverified]
+roles      = []
+cost_class = "metered"
+secret     = "XAI_API_KEY"
+
+[[service]]
+id         = "local-qwen"               # DGX1; unreachable from M5, so from there it reads cannot_assess:unreachable
+kind       = "local"
+provider   = "qwen"
+family     = "qwen"
+account    = "dgx1"
+base_url   = "http://192.168.8.180:30000/v1"
+protocol   = "openai"
+models     = ["qwen3"]                  # [unverified]
+roles      = ["work"]
+cost_class = "local"
+secret     = "NUSY_LOCAL_QWEN"
