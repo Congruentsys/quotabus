@@ -2,9 +2,9 @@
 id: CHORE-001
 title: "C1: nusy-product-team docs/external-review.md §1a — replace the hand probe with 'run quotabus status'"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001]
 depends_on: [EXP-001]
@@ -34,6 +34,11 @@ Hold met: EXP-001, EXP-002, EXP-003 and EXP-004 have all landed (PRs #6?/12/14/1
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T21:41:05+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T21:41:07+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
