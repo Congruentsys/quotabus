@@ -95,3 +95,7 @@ Measured 2026-10-08, key names and value shapes only: ~/.claude.json cachedUsage
 ### M5-MBP-2/s-72a67d16 (2026-10-08 19:50)
 
 Rescoped by the Captain 2026-10-08. The new body quotes the ruling and records the measurements: the setup-token read works centrally for all six accounts, oauth/usage is 403, and Copilot works with GITHUB_TOKEN. The red tests at bf1c9d6 targeted the per-host agent; most are obsolete and get rewritten on the same branch. Partial implementer work was stopped before any commit.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 19:56)
+
+Tests red at 556da87 (partner sub-agent, rescoped). There are 49 new tests across exp002_subscription_interval, claude_direct, claude_fallback, copilot, subscription_schedule, no_leak and docs; the obsolete per-host tests and stubs are deleted. 47 fail on a todo!() stub or an assertion, none on a compile error. Both controls pass (the reference known answer and the leak-scan control).
