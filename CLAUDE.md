@@ -80,14 +80,21 @@ lists what was kept, adapted and cut).
   findings file with the exact command and its output, a PR reviewed like code) and **other-repo** (a change that
   lands in another repo: the change is written here as a packet, and the item waits `stranded` (blocked) on that
   repo).
+- **`steer`** (the outer loop above `quotabus-loop`; ported 2026-10-08 from yurtle-kanban@ecf76fa, MIT): sweeps the
+  open signals, the harbor items waiting on a decision and the `stranded` items; decides buckets 1–2 on the board
+  against quotabus's goals (G1 honesty and safety, G2 the fleet's use, G3 simplicity and FOSS) and puts only bucket 3
+  to the Captain, batched, each with a recommended default.
 - **Release rule:** only `provisioning` items are claimable, and well-defined work is released, with `depends_on`
   setting the order. A well-defined work item (an expedition, chore or hazard whose body has a "Definition of Done" /
   "Done when" and that waits on no OPEN Captain decision; a decision the deliverable only records is not a wait) goes
   to `provisioning` when it is filed (`.venv/bin/yurtle-kanban move <ID> provisioning --agent "$ME"`), whatever its
   dependencies: `claim` enforces them. An item that is not yet well defined stays in `harbor` with a comment naming
   what it lacks. Voyages and signals stay in `harbor`; they are not work items.
-- **Signals are the Captain's open questions.** No session decides one. Where a SIG blocks nothing, build to the
-  design's recommendation (`docs/DESIGN.md` §10) and say so in a comment on the SIG and on the item that relied on it.
+- **Signals are the Captain's open questions.** No session decides one, EXCEPT through **`steer`**'s bucket 1
+  (a measurement settles it) or bucket 2 (the goals or an existing Captain ruling settle it), recorded on the signal
+  as a `[steer] bucket-N` comment with its basis and open to the Captain's veto. Bucket 3 (a feature or goal change,
+  or human authority) stays the Captain's. Where a SIG blocks nothing, build to the design's recommendation
+  (`docs/DESIGN.md` §10) and say so in a comment on the SIG and on the item that relied on it.
 - Review and research method: **`uxr-review`** and **`editor-review`** (role-played expert reviews of a surface or a
   draft, before the Captain reads). **`hypothesize`** and **`refine-idea`** need yurtle-kanban's research (HDD) board,
   which this repo has not configured: until a question needs the full Hypothesis → Measure → Experiment trio, a
