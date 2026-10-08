@@ -7,7 +7,7 @@ priority: high
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001]
-depends_on: [EXP-001, CHORE-002]
+depends_on: [EXP-001, CHORE-002, CHORE-007]
 ---
 
 # E2: per-host agent — Claude Code subscription state (statusLine capture + ~/.claude.json fallback) and GitHub Copilot quota, one row per host
