@@ -69,7 +69,7 @@ pub struct Headroom {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Window {
     pub window: String,
-    /// 0–100, as measured.
+    /// 0–100, as measured, rounded to at most 2 decimals when the window is built (CHORE-011).
     pub used_pct: f64,
     /// RFC 3339.
     pub reset_at: Option<String>,
@@ -77,6 +77,11 @@ pub struct Window {
     pub reset_in_s: Option<i64>,
     /// `(used_pct / 100) / (elapsed / len)`: 1.0 uses the window up exactly at its reset; above 1, sooner.
     pub pace: Option<f64>,
+}
+
+/// At most 2 decimals: kills f64 noise such as `0.14 * 100.0 == 14.000000000000002` (CHORE-011).
+fn round_2dp(x: f64) -> f64 {
+    (x * 100.0).round() / 100.0
 }
 
 impl Window {
@@ -89,6 +94,7 @@ impl Window {
         now: DateTime<Utc>,
     ) -> Window {
         let reset_in_s = reset.map(|r| (r - now).num_seconds());
+        // pace uses the UNROUNDED used_pct: rounding is for the stored figure, not for the rate derived from it.
         let pace = match (reset_in_s, len_s) {
             (Some(left), Some(len)) if len > 0 && len - left > 0 => {
                 Some((used_pct / 100.0) / ((len - left) as f64 / len as f64))
@@ -97,7 +103,7 @@ impl Window {
         };
         Window {
             window: name.to_string(),
-            used_pct,
+            used_pct: round_2dp(used_pct),
             reset_at: reset.map(|r| r.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)),
             reset_in_s,
             pace,
