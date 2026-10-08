@@ -79,7 +79,10 @@ fn service(
 }
 
 fn config(services: &[String]) -> Config {
-    let text = format!("[probe]\nttl = \"2m\"\n\n{}", services.join("\n"));
+    let text = format!(
+        "[ttl]\napi = \"2m\"\nbalance = \"2m\"\n\n{}",
+        services.join("\n")
+    );
     Config::from_toml_str(&text).unwrap_or_else(|e| panic!("test config must parse: {e}\n{text}"))
 }
 

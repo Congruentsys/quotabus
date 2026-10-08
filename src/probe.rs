@@ -85,6 +85,20 @@ impl Runner {
         r
     }
 
+    /// One scheduled cycle (CHORE-007): make a query kind's calls only when that kind is DUE, i.e. its own
+    /// `[intervals]` entry has elapsed since that kind's last row in `store_rows` (no row = due); `force` runs every
+    /// kind. `now` is the clock (injectable for tests): every returned row has `checked_at == now` and `ttl_s` equal to
+    /// its own kind's TTL. Rows are returned, not published. CHORE-007 seam: stub.
+    pub async fn run_due(
+        &self,
+        store_rows: &[Record],
+        now: chrono::DateTime<Utc>,
+        force: bool,
+    ) -> Vec<Record> {
+        let _ = (store_rows, now, force);
+        todo!("CHORE-007: per-kind scheduling")
+    }
+
     /// One cycle: one redacted row per (service, model). Rows are returned, not published.
     pub async fn run_once(&self) -> Vec<Record> {
         let client = reqwest::Client::builder()

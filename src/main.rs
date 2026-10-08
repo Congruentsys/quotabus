@@ -30,7 +30,11 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     /// Run one probe cycle and write one row per (service, model) to the backend.
-    Probe,
+    Probe {
+        /// Run every query kind now, due or not. (CHORE-007 stub: accepted, not yet acted on.)
+        #[arg(long)]
+        force: bool,
+    },
     /// Read rows and apply the freshness rule.
     Status {
         /// Print a JSON array: one {service, key, verdict, reason, age_s, row} per configured (service, model).
@@ -59,7 +63,7 @@ fn main() -> ExitCode {
         .config
         .or_else(|| std::env::var_os("QUOTABUS_CONFIG").map(PathBuf::from))
         .unwrap_or_else(|| PathBuf::from("quotabus.toml"));
-    let is_probe = matches!(cli.command, Command::Probe);
+    let is_probe = matches!(cli.command, Command::Probe { .. });
     let config = match Config::load(&path) {
         Ok(c) => c,
         Err(e) => {
@@ -88,7 +92,7 @@ fn main() -> ExitCode {
         }
     };
     let code = match cli.command {
-        Command::Probe => rt.block_on(probe(&config, &runner, &redactor)),
+        Command::Probe { force: _ } => rt.block_on(probe(&config, &runner, &redactor)),
         Command::Status {
             json,
             kind,

@@ -306,6 +306,19 @@ impl Config {
         })
     }
 
+    /// How often `kind` is queried: `[intervals] <kind>` (default 12h). CHORE-007 seam: stub.
+    pub fn interval_for(&self, kind: crate::schedule::QueryKind) -> Duration {
+        let _ = kind;
+        todo!("CHORE-007: [intervals]")
+    }
+
+    /// How long a `kind` row is trustworthy (its `ttl_s`): `[ttl] <kind>`, default 3 × that kind's own interval.
+    /// CHORE-007 seam: stub.
+    pub fn ttl_for(&self, kind: crate::schedule::QueryKind) -> Duration {
+        let _ = kind;
+        todo!("CHORE-007: [ttl]")
+    }
+
     pub fn load(path: &Path) -> Result<Config, ConfigError> {
         let text = std::fs::read_to_string(path)
             .map_err(|e| ConfigError(format!("cannot read {}: {e}", path.display())))?;
