@@ -2,12 +2,13 @@
 id: SIG-003
 title: "Q4: undocumented usage endpoints — off by default, on for the fleet, always labelled?"
 type: signal
-status: backlog
+status: arrived
 priority: medium
 assignee: null
 created: 2026-10-08
 tags: [captain-decision, design]
 depends_on: []
+resolution: completed
 ---
 
 # Q4: undocumented usage endpoints — off by default, on for the fleet, always labelled?
@@ -27,3 +28,16 @@ CHORE-002 (PR #3) measured z.ai's undocumented GET /api/monitor/usage/quota/limi
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
 
 Captain 2026-10-08: "Off FOSS, on fleet". This is the recommended default: undocumented sources are off in the shipped config and on in the fleet config, and every row is labelled source=undocumented.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:done ;
+    kb:at "2026-10-08T18:52:43+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:forcedMove "true"^^xsd:boolean ;
+    kb:resolution "completed" ;
+  ] .
+```
