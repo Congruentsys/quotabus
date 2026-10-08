@@ -25,3 +25,14 @@ A decision: either (a) add a per-kind or per-service `warn_pct` with a DEFAULT v
 ### M5-MBP-2/s-72a67d16 (2026-10-08 20:15)
 
 Kept in harbor: it lacks a default warn % (or a ruling to drop the clause). No ruling names one; the question is for the Captain.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 21:58)
+
+[steer] bucket-2: option (a). Implement §2's clause with `[probe] warn_pct = 90` (configurable): any window whose used_pct is >= warn_pct reads `degraded`, for subscription `headroom.windows[]` and API `window_pct`.
+Basis:
+- G2 and DESIGN §1 Goal: 'does it work right now, and how much is left?'. The motivating failure: 'the Copilot subscription ran out and was found only when a review failed' (§1). A near-limit state is exactly what that needed.
+- G1: `degraded` is never `ok`, and select already refuses it, so this cannot produce a false all-clear.
+- G3: one key, already designed in §2.
+90 is the default because a 5 h window at 90 % still leaves time to act, while 80 % would flag routine heavy use. It is reversible (config).
+Whether a near-limit degraded FILES a signal is SIG-010 (open, bucket 3). Until it is ruled, it files as every bad state does today.
+Released. Decided — open to the Captain's veto.
