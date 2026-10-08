@@ -2,9 +2,9 @@
 id: HAZ-002
 title: "Throwaway nats-server test fixture races under the parallel suite (connection reset at startup)"
 type: hazard
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5/s-b1fd4c67
 created: 2026-10-08
 depends_on: []
 ---
@@ -25,6 +25,11 @@ The throwaway-server helper waits until the server really accepts a connection (
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T19:03:35+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T19:03:52+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
   ] .
 ```
