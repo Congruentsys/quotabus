@@ -40,3 +40,10 @@ Found after EXP-002 merged (PR #12), while publishing its rows to Mini's `ai_sta
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 20:25)
+
+Tests red at 505eef5 (partner): tests/haz003_system_prompt.rs. 5 fail on assertions: no system field in the request body, unknown instead of ok, probe=stream_json reproduces the bug, the reason doesn't name the 429, and DESIGN §4 is missing the requirement. 4 controls pass, each shown able to fail. The stub mimics the measured server (429 without the system prompt, 200 with it).
