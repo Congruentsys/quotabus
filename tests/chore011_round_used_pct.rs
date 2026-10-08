@@ -163,9 +163,11 @@ async fn stream_json_0_14_is_stored_as_14() {
     assert_used(&r, "seven_day", 14.0);
     assert_used(&r, "five_hour", 0.5);
     assert_rows_rounded(&r);
-    assert!(!serde_json::to_string(&r)
-        .unwrap()
-        .contains("14.000000000000002"));
+    assert!(
+        !serde_json::to_string(&r)
+            .unwrap()
+            .contains("14.000000000000002")
+    );
 }
 
 #[tokio::test]
