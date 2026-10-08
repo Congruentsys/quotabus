@@ -221,7 +221,9 @@ render_into "$stage"
 print_plan
 
 if [ "$os" = "macos" ]; then
-    load_cmd="launchctl unload '$dest_dir/$PLIST_NAME' 2>/dev/null || true; launchctl load -w '$dest_dir/$PLIST_NAME'"
+    # The gui/<uid> domain is named explicitly (legacy load/unload pick it from the session, and an ssh session is not
+    # Aqua). The uid is computed where this runs: on the target for --host. The target user must be logged in at the GUI.
+    load_cmd="launchctl bootout gui/\$(id -u)/$LABEL 2>/dev/null || true; launchctl bootstrap gui/\$(id -u) '$dest_dir/$PLIST_NAME'"
     mkdir_cmd="mkdir -p '$dest_dir' '$log_dir'"
 else
     load_cmd="systemctl --user daemon-reload && systemctl --user enable --now $TIMER_NAME"
