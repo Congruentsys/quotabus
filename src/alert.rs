@@ -9,7 +9,7 @@
 //!
 //! [INFERENCE] decisions the design does not make, documented in `docs/DESIGN.md` §3 alert:
 //! - `degraded` and `rate_limited` are not `ok`, so they are crossings like any other bad state (open as the
-//!   Captain's SIG-010).
+//!   Captain's SIG-010; review r1 F2). Until it is ruled, every bad state files.
 //! - Partial sink failure: the crossing is recorded only when every sink succeeded. The sinks that did succeed are
 //!   remembered in the entry's `pending`, so the next run retries only the ones that failed — a failed webhook does
 //!   not file a second kanban item.

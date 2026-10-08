@@ -295,7 +295,10 @@ it declares secrets at compile time, and our list is config-driven. [INFERENCE]
   (ruled by the driver on review r1 F1, `reviews/EXP-004-r1.md`; it replaces this section's first [INFERENCE], under
   which a provider at its cap alternating between the two 429 readings filed a signal every cycle). A crossing still
   pending on some sinks is completed on the others whatever bad state it reads now. `degraded` and `rate_limited` are
-  not `ok`, so each is a crossing too.
+  not `ok`, so each is a crossing too: **open as the Captain's SIG-010** (`kanban-work/signals/SIG-010-*.md`, "Should
+  'degraded' (and 'rate_limited') file an alert at all — or only hard failures?"; review r1 F2). Until it is ruled,
+  every bad state files as built, so `ok` ↔ `degraded` flapping files one item per return to `degraded` (5 in 10
+  cycles, measured in `reviews/EXP-004-r1.md`).
 - **Exit codes:** 0 every sink called succeeded (or nothing crossed) · 1 a sink, or a dedup read/write, failed
   (retried next run) · 2 CANNOT-ASSESS: the store cannot be read (bus down, bucket or row directory missing), and
   nothing is filed. An `alert.<key>` that is not an alert entry skips that key with rc 1 (whether it was filed is
