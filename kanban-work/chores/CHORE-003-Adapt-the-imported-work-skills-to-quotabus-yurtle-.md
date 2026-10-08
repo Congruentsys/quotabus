@@ -2,9 +2,9 @@
 id: CHORE-003
 title: "Adapt the imported work skills to quotabus — yurtle-kanban board, GitHub PRs, no fleet Layer-B tooling"
 type: chore
-status: provisioning
+status: underway
 priority: high
-assignee: null
+assignee: M5/s-b1fd4c67
 created: 2026-10-08
 tags: [v1.0, VOY-001, skills]
 depends_on: []
@@ -35,6 +35,11 @@ Part of VOY-001; FIRST, before EXP-001 is landed through the loop. Captain 2026-
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T17:13:52+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-08T17:13:55+00:00"^^xsd:dateTime ;
     kb:by "M5/s-b1fd4c67" ;
   ] .
 ```
