@@ -13,8 +13,8 @@ mod common;
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
-use std::time::{Duration, Instant};
+use std::process::{Child, Command};
+use std::time::Duration;
 
 use chrono::Utc;
 use common::{FAKE_SK, NatsServer, rc, run_cli, text};
@@ -475,9 +475,8 @@ struct RestrictedNats {
 
 impl RestrictedNats {
     fn start(deny_reads: bool) -> RestrictedNats {
-        drop(NatsServer::start()); // fails with a clear message when nats-server is missing
+        common::require_nats_server();
         let dir = tempfile::tempdir().unwrap();
-        let port = common::free_port();
         let deny = if deny_reads {
             r#", deny: ["$JS.API.DIRECT.GET.>", "$JS.API.STREAM.MSG.GET.>"]"#
         } else {
@@ -487,7 +486,7 @@ impl RestrictedNats {
         std::fs::write(
             &conf,
             format!(
-                "listen: 127.0.0.1:{port}\njetstream {{ store_dir: {:?} }}\nno_auth_user: lister\n\
+                "jetstream {{ store_dir: {:?} }}\nno_auth_user: lister\n\
                  authorization {{ users = [\n\
                    {{ user: admin, password: adminpw }}\n\
                    {{ user: lister, password: listerpw, permissions: {{\n\
@@ -498,31 +497,14 @@ impl RestrictedNats {
             ),
         )
         .unwrap();
-        let child = Command::new("nats-server")
-            .arg("-c")
-            .arg(&conf)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .expect("spawn nats-server");
-        let mut s = RestrictedNats {
+        let mut cmd = Command::new("nats-server");
+        cmd.arg("-c").arg(&conf);
+        let (child, port) = common::spawn_nats(cmd, "restricted", dir.path());
+        RestrictedNats {
             child,
             port,
             _dir: dir,
-        };
-        let deadline = Instant::now() + Duration::from_secs(10);
-        while std::net::TcpStream::connect(("127.0.0.1", port)).is_err() {
-            if let Ok(Some(st)) = s.child.try_wait() {
-                panic!("restricted nats-server exited: {st}");
-            }
-            assert!(
-                Instant::now() < deadline,
-                "restricted nats-server did not listen"
-            );
-            std::thread::sleep(Duration::from_millis(50));
         }
-        std::thread::sleep(Duration::from_millis(200));
-        s
     }
 
     fn url(&self) -> String {
