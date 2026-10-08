@@ -41,3 +41,7 @@ Captain 2026-10-08: "Slower - twice a day, but make it a config setting"; on sco
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:56)
 
 Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure there are separate times for the different types of queries." So each query kind has its OWN config interval, set independently: API (messages) probe, balance read, and subscription read (and any later kind, e.g. a quota-window read). There is no shared interval. Defaults per the SIG-004 ruling: API 12 h, balance 12 h, subscription 5 min.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 19:50)
+
+Amended by the Captain 2026-10-08 (verbatim on EXP-002): 'We should not need to run anything else on the other machines (just Mini or M5 depending on where we host this)'. Claude usage is read centrally with each account's Doppler setup-token: 'Direct, stream-json fallback'. No statusLine install. Subscription cadence: 'Hourly' (1 h default, its own key).
