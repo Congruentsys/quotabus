@@ -16,3 +16,9 @@ Optional, after v1.0. Design §7 and §9 row E5: `quotabus serve` (one page on 1
 
 ## Definition of Done
 One page on 127.0.0.1 shows the table; an `expires` 14 days out reads `degraded`.
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 17:22)
+
+Not released: tagged post-v1.0 (optional / not a v1.0 feature per VOY-001 and the Captain's 2026-10-08 rulings). Stays in harbor until the Captain asks for it after v1.0.
