@@ -2,7 +2,7 @@
 id: CHORE-001
 title: "C1: nusy-product-team docs/external-review.md §1a — replace the hand probe with 'run quotabus status'"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -26,3 +26,14 @@ Held in harbor on purpose (resident session brief, 2026-10-08): this lands in nu
 ### M5-MBP-2/s-72a67d16 (2026-10-08 21:41)
 
 Hold met: EXP-001, EXP-002, EXP-003 and EXP-004 have all landed (PRs #6?/12/14/15 on origin/main). Released, and taken through pairit's other-repo lane: a packet at docs/flowback/CHORE-001-to-nusy-product-team.md.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T21:41:05+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
