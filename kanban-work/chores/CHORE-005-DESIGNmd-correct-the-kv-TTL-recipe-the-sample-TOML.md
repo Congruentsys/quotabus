@@ -2,7 +2,7 @@
 id: CHORE-005
 title: "DESIGN.md: correct the kv TTL recipe, the sample TOML and the OpenAI probe route (found in EXP-001)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -19,3 +19,14 @@ Found while landing EXP-001 (PR #2). `docs/DESIGN.md` is wrong or out of date in
 
 ## Done when
 A PR amends DESIGN.md §3 and §4 on those three points, each citing its evidence; reviewed and merged.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T18:40:16+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
