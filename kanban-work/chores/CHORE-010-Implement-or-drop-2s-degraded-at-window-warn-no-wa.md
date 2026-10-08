@@ -12,7 +12,7 @@ depends_on: []
 
 # Implement §2's 'degraded at window ≥ warn %': [probe] warn_pct = 90 (steer bucket 2)
 
-Found in the EXP-004 review... correction: in the EXP-002 review (`reviews/EXP-002-r1.md` F2, PR #12). DESIGN.md §2's state table lists "a window ≥ warn %" under `degraded`, but no `warn %` config or code exists, so a subscription window at 97 % reads `ok`.
+Found in the EXP-002 review (`reviews/EXP-002-r1.md` F2, PR #12). DESIGN.md §2's state table lists "a window ≥ warn %" under `degraded`, but no `warn %` config or code exists, so a subscription window at 97 % reads `ok`.
 
 **Decided by steer, bucket 2 (2026-10-08, open to the Captain's veto; basis in the comment):** option (a), `[probe] warn_pct`, default **90**.
 
