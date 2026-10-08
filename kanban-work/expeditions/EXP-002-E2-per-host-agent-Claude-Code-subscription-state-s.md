@@ -33,3 +33,10 @@ Five `subscription.*` rows on the bus from five hosts, each `observed_by` its ow
     kb:by "M5/s-b1fd4c67" ;
   ] .
 ```
+
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 17:22)
+
+Released with depends_on EXP-001, CHORE-002 (statusLine install waits on CHORE-002's measurement, Captain Q9). SIG-003 is built to the recommendation (undocumented sources off by default in the FOSS config, on in the fleet config, every row labelled source=undocumented); SIG-004's 5-min subscription cadence is config.
