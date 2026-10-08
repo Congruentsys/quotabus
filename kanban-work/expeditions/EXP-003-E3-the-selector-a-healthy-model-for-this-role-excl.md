@@ -2,7 +2,7 @@
 id: EXP-003
 title: "E3: the selector — 'a healthy model for this role, excluding this family' as a library call and a CLI"
 type: expedition
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -33,6 +33,12 @@ The selector refuses a family the author uses; rc 3 when every candidate is `unk
     kb:status kb:in_progress ;
     kb:at "2026-10-08T20:34:03+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-08T21:03:42+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/14> ;
   ] .
 ```
 
