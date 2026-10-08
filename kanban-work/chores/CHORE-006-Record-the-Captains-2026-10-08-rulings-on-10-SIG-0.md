@@ -1,0 +1,24 @@
+---
+id: CHORE-006
+title: "Record the Captain's 2026-10-08 rulings on §10 (SIG-001…008) in DESIGN.md"
+type: chore
+status: backlog
+priority: medium
+assignee: null
+created: 2026-10-08
+tags: [v1.0, VOY-001, design]
+depends_on: []
+---
+
+# Record the Captain's 2026-10-08 rulings on §10 (SIG-001…008) in DESIGN.md
+
+Part of VOY-001. On 2026-10-08 the Captain answered every open §10 signal (SIG-001…SIG-008); each ruling is verbatim in a comment on its signal. `docs/DESIGN.md` still shows them as recommendations. Two rulings differ from the recommendation:
+- **Q2 (SIG-001):** the central probe's host is a CONFIG choice (local, or a named host); the fleet sets Mini.
+- **Q5 (SIG-004):** API probes and balance reads default to every 12 h; subscription reads stay at 5 min; every interval is config. §4's cost line ("≤ 96 calls … per day") changes to match.
+- **Q9 (SIG-008):** statusLine + stream-json `rate_limit_event` + `~/.claude.json` fallback.
+
+## Definition of Done
+A PR to `docs/DESIGN.md` that, for each of Q2, Q3, Q4, Q5, Q7, Q8, Q9 and Q10 in §10 (and the Origin note):
+1. Records the ruling verbatim as `Captain 2026-10-08: "…"`, citing its SIG, and says whether it was the recommended default.
+2. Updates every other sentence it makes stale (e.g. §4's cadence and cost line, the Claude Max row's "pending SIG-008", the GLM row's "pending SIG-003", §3's host for the central probe).
+3. `make check` is green. A distinct session reviews it (a DESIGN.md change).
