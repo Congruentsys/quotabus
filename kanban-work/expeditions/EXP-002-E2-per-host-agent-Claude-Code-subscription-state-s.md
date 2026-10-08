@@ -71,3 +71,8 @@ Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure 
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:58)
 
 Now depends on CHORE-007 (per-kind intervals, Captain Q5): it lands first, and this item then adds its subscription interval (5 min) as a third key of the same [intervals] table. The claim is kept.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 19:40)
+
+tests red at bf1c9d6 (partner sub-agent): 75 new tests in tests/exp002_*.rs (subscription config, statusline capture and tee and install-statusline, agent for claude and copilot, schedule, units). 67 fail, every one on a todo!() stub or an assertion, none on a compile error. 8 controls pass, each shown able to fail.
+Measured 2026-10-08, key names and value shapes only: ~/.claude.json cachedUsageUtilization has {fetchedAtMs, accountUuid, utilization.{five_hour,seven_day}.{utilization %, resets_at ISO}}, which matches the test fixture. It is present on Mini (fetched ~2026-09-23, stale) and the Spark (~2026-10-06), and ABSENT on M5 and Air (Claude Code 2.1.294). So the fallback alone often reads unknown, which is why the statusLine plus stream-json sources matter (SIG-008).
