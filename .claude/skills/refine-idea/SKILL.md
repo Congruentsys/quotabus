@@ -1,215 +1,225 @@
 ---
 name: refine-idea
-description: "Take a captured IDEA through review-and-refine to FILED work — validate the premise, split by measurement, define under the citation rule, and land the edges so the pass survives the session"
+description: "Take a captured IDEA through review-and-refine to FILED work — validate the premise, split by measurement, define under the citation rule, and land the links so the pass survives the session"
 disable-model-invocation: false
-argument-hint: "IDEA-XXXX"
+argument-hint: "IDEA-R-NNN"
+allowed-tools: Bash(.venv/bin/yurtle-kanban *), Bash(PYTHONPATH= .venv/bin/yurtle-kanban *), Bash(git *), Bash(claude *), Read, Edit, Write, Agent
 ---
-
-> ⚠ **IMPORTED, NOT YET ADAPTED.** Copied verbatim from `nusy-product-team@27feda15ea:.claude/skills/refine-idea/SKILL.md` on
-> 2026-10-08 (Captain-directed). It was written for that monorepo's fleet. **In quotabus, until CHORE-003 adapts it,
-> read every mechanism below through this mapping, and stop rather than guess when one has no equivalent:**
-> - board: `nusy-kanban` / `nk` on NATS → **`yurtle-kanban`** over `kanban-work/` (`create … --push`, `claim`, `list`, `move`);
->   item ids are `EXP-`/`CHORE-`/`VOY-`/`SIG-`/`HAZ-`; there is no `nk pr` proposal store;
-> - landing: monorepo proposals / `pairit` §5 scratch merge → **a branch and a GitHub PR** (`gh pr create`), reviewed by a
->   distinct `claude -p` session, merged after review;
-> - Layer-B rows (`verdicts record`, `NUSY_VERDICT_CONF`), `scripts/lib/*`, `scripts/safety-paths.conf`, the pre-push hook,
->   arch-guard, `CA-*` campaign clauses and fleet canon (`CLAUDE.md` of the monorepo) **do not exist here** — the review
->   verdict goes in the PR, not a verdict row;
-> - this repo's `CLAUDE.md` wins over anything below.
 
 # Refine Idea — the planning step between capture and work
 
-> **New session?** Read [`docs/AUTONOMOUS-FLEET.md`](../../../docs/AUTONOMOUS-FLEET.md) first — how to operate in the autonomous fleet: what a session is, who may review/revise/merge, and which older statements in this repo are retired.
+**Board writes reach `origin` at once** (CLAUDE.md § Syncing the board): `create`/`update` take `--push`; `move` and
+`comment` go through `scripts/yk_push.sh` (with `ME` set in the same Bash call).
 
-**Captain-directed, 2026-08-13, verbatim:** *"this is the planning step we need to add to
-kanban. IDEA -> review and refine -> HDD (turn into hypotheses, measures, expr) - Then define
-work -> then ready (then the rest of the process we have)."*
+> Ported from nusy-product-team `refine-idea` (2026-10-02), nk → yurtle-kanban 3.2.0.
 
-This skill **assembles existing mechanisms**. It introduces no new judgement machinery — the
-adversarial pass, the `/steer` classifier, `/hypothesize`, the CH-6369 citation rule and the
-reviewer≠author definition pass all already exist. What did not exist is the **step that files
-the result**, which is why the pass has historically produced nothing durable.
+**Captain-directed, 2026-08-13, verbatim:** *"this is the planning step we need to add to kanban.
+IDEA -> review and refine -> HDD (turn into hypotheses, measures, expr) - Then define work -> then
+ready (then the rest of the process we have)."*
+
+This skill **assembles existing mechanisms**: an adversarial pass, the measurement classifier,
+`/hypothesize`, the citation rule and a reviewer ≠ author definition pass. What did not exist is
+the **step that files the result**, which is why the pass historically produced nothing durable.
 
 ## Why this exists — the measured failure
 
-The pipeline was run by hand on two ideas. It worked, and it produced **nothing**.
+The pipeline was run by hand on two ideas (in nusy-product-team). It worked, and it produced
+**nothing**.
 
 | | |
 |---|---|
-| definitions produced | **16** (9 + 7) — `CH`×4, `M`×4, `HZ`×2, `H`×2, `EXPR`×2, `SG`×1, `EX`×1 |
+| definitions produced | **16** (9 + 7) — chores ×4, measures ×4, hazards ×2, hypotheses ×2, experiments ×2, signal ×1, expedition ×1 |
 | of those, filed | **0** |
 | ideas rescoped by the pass | **2 of 2** — neither was buildable as written |
 | ideas killed by the pass | **0 of 2** (the review edits; it does not filter) |
 
 The refine stage paid for itself: it caught a premise that was **measurably false**, a Captain
-ruling made eight days earlier that the idea did not cite, and two crates the ideas proposed
-to build that were **already in-tree**. All of that evaporated with the session.
+ruling made eight days earlier that the idea did not cite, and two components the ideas proposed to
+build that were **already in-tree**. All of that evaporated with the session.
 
-⚠ **The lesson is not "review harder."** The review was good. There was no filing step, so
-the analysis had nowhere durable to go. Phase 5 is the reason this skill exists; phases 1–4
-are the part that already worked.
+⚠ **The lesson is not "review harder."** The review was good. There was no filing step, so the
+analysis had nowhere durable to go. Phase 5 is the reason this skill exists; phases 1–4 are the part
+that already worked.
 
 ## Two shapes to expect, because both are counter-intuitive
 
-**An idea fans out; it does not become one item.** Sixteen definitions from two ideas —
-**half of them development-board work**, only **two** hypotheses. The old ontology comment
-("promoted to Hypothesis") described the intended case, not the dominant one.
+**An idea fans out; it does not become one item.** Sixteen definitions from two ideas — **half of
+them development-board work**, only **two** hypotheses.
 
-**So do NOT emit a hypothesis per idea.** Apply the classifier **per definition**, not per
-idea. Observed rate: ~1 hypothesis per idea across 8 definitions. A pass that scaffolds an
-H→M→EXPR trio by default is the **over-formalization failure** CLAUDE.md names explicitly
-("forcing an EXPR onto them is the over-formalization failure mode") — treat it as a defect
-in this skill, not as rigor.
+**So do NOT emit a hypothesis per idea.** Apply the classifier **per definition**, not per idea.
+Observed rate: ~1 hypothesis per idea across 8 definitions. A pass that scaffolds an H→M→EXPR trio
+by default is the **over-formalization failure** ("forcing an EXPR onto them is the
+over-formalization failure mode") — treat it as a defect in this skill, not as rigor. ⚠ It fails in
+the other direction too: a definition that IS a claim a measurement could settle, filed as a plain
+chore or sent to the Captain as a "decision", is an unfiled experiment.
 
 ## Required environment
 
-```bash
-alias nk='nusy-kanban --server "${NUSY_FLEET_KANBAN_SERVER:-nats://192.168.8.110:4222}"'
-```
+Run from the repo root. The CLI is `.venv/bin/yurtle-kanban` (on a Spark, prefix `PYTHONPATH=`).
+Name yourself on every board write: `--agent "$ME"`, with
+`ME="${NUSY_AGENT_NAME:-$(hostname -s)}/s-${CLAUDE_CODE_SESSION_ID:0:8}"` set in the same command (shell
+variables do not survive between tool calls; CLAUDE.md § The board). A move on an item held by someone is
+refused unless you name yourself. `move`, `update` and `comment` commit locally: `git pull --rebase && git push` after each
+phase (board files go straight to `main`).
+
+**The idea lifecycle on this board** (`.venv/bin/yurtle-kanban states --board research`):
+
+| this skill says | research-board status | how you get there |
+|---|---|---|
+| captured | `draft` | `idea create` puts it here |
+| refining | `active` | `move … active --assign <agent>` |
+| formalized | `complete` (`--resolution completed`) | Phase 5 |
+| killed | `abandoned` (`--resolution wont_do`) | Phase 6 |
+
+Legal moves: `draft → active | abandoned`, `active → complete | abandoned | draft`,
+`abandoned → draft`. `complete` is terminal.
 
 ---
 
 ## Phase 1 — Claim
 
 ```bash
-nk move IDEA-XXXX refining --assign "$(resolve_session_name)"
+scripts/yk_push.sh move IDEA-R-NNN active --assign "$ME" --agent "$ME"
 ```
 
-`refining` is a legal status: it is in the engine's `VALID_STATUSES` and in
-`.yurtle-kanban/config.yaml`'s `type_states.idea`. If this move is REFUSED with
-`UNKNOWN_STATUS`, this machine's **server** predates that (validation is server-side —
-CH-7280), and the remedy is the writer rebuild + swap, not `--force`.
+(`claim` does not apply: it takes only a `ready` item, and the research board has no `ready`
+status.)
 
-**The claim is reversible and the release is one command.** A dead session must never wedge
-an idea here:
+**The claim is reversible and the release is one command.** A dead session must never wedge an idea
+here:
 
 ```bash
-nk move IDEA-XXXX captured        # ungated, always available
+scripts/yk_push.sh move IDEA-R-NNN draft --agent "$ME"   # holder; a peer adds --take-over
 ```
 
 ## Phase 2 — Validate the premise, adversarially
 
-Spawn ONE fresh sub-agent (routine or strong tier by the idea's stakes) with the REFUTE mandate
-below as its whole prompt, and write its findings to an artifact whose header names path
-(subagent), model and status. The sub-agent is the path (SG-10917 / CH-11596); a Copilot-CLI
-run is opportunistic and never required. **An artifact with no findings and no header is a pass
-still owed, not a skip.**
+Spawn ONE fresh sub-agent with the REFUTE mandate below as its whole prompt, and write its findings
+to an artifact (`research/IDEA-R-NNN-refine-premise.md`) whose header names path (subagent), model
+and status. **An artifact with no findings and no header is a pass still owed, not a skip.**
 
-**Mandate the reviewer to REFUTE AGAINST THE CODE, not against plausibility.** That is what
-caught all three real findings on the worked pair. Concretely: does the premise reproduce?
-Does the thing it proposes to build already exist? Has a ruling already settled it?
+**Mandate the reviewer to REFUTE AGAINST THE CODE, not against plausibility.** That is what caught
+all three real findings on the worked pair. Concretely: does the premise reproduce? Does the thing
+it proposes to build already exist (here, in a sister repo, or in a pinned dependency)? Has a ruling
+already settled it?
 
-⚠ **A premise that sounds precise is the dangerous kind.** One idea claimed a surface
-*"refuses cleanly rather than returning a wrong answer"*; running it returned a **wrong
-answer**, silently. Nothing but execution would have caught that.
+⚠ **A premise that sounds precise is the dangerous kind.** One idea claimed a surface *"refuses
+cleanly rather than returning a wrong answer"*; running it returned a **wrong answer**, silently.
+Nothing but execution would have caught that.
 
 ## Phase 3 — Verdict
 
-One of three, recorded as a comment on the idea:
+One of three, recorded as a comment on the idea
+(`scripts/yk_push.sh comment IDEA-R-NNN --agent "$ME" --body-file <a file>`; never `--body-file -`: a retried write would re-read an empty stdin):
 
-- **KILL** — go to Phase 6. This is a **success**, and the pass has produced **zero** so far
-  across two ideas, which is itself a signal worth watching.
+- **KILL** — go to Phase 6. This is a **success**, and the pass produced **zero** across the first
+  two ideas, which is itself a signal worth watching.
 - **VALID-AS-WRITTEN** — rare (0 of 2).
 - **VALID-BUT-RESCOPED** — the common case (2 of 2). Record *what changed and why*.
 
-Apply `/steer`'s classifier to any decision the verdict needs: *could a measurement settle
-it?* → science; *do the goals settle it?* → decide now; *does it change a FEATURE or a GOAL, or
-need genuine human authority?* → escalate.
+Apply the three-way classifier to any decision the verdict needs: *could a measurement settle it?*
+→ science (`/hypothesize`); *do the goals settle it?* → decide now; *does it change a FEATURE or a
+GOAL, or need genuine human authority?* → escalate to the Captain.
 
 ## Phase 4 — Define
 
 **Per definition, ask the classifier** — *"could a measurement change the answer?"*
 
 - **yes** → `/hypothesize "<claim>"` for **that definition** (H + M + EXPR trio).
-- **no** → an ordinary work item. This is the **majority**; see the shapes above.
+- **no** → an ordinary development-board item (expedition, chore, hazard, signal). This is the
+  **majority**; see the shapes above.
 
-Write 6-element bodies under the **citation rule (CH-6369)**: never write an enumerated list
-from memory — every gate number, lifecycle sequence and dependency claim is quoted with a
-file+section citation, and campaign-scoped items carry a `Docs:` line.
+**Size by agent context, never by time.** A chore is a fraction of one context; an expedition is
+what ONE agent can take from start to landed within its context; a voyage is 5–10 expeditions. An
+item one agent cannot land before its context runs out is two expeditions. Never write a human time
+estimate into a body.
 
-Then the **definition review**: reviewer ≠ author, **session**-scoped (CH-7739), distinct
-model. Adopt `/plan-phase` step 6's **Release split** verbatim — Captain-directed scope
-**auto-releases** after the pass; only genuinely **new** scope stays in the `planning`
-STATUS for a decision packet (the retired `pending-ratification` tag is inert).
+Write 6-element bodies under the **citation rule**: never write an enumerated list from memory —
+every gate number, lifecycle sequence and dependency claim is quoted with a file+section citation.
 
-## Phase 5 — FILE, and land the edge — ⚠ THE STEP THAT DID NOT EXIST
+Then the **definition review**: reviewer ≠ author, a DISTINCT SESSION (a `claude -p` child that
+wrote none of the definitions — the same reviewer `pairit` spawns), given the drafts and the
+premise artifact, not the author's reasoning. Definitions that are Captain-directed scope may be
+filed ready; genuinely **new** scope is filed in the backlog status (`harbor` / `draft`) with a
+comment asking the Captain, not released.
 
-**File with the edge at CREATE time.** A bad edge refuses the whole create, so no orphan is
-ever minted:
+## Phase 5 — FILE, and land the link — ⚠ THE STEP THAT DID NOT EXIST
+
+**File each definition, citing the idea in its body** (an `Idea: IDEA-R-NNN` line):
 
 ```bash
-nk create <type> "<title>" --body-file <draft> --relate formalizedFrom:IDEA-XXXX --push
+# development board — expedition | chore | hazard | signal | voyage
+.venv/bin/yurtle-kanban create <type> "<title>" --body-file <draft.md> --tags <tags> --push
+# research board — via /hypothesize, with --source-idea IDEA-R-NNN on the hypothesis
 ```
 
-For an item that already exists, attach it:
+Then record the formalizedAs set on the idea, and the inverse on each item. yurtle-kanban has no
+typed edges (`formalizedFrom`/`formalizedAs`); the `related` list is the link, written both ways:
 
 ```bash
-nk update IDEA-XXXX --relate formalizedAs:<ID>
+.venv/bin/yurtle-kanban update IDEA-R-NNN --related "<ID1>,<ID2>,…" --push   # REPLACES the list: pass the whole set
+.venv/bin/yurtle-kanban update <ID>       --related "IDEA-R-NNN[,…]" --push
 ```
 
-Both spellings resolve to the one stored edge — the server normalizes the inverse into the
-stored direction — so write whichever is natural at the moment of filing.
+Do not use `--add-dep` for this: a dependency makes the item unpickable until the idea is done.
 
 Then ask the gate whether this idea may be marked filed:
 
 ```bash
-nk show IDEA-XXXX     # read its `formalizedAs` edges; then `nk show <target>` for each — every target must resolve
-#   0 PASS     >=1 formalizedAs edge AND every target resolves
-#   1 REFUSE   no edges, or a target that does not exist (both named)
-#   2 CANNOT-ASSESS  never a pass
+.venv/bin/yurtle-kanban show IDEA-R-NNN --json    # read `related`
+.venv/bin/yurtle-kanban show <ID>                 # for EACH related id — rc 0 resolves, rc 1 does not
+#   PASS           >=1 related id AND every one resolves
+#   REFUSE         none, or a target that does not exist (name it)
+#   CANNOT-ASSESS  the CLI errored — never a pass
 ```
 
-⚠ **The second arm is not paperwork.** An unresolvable relate target is **accepted at write
-time on purpose** (cross-board research targets must work), so a typo'd id would satisfy an
-edge count while nothing was filed. The gate refuses; it does not move. On PASS:
+⚠ **The second arm is not paperwork.** `update --related` accepts an ID that exists on no board
+(measured 2026-10-02: `--related CHORE-999` was written without complaint), so a typo'd id would
+satisfy a count while nothing was filed. The gate refuses; it does not move. On PASS:
 
 ```bash
-nk move IDEA-XXXX formalized --resolution completed
+scripts/yk_push.sh move IDEA-R-NNN complete --resolution completed --agent "$ME"
 ```
 
-**Two-way traceability is then a single question each:**
-
-```bash
-nk relation query IDEA-XXXX     # what did this idea become?
-nk relation query <ITEM>        # which idea spawned this?
-```
+**Two-way traceability is then a single read each:** `show IDEA-R-NNN` lists what the idea became;
+`show <ID>` lists the idea it came from. `hdd validate` checks the research-board half.
 
 ## Phase 6 — The death path, and why it is deliberately asymmetric
 
-**Kill from `captured` — one command, no reason, no review:**
+**Kill from `draft` (captured) — one command, no reason, no review:**
 
 ```bash
-nk move IDEA-XXXX abandoned --resolution wont_do
-nk comment IDEA-XXXX "[refine-idea] killed at capture — <one line>"
+scripts/yk_push.sh move IDEA-R-NNN abandoned --resolution wont_do --agent "$ME"
+scripts/yk_push.sh comment IDEA-R-NNN --agent "$ME" --body "[refine-idea] killed at capture — <one line>"
 ```
 
-**Kill from `refining` — record WHICH objection killed it, with its citation.** Checked for
-non-emptiness only.
+**Kill from `active` (refining) — record WHICH objection killed it, with its citation** (the
+premise artifact path), in the comment. Checked for non-emptiness only.
 
-**The asymmetry is the design.** From `captured` nobody invested anything. From `refining`
-the **refutation IS the product** — losing it makes the next filer re-derive the whole
-investigation, the shape that cost CH-6464 six separate investigations of one void premise.
+**The asymmetry is the design.** From `draft` nobody invested anything. From `active` the
+**refutation IS the product** — losing it makes the next filer re-derive the whole investigation
+(one void premise once cost six separate investigations).
 
 **Killing must stay cheaper than advancing**, and resurrection cheaper still
-(`nk move IDEA-XXXX captured`, ungated, from either state). A cheap kill is only safe when
-resurrection is cheap — and the pipeline's measured defect is that it is a **ratchet** (3 of
-39 ideas ever resolved), so anything that makes killing expensive makes the defect worse.
+(`scripts/yk_push.sh move IDEA-R-NNN draft --agent "$ME"`, ungated, from `abandoned` or `active`). A cheap
+kill is only safe when resurrection is cheap — and the pipeline's measured defect was that it is a
+**ratchet** (3 of 39 ideas ever resolved), so anything that makes killing expensive makes the defect
+worse.
 
 ## Health
 
 ```bash
-nk list --board research --type idea    # read the pipeline by eye; no script sweeps it since CH-11826
+.venv/bin/yurtle-kanban list --board research --type idea
+.venv/bin/yurtle-kanban list --board research --type idea --older-than 14d    # age, reported
+.venv/bin/yurtle-kanban hdd validate
 ```
 
-Report-only, never a gate: ideas claiming a stage with no graph record, unresolvable edge
-targets, statuses outside the declared lifecycle, and the captured-pool count.
+Report-only, never a gate: ideas `complete` with no `related`, unresolvable `related` targets, and
+the `draft` pool count.
 
-⚠ **Age is reported, never gated.** Canon forbids date-based criteria on work while naming
-Work Item Age as a mandatory flow metric — consistent, because a deadline decides and a
-metric informs.
+⚠ **Age is reported, never gated.** A deadline decides; a flow metric informs.
 
 ## Authorization
 
-Captain-directed (2026-08-13). No ratification gate on the pipeline itself; individual
-definitions follow the normal `planning`-STATUS rules via the Release split in Phase 4
-(the retired `pending-ratification` tag is inert).
+Captain-directed (2026-08-13). No ratification gate on the pipeline itself; new scope waits in the
+backlog for the Captain (Phase 4).
