@@ -16,3 +16,9 @@ Part of VOY-001; after E1. Lands in **nusy-product-team** (doc-only, straight to
 
 ## Definition of Done
 The §1a section points at `quotabus status` and the bucket name; the commit is cited on this item and on IDEA-13333.
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 17:22)
+
+Held in harbor on purpose (resident session brief, 2026-10-08): this lands in nusy-product-team as a doc-only change, so it is left for LAST, after EXP-001…EXP-004 land here. It goes through pairit's other-repo lane (a packet at docs/flowback/CHORE-001-to-nusy-product-team.md); no session here edits nusy-product-team.
