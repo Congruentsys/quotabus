@@ -16,3 +16,9 @@ Optional, after v1.0, behind a feature flag. The Captain (2026-10-08): M5 will b
 
 ## Definition of Done
 `census/1.0` rows for five hosts on the bus, behind a feature flag, off by default.
+
+## Comments
+
+### M5/s-b1fd4c67 (2026-10-08 17:22)
+
+Not released: tagged post-v1.0 (optional / not a v1.0 feature per VOY-001 and the Captain's 2026-10-08 rulings). Stays in harbor until the Captain asks for it after v1.0.
