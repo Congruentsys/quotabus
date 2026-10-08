@@ -23,3 +23,15 @@ The design pulls both ways: §1 treats Copilot as a reviewer source, while §2 g
 
 ## Recommendation (an agent's, not a decision)
 1 for v1.0, which is what EXP-003 ships. Then 2 as a later item, if the fleet wants `select` to route reviews to Copilot or a Claude account.
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 21:57)
+
+[steer] bucket-2: option 1. A subscription seat is NEVER a select candidate (what EXP-003 ships, PR #14).
+Basis:
+- G1, never a false answer: `select`'s line 1 must be a runnable `provider model`, and a seat has no model. DESIGN §2: 'the model slot is the service id'. A healthy Copilot seat printed 'github copilot' (reviews/EXP-003-r1.md F1).
+- G3: the smallest change, and already shipped and reviewed.
+- Measured (M5, 2026-10-08, quotabus b5c20f5): no subscription service in DESIGN §3 or examples/quotabus.toml has `roles`, and no text in DESIGN makes a seat a select candidate (grep 'copilot' with review/select/role → none). No reader relies on seats being picked.
+Option 2 (route reviews to a seat by a configured model) would be a NEW feature, not a decision; the Captain can file it.
+Closed with move --force, because the board refuses harbor→arrived (see the steer skill). Decided — open to the Captain's veto.
