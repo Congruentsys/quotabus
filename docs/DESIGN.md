@@ -30,6 +30,13 @@ dated 2026-09-24 (`:35-50`).
 
 One record per **(kind, provider, account, model)**. JSON on the bus; the same struct in the library and the CLI.
 
+**The balance row is not a model.** Each service with a balance endpoint also writes one row per (kind, provider,
+account) under `<kind>.<provider>.<account>.balance`, with `probe.name = "balance"`: the balance read's own record, so
+that kind has a last row to be due from (§3). Its `state` is `ok`, `quota_exhausted` at or below the floor, or
+`unknown` (`cannot_assess:balance_unreadable`); its `balance` is set unless `publish_balance = false`; its `ttl_s` is
+the balance kind's. A reader choosing or listing models skips it (`probe.name == "balance"`); the floor reaches the
+model rows themselves as `quota_exhausted`. Config refuses a model whose slug is `balance` on such a service.
+
 | field | type | notes |
 |---|---|---|
 | `contract` | `"ai-status/1"` | versioned like the dead rows (`provider_balance/1.0`, `account-util/1.0`, LIT §6) |
