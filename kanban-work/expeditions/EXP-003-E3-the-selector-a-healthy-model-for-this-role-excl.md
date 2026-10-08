@@ -2,7 +2,7 @@
 id: EXP-003
 title: "E3: the selector — 'a healthy model for this role, excluding this family' as a library call and a CLI"
 type: expedition
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -19,3 +19,14 @@ A pure function over status rows plus a static model table (role, family, contex
 
 ## Definition of Done
 The selector refuses a family the author uses; rc 3 when every candidate is `unknown`; unit tests run without a bus.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T17:22:12+00:00"^^xsd:dateTime ;
+    kb:by "M5/s-b1fd4c67" ;
+  ] .
+```
