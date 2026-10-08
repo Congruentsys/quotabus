@@ -107,14 +107,26 @@ pub fn free_port() -> u16 {
         .port()
 }
 
-/// A loopback port with nothing listening on it.
+/// A loopback port that REFUSES connections, deterministically: port 1 (tcpmux, never served on a dev or CI box)
+/// is privileged, so no non-root test process can bind it, and `free_port()` only hands out ephemeral ports. The
+/// previous bind-drop-reuse of a free port raced with parallel tests that were handed the same port. The check
+/// below proves it is a prompt "connection refused" (not a timeout) every time it is used.
 pub fn closed_port() -> u16 {
-    let p = free_port();
+    const P: u16 = 1;
+    let started = Instant::now();
+    match TcpStream::connect_timeout(
+        &(std::net::Ipv4Addr::LOCALHOST, P).into(),
+        Duration::from_secs(2),
+    ) {
+        Err(e) if e.kind() == std::io::ErrorKind::ConnectionRefused => {}
+        Err(e) => panic!("127.0.0.1:{P} must refuse a connection, got {e:?}"),
+        Ok(_) => panic!("127.0.0.1:{P} unexpectedly accepts connections: something listens on it"),
+    }
     assert!(
-        TcpStream::connect(("127.0.0.1", p)).is_err(),
-        "port {p} unexpectedly open"
+        started.elapsed() < Duration::from_secs(1),
+        "127.0.0.1:{P} refused too slowly"
     );
-    p
+    P
 }
 
 /// A throwaway `nats-server -js` on loopback, killed on drop.
