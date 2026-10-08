@@ -2,12 +2,13 @@
 id: SIG-008
 title: "Q9 revisited: statusLine does not fire under claude -p — install it anyway, and/or capture stream-json rate_limit_event?"
 type: signal
-status: backlog
+status: arrived
 priority: medium
 assignee: null
 created: 2026-10-08
 tags: [captain-decision, design]
 depends_on: []
+resolution: completed
 ---
 
 # Q9 revisited: statusLine does not fire under claude -p — install it anyway, and/or capture stream-json rate_limit_event?
@@ -29,3 +30,16 @@ Yes to 1 and 2, with the fallback kept: the statusLine covers interactive hosts,
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
 
 Captain 2026-10-08 (asked by M5-MBP-2/s-72a67d16): "Both + fallback". This is the recommended default. E2 installs the statusLine for interactive hosts, ALSO captures the stream-json rate_limit_event from `claude -p` runs into the same cache, and keeps the ~/.claude.json cachedUsageUtilization fallback.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:done ;
+    kb:at "2026-10-08T18:52:54+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:forcedMove "true"^^xsd:boolean ;
+    kb:resolution "completed" ;
+  ] .
+```
