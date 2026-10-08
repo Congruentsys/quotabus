@@ -487,8 +487,17 @@ impl Backend for NatsKv {
                 .publish(change_subject(&row.key), bytes.into())
                 .await
                 .is_ok();
-            if announced {
-                let _ = client.flush().await;
+            // the flush is bounded (review r1 F4): a stalled connection must not hold the put, which already succeeded
+            if announced
+                && tokio::time::timeout(ANNOUNCE_FLUSH_TIMEOUT, client.flush())
+                    .await
+                    .is_err()
+            {
+                tracing::warn!(
+                    key = %row.key,
+                    "the change announcement did not flush within {}s; the row is stored",
+                    ANNOUNCE_FLUSH_TIMEOUT.as_secs()
+                );
             }
         }
         Ok(())
@@ -528,6 +537,9 @@ impl Backend for NatsKv {
         Ok(self.scan().await?.rows)
     }
 }
+
+/// How long the change announcement's flush may take before the put returns anyway.
+const ANNOUNCE_FLUSH_TIMEOUT: Duration = Duration::from_secs(2);
 
 /// How many times a conditional write is retried after a concurrent writer moved the key's revision.
 const CAS_ATTEMPTS: usize = 5;
