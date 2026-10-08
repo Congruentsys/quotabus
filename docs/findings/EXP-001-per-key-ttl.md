@@ -43,6 +43,6 @@ nats kv del $B --force
    creates its bucket the same way (`limit_markers` in async-nats's `kv::Config`, server 2.11+); an existing bucket
    created without it (every pre-existing bucket on Mini, per DESIGN.md §3) cannot be relied on to expire keys.
 3. **Nothing of the expired key is left in the stream** once the 2 s marker TTL has also passed: the state shows
-   \`messages=1, first_seq=2\` — the plain key (seq 2) alone; seq 1 (the TTL key) and seq 3 are gone. [INFERENCE] seq 3
-   is the server's delete marker for the expired key, which a \`watch\`er would see as a delete entry while it lives;
+   `messages=1, first_seq=2` — the plain key (seq 2) alone; seq 1 (the TTL key) and seq 3 are gone. [INFERENCE] seq 3
+   is the server's delete marker for the expired key, which a `watch`er would see as a delete entry while it lives;
    a reader treats it as ABSENT (the freshness rule's first line), never as a value. Not measured with a watcher.
