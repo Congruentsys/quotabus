@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -9,8 +9,8 @@ use chrono::Utc;
 use clap::{Parser, Subcommand};
 use quotabus::config::DEFAULT_BUCKET;
 use quotabus::{
-    Backend, BackendError, Config, FileBackend, Kind, NatsKv, Record, Redactor, Runner, Verdict,
-    freshness,
+    Backend, BackendError, Config, FileBackend, Kind, Listing, NatsKv, Record, Redactor, Runner,
+    Verdict, freshness,
 };
 
 #[derive(Parser)]
@@ -260,12 +260,12 @@ struct Entry {
     verdict: Verdict,
 }
 
-async fn read_rows(config: &Config) -> Result<Vec<Record>, BackendError> {
+async fn read_rows(config: &Config) -> Result<Listing, BackendError> {
     match nats_url(config) {
-        Some((url, bucket)) => NatsKv::connect_reader(&url, &bucket).await?.list().await,
+        Some((url, bucket)) => NatsKv::connect_reader(&url, &bucket).await?.scan().await,
         None => {
             let dir = file_dir(config).map_err(BackendError::Other)?;
-            FileBackend::new(dir).list().await
+            FileBackend::new(dir).scan().await
         }
     }
 }
@@ -294,11 +294,12 @@ async fn status(config: &Config, redactor: &Redactor, args: &StatusArgs) -> u8 {
         return UNKNOWN;
     }
 
-    let (rows, failure) = match read_rows(config).await {
-        Ok(rows) => (rows, None),
-        Err(e) => (Vec::new(), Some(e)),
+    let (listing, failure) = match read_rows(config).await {
+        Ok(l) => (l, None),
+        Err(e) => (Listing::default(), Some(e)),
     };
-    let by_key: HashMap<&str, &Record> = rows.iter().map(|r| (r.key.as_str(), r)).collect();
+    let by_key: HashMap<&str, &Record> = listing.rows.iter().map(|r| (r.key.as_str(), r)).collect();
+    let unreadable: HashSet<&str> = listing.unreadable.iter().map(|(k, _)| k.as_str()).collect();
     let now = Utc::now();
     let mut entries = Vec::new();
     for svc in services {
@@ -308,6 +309,10 @@ async fn status(config: &Config, redactor: &Redactor, args: &StatusArgs) -> u8 {
             let verdict = match &failure {
                 Some(e) => Verdict::CannotAssess {
                     reason: e.reason().to_string(),
+                },
+                // a row that exists but does not parse is a failure to measure, never `absent`
+                None if unreadable.contains(key.as_str()) => Verdict::CannotAssess {
+                    reason: "cannot_assess:unreadable_row".to_string(),
                 },
                 None => freshness(row.as_ref(), now),
             };

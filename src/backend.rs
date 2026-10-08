@@ -41,13 +41,27 @@ impl BackendError {
     }
 }
 
+/// What a reader found: the rows it could parse, and the keys present whose value is not a row.
+#[derive(Debug, Default)]
+pub struct Listing {
+    pub rows: Vec<Record>,
+    /// (key, why) for each key that exists but does not parse: CANNOT-ASSESS, never absent (DESIGN §2).
+    pub unreadable: Vec<(String, String)>,
+}
+
 pub trait Backend {
     /// Write a row under `row.key`; a bus backend gives it a per-key TTL of `row.ttl_s`.
     fn put(&self, row: &Record) -> impl Future<Output = Result<(), BackendError>> + Send;
     /// The row for `key`, or `None` when it is absent (or expired out of the bucket).
     fn get(&self, key: &str) -> impl Future<Output = Result<Option<Record>, BackendError>> + Send;
-    /// Every row present.
+    /// Every key present. A failed read part-way through is an error for the whole listing.
+    fn scan(&self) -> impl Future<Output = Result<Listing, BackendError>> + Send;
+    /// Every row present (unparseable keys are left out; [`Backend::scan`] reports them).
     fn list(&self) -> impl Future<Output = Result<Vec<Record>, BackendError>> + Send;
+}
+
+fn parse_row(key: &str, bytes: &[u8]) -> Result<Record, String> {
+    serde_json::from_slice(bytes).map_err(|e| format!("{key} is not a row: {e}"))
 }
 
 /// `<dir>/<key>.json`.
@@ -92,43 +106,66 @@ impl Backend for FileBackend {
     }
 
     async fn get(&self, key: &str) -> Result<Option<Record>, BackendError> {
-        let path = self.path(key)?;
-        match tokio::fs::read(&path).await {
-            Ok(bytes) => serde_json::from_slice(&bytes)
+        match self.read_raw(key).await? {
+            Some(bytes) => parse_row(key, &bytes)
                 .map(Some)
-                .map_err(|e| other(&format!("{} is not a row", path.display()), e)),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
-            Err(e) => Err(other(&format!("cannot read {}", path.display()), e)),
+                .map_err(BackendError::Other),
+            None => Ok(None),
         }
     }
 
-    async fn list(&self) -> Result<Vec<Record>, BackendError> {
+    async fn scan(&self) -> Result<Listing, BackendError> {
         let mut rd = match tokio::fs::read_dir(&self.dir).await {
             Ok(rd) => rd,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Listing::default()),
             Err(e) => return Err(other(&format!("cannot read {}", self.dir.display()), e)),
         };
-        let mut rows = Vec::new();
+        let mut keys = Vec::new();
         while let Some(entry) = rd
             .next_entry()
             .await
             .map_err(|e| other(&format!("cannot read {}", self.dir.display()), e))?
         {
             let name = entry.file_name().to_string_lossy().into_owned();
-            let Some(key) = name.strip_suffix(".json") else {
-                continue;
-            };
-            if key.starts_with('.') {
-                continue;
-            }
-            match self.get(key).await {
-                Ok(Some(r)) => rows.push(r),
-                Ok(None) => {}
-                Err(e) => tracing::warn!("skipping unreadable row: {e}"),
+            if let Some(key) = name.strip_suffix(".json")
+                && !key.starts_with('.')
+            {
+                keys.push(key.to_string());
             }
         }
-        rows.sort_by(|a, b| a.key.cmp(&b.key));
-        Ok(rows)
+        keys.sort();
+        let mut listing = Listing::default();
+        for key in keys {
+            if let Some(bytes) = self.read_raw(&key).await? {
+                push_parsed(&mut listing, key, &bytes);
+            }
+        }
+        Ok(listing)
+    }
+
+    async fn list(&self) -> Result<Vec<Record>, BackendError> {
+        Ok(self.scan().await?.rows)
+    }
+}
+
+impl FileBackend {
+    async fn read_raw(&self, key: &str) -> Result<Option<Vec<u8>>, BackendError> {
+        let path = self.path(key)?;
+        match tokio::fs::read(&path).await {
+            Ok(bytes) => Ok(Some(bytes)),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(e) => Err(other(&format!("cannot read {}", path.display()), e)),
+        }
+    }
+}
+
+fn push_parsed(listing: &mut Listing, key: String, bytes: &[u8]) {
+    match parse_row(&key, bytes) {
+        Ok(r) => listing.rows.push(r),
+        Err(why) => {
+            tracing::warn!("unreadable row: {why}");
+            listing.unreadable.push((key, why));
+        }
     }
 }
 
@@ -250,31 +287,48 @@ impl Backend for NatsKv {
     }
 
     async fn get(&self, key: &str) -> Result<Option<Record>, BackendError> {
-        match self.store.get(key).await {
-            Ok(Some(bytes)) => serde_json::from_slice(&bytes)
+        match self.read_raw(key).await? {
+            Some(bytes) => parse_row(key, &bytes)
                 .map(Some)
-                .map_err(|e| other(&format!("{key} is not a row"), e)),
-            Ok(None) => Ok(None),
-            Err(e) => Err(other(&format!("get {key}"), e)),
+                .map_err(BackendError::Other),
+            None => Ok(None),
         }
     }
 
-    async fn list(&self) -> Result<Vec<Record>, BackendError> {
-        let mut keys = self.store.keys().await.map_err(|e| other("list keys", e))?;
+    async fn scan(&self) -> Result<Listing, BackendError> {
+        let mut keys = self.store.keys().await.map_err(|e| {
+            BackendError::Unreachable(format!("cannot list bucket {}: {e}", self.bucket))
+        })?;
         let mut names = Vec::new();
         while let Some(k) = keys.next().await {
-            names.push(k.map_err(|e| other("list keys", e))?);
+            names.push(k.map_err(|e| {
+                BackendError::Unreachable(format!("cannot list bucket {}: {e}", self.bucket))
+            })?);
         }
         names.sort();
-        let mut rows = Vec::new();
-        for k in names {
-            match self.get(&k).await {
-                Ok(Some(r)) => rows.push(r),
-                Ok(None) => {}
-                Err(BackendError::Other(m)) => tracing::warn!("skipping unreadable row: {m}"),
-                Err(e) => return Err(e),
+        let mut listing = Listing::default();
+        for key in names {
+            // a read that fails part-way is a failure to measure for the whole listing, never `absent`
+            if let Some(bytes) = self.read_raw(&key).await? {
+                push_parsed(&mut listing, key, &bytes);
             }
         }
-        Ok(rows)
+        Ok(listing)
+    }
+
+    async fn list(&self) -> Result<Vec<Record>, BackendError> {
+        Ok(self.scan().await?.rows)
+    }
+}
+
+impl NatsKv {
+    async fn read_raw(&self, key: &str) -> Result<Option<Vec<u8>>, BackendError> {
+        match self.store.get(key).await {
+            Ok(v) => Ok(v.map(|b| b.to_vec())),
+            Err(e) if e.kind() == kv::EntryErrorKind::TimedOut => {
+                Err(BackendError::Unreachable(format!("cannot read {key}: {e}")))
+            }
+            Err(e) => Err(other(&format!("cannot read {key}"), e)),
+        }
     }
 }
