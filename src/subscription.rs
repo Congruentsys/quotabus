@@ -165,6 +165,9 @@ fn epoch(secs: i64) -> Option<DateTime<Utc>> {
     Utc.timestamp_opt(secs, 0).single()
 }
 
+/// The system prompt Claude Code sends; the direct read needs it (HAZ-003: without it, 429 and no unified headers).
+const CLAUDE_CODE_SYSTEM: &str = "You are Claude Code, Anthropic's official CLI for Claude.";
+
 // ── Claude ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 async fn claude(
@@ -219,6 +222,8 @@ async fn claude_direct(
         .json(&json!({
             "model": model,
             "max_tokens": 1,
+            // HAZ-003: without Claude Code's system prompt a setup-token gets 429 with no unified headers
+            "system": CLAUDE_CODE_SYSTEM,
             "messages": [{"role": "user", "content": PROMPT}],
         }));
     let started = Instant::now();
@@ -279,10 +284,13 @@ async fn claude_direct(
             h.status,
             error_body(&h).map(|b| format!(": {b}")).unwrap_or_default()
         );
-        return Err((
-            "no_unified_headers".to_string(),
-            ctx.redactor.redact_error(&error),
-        ));
+        // HAZ-003: a bare 429 is the server refusing the call, not a quota reading; name it so
+        let why = if h.status == 429 {
+            "http_429_no_unified_headers"
+        } else {
+            "no_unified_headers"
+        };
+        return Err((why.to_string(), ctx.redactor.redact_error(&error)));
     }
     let statuses: Vec<&str> = statuses.iter().map(String::as_str).collect();
     let mut r = base_row(ctx, svc, UNIFIED_HEADERS);
