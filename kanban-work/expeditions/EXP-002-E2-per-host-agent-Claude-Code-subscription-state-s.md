@@ -105,3 +105,7 @@ Rescoped by the Captain 2026-10-08. The new body quotes the ruling and records t
 ### M5-MBP-2/s-72a67d16 (2026-10-08 19:56)
 
 Tests red at 556da87 (partner sub-agent, rescoped). There are 49 new tests across exp002_subscription_interval, claude_direct, claude_fallback, copilot, subscription_schedule, no_leak and docs; the obsolete per-host tests and stubs are deleted. 47 fail on a todo!() stub or an assertion, none on a compile error. Both controls pass (the reference known answer and the leak-scan control).
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 20:22)
+
+DoD met on the bus: 2026-10-08T20:21Z, from M5, 'doppler run --project nusy-product-team --config dev -- quotabus --config <fleet-subscription.toml> probe --force' gave 'published 7 rows to bucket ai_status' (Mini). All 7 ok: six subscription.anthropic.* rows and subscription.github.hankh95.copilot, observed_by M5. Every Claude row came via the stream-json FALLBACK: the direct read gets HTTP 429 without Claude Code's system prompt. Filed as HAZ-003 (high, provisioning).
