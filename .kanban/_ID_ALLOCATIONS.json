@@ -33,5 +33,12 @@
     "number": 2,
     "allocated_at": "2026-10-08T17:03:46.278682",
     "allocated_by": "Hank Head"
+  },
+  {
+    "id": "EXP-003",
+    "prefix": "EXP",
+    "number": 3,
+    "allocated_at": "2026-10-08T17:03:48.437749",
+    "allocated_by": "Hank Head"
   }
 ]
