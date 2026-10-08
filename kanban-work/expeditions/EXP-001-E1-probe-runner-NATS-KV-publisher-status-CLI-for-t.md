@@ -53,3 +53,7 @@ Released with depends_on CHORE-003. Open signals it touches are built to docs/DE
 ### M5/s-b1fd4c67 (2026-10-08 17:33)
 
 Measure-first step done: a per-key TTL put EXPIRES on Mini's nats-server 2.12.4 (5 s key present at +2 s, absent at +8 s; plain key survives; bucket reports Per-Key TTL Supported: true). Only a temporary bucket qb_measure_exp001 was created and then deleted. natscli 0.3.1 has the TTL flag on 'kv create', not 'kv put' (design §3 recipe corrected in the finding). Finding: docs/findings/EXP-001-per-key-ttl.md on branch exp/EXP-001-probe-kv-status.
+
+### M5/s-b1fd4c67 (2026-10-08 17:53)
+
+tests red at ade2ebd (partner sub-agent): 80 Rust tests, 73 failing on todo!() stubs or exit-code asserts, none on a compile error; fmt/clippy/build green; the 35 script tests still pass. Controls shown able to fail (leak checker mutant; plain bucket vs limit_markers).
