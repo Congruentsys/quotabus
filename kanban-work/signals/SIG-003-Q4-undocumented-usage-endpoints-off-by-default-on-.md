@@ -23,3 +23,7 @@ Still open — not decided by any session. It blocks nothing in v1.0, so the wor
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:29)
 
 CHORE-002 (PR #3) measured z.ai's undocumented GET /api/monitor/usage/quota/limit and /api/biz/subscription/list. Both answer an NUSY_GLM API key. The findings file builds to §10 Q4's RECOMMENDATION (off in the FOSS config, on and labelled in the fleet's) and cites this signal as open; it decides nothing.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
+
+Captain 2026-10-08: "Off FOSS, on fleet". This is the recommended default: undocumented sources are off in the shipped config and on in the fleet config, and every row is labelled source=undocumented.
