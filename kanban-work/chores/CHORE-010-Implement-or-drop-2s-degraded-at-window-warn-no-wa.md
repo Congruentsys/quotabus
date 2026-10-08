@@ -2,7 +2,7 @@
 id: CHORE-010
 title: "Implement §2's 'degraded at window ≥ warn %': [probe] warn_pct = 90 (steer bucket 2)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-08
@@ -38,3 +38,14 @@ Basis:
 90 is the default because a 5 h window at 90 % still leaves time to act, while 80 % would flag routine heavy use. It is reversible (config).
 Whether a near-limit degraded FILES a signal is SIG-010 (open, bucket 3). Until it is ruled, it files as every bad state does today.
 Released. Decided — open to the Captain's veto.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-08T21:58:05+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
