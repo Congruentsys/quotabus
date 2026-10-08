@@ -49,3 +49,7 @@ Released with depends_on EXP-001, CHORE-002 (statusLine install waits on CHORE-0
 ### M5-MBP-2/s-72a67d16 (2026-10-08 18:29)
 
 CHORE-002 (PR #3): the statusLine hook does NOT fire under claude -p. Step 2's precondition ('only after CHORE-002 shows it fires under claude -p') is therefore false, and the Captain's conditional Q9 yes goes back as SIG-008 (open). That signal also names a measured alternative: stream-json rate_limit_event. Back to harbor until SIG-008 is answered; the Copilot and ~/.claude.json fallback steps do not depend on it.
+
+### M5-MBP-2/s-72a67d16 (2026-10-08 18:53)
+
+SIG-008 ruled (Captain 2026-10-08, 'Both + fallback'). Step 2 becomes: install the statusLine for interactive hosts, ALSO tee the stream-json rate_limit_event from claude -p runs into the same cache, and keep the ~/.claude.json fallback. A missing rate_limits reads as unknown, never 0 % (docs/findings/CHORE-002-statusline-under-claude-p.md). SIG-004/Q5: subscription reads stay at 5 min. SIG-003/Q4: Copilot copilot_internal is on in the fleet, off in FOSS, labelled. Released again to provisioning.
