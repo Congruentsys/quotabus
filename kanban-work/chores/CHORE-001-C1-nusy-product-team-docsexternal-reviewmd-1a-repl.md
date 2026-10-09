@@ -67,3 +67,7 @@ Packet re-pinned by CHORE-014 (PR #22, merged at 84204b3): every quotabus cite n
 ### Mac-mini/s-e7976c42 (2026-10-09 13:36)
 
 [steer] bucket-1 read (Mac-mini, 2026-10-09, quotabus 9005df3): nusy-product-team origin/main d5c0ced739 (2026-10-09 12:30 UTC) — `git show origin/main:docs/external-review.md | grep -ci quotabus` → 0; its last change to that file is still f03397e352 (the 2026-09-24 hand-probe §1a). Not landed there, so this stays stranded on nusy-product-team.
+
+### M5-MBP-2/s-72a67d16 (2026-10-09 13:37)
+
+Filed on nusy-product-team's board as nusy-product-team CH-13371 (2026-10-09, at the Captain's request: "this is how we move work between repos"). It is related to IDEA-13333, and its body links the packet, the wiring note and the CHORE-016 finding. Re-checked: their docs/external-review.md is unchanged since f03397e352, so the packet's base holds. CHORE-001 stays stranded until CH-13371 lands; whoever reads its landing sha closes CHORE-001 citing it.
