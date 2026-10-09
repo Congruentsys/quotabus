@@ -299,5 +299,12 @@
     "number": 21,
     "allocated_at": "2026-10-09T22:31:20.141502",
     "allocated_by": "hankh1844"
+  },
+  {
+    "id": "CHORE-022",
+    "prefix": "CHORE",
+    "number": 22,
+    "allocated_at": "2026-10-09T22:31:39.247715",
+    "allocated_by": "hankh1844"
   }
 ]
