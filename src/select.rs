@@ -72,8 +72,9 @@ pub fn select(rows: &[Record], query: &Query, config: &Config) -> Vec<Candidate>
     };
     let mut ranked: Vec<(Rank, Candidate)> = Vec::new();
     for svc in &config.services {
-        // a subscription seat is never a candidate, pending the Captain's SIG-009: its row is per ACCOUNT, with the
-        // service id in the model slot, so there is no model to print as `provider model` (review r1 F1)
+        // a subscription seat is never a candidate, as decided on SIG-009 (steer bucket 2, 2026-10-08: an agent
+        // session's decision, not a Captain ruling, open to the Captain's veto; DESIGN §3): its row is per ACCOUNT,
+        // with the service id in the model slot, so there is no model to print as `provider model` (review r1 F1)
         if svc.kind == Kind::Subscription
             || !svc.roles.iter().any(|r| r == &query.role)
             || excluded(&svc.family)
