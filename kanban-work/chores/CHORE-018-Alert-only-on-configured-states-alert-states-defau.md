@@ -2,7 +2,7 @@
 id: CHORE-018
 title: "Alert only on configured states: [alert] states, default hard failures + near-limit window (Captain SIG-010)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -39,3 +39,14 @@ by guessing.
    show each check can fail.
 5. DESIGN.md §3 alert row and §10 Q8 record the ruling verbatim with its SIG; `examples/quotabus.toml` shows
    `[alert] states` with the default. `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T13:38:37+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
