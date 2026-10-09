@@ -55,3 +55,7 @@ Correction to my last comment: EXP-001 landed in PR #2, not '#6?'. EXP-002 is #1
 ### M5-MBP-2/s-72a67d16 (2026-10-08 21:58)
 
 [steer] bucket-1 read (M5, 2026-10-08): nusy-product-team origin/main 34e7be27ff still has the 2026-09-24 hand-probe §1a ('quotabus' does not appear in docs/external-review.md). Not landed there, so this stays stranded.
+
+### M5-MBP-2/s-72a67d16 (2026-10-09 01:40)
+
+Packet amended by CHORE-013 (PR #20, e8a7eda, merged at 6f6ce98): the seat rule is now stated as decided on SIG-009 (steer bucket 2, open to the Captain's veto), no longer 'interim'. nusy-product-team should take the packet as it is on quotabus main.
