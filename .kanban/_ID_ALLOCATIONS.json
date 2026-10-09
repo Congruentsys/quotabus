@@ -306,5 +306,12 @@
     "number": 22,
     "allocated_at": "2026-10-09T22:31:39.247715",
     "allocated_by": "hankh1844"
+  },
+  {
+    "id": "HAZ-005",
+    "prefix": "HAZ",
+    "number": 5,
+    "allocated_at": "2026-10-09T22:31:41.088170",
+    "allocated_by": "hankh1844"
   }
 ]
