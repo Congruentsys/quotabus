@@ -246,4 +246,6 @@ between repos", quoted in CHORE-017's body).
    by another `--agent`: a plain `move <ID> done` → "Illegal move CHORE-019: stranded → arrived. Legal from stranded:
    provisioning, underway, harbor.", rc 1; the forced move above → "…: pushed to origin/main", rc 0, the item
    `arrived`, `resolution: completed`, `kb:forcedMove true`, its `assignee:` unchanged. The holder guard covers
-   in-progress items only (`move --help`), so any session may close a stranded one; the claimant stays the record.
+   in-progress items only (`move --help`), so any session may close a LANDED OTHER-REPO item whose `-m` carries the
+   landing commit AND the read that shows it; the claimant stays the record. Any other `stranded` item is never
+   closed with `--force`: it goes back through the table (`provisioning` or `harbor`).
