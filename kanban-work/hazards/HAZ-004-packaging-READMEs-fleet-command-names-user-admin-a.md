@@ -2,7 +2,7 @@
 id: HAZ-004
 title: "packaging README's fleet command names user 'admin' and /usr/local paths that do not exist on Mini"
 type: hazard
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
@@ -41,6 +41,12 @@ Run as written, the command fails at SSH. Run with the right user, it would inst
     kb:status kb:in_progress ;
     kb:at "2026-10-09T02:59:37+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T03:10:54+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/24> ;
   ] .
 ```
 
