@@ -144,3 +144,17 @@ pub fn warn_state(state: State, headroom: Option<&Headroom>, warn_pct: f64) -> S
         .any(|p| p >= warn_pct);
     if near { State::Degraded } else { state }
 }
+
+/// The `reason` a row carries when the warn rule ([`warn_state`]) turned its `ok` into `degraded` (CHORE-018): how
+/// `quotabus alert` tells a near-limit window from a latency-degraded row (`[alert] states`, SIG-010).
+pub const WINDOW_NEAR_LIMIT: &str = "window_near_limit";
+
+/// Apply the warn rule to a built row: its state as [`warn_state`] leaves it, and, when that turned an `ok` into
+/// `degraded`, the reason [`WINDOW_NEAR_LIMIT`]. Any other row is left as it is.
+pub fn apply_warn_rule(r: &mut crate::record::Record, warn_pct: f64) {
+    let before = r.state;
+    r.state = warn_state(r.state, r.headroom.as_ref(), warn_pct);
+    if before == State::Ok && r.state == State::Degraded {
+        r.reason = Some(WINDOW_NEAR_LIMIT.to_string());
+    }
+}

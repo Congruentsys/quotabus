@@ -198,7 +198,7 @@ async fn alert_with(
     config: &Config,
     redactor: &Redactor,
 ) -> Result<u8, BackendError> {
-    use quotabus::alert::{AlertEntry, Crossing, Decision, Pending, alert_key, decide};
+    use quotabus::alert::{AlertEntry, Crossing, Decision, Pending, alert_key, decide_listed};
     let listing = backend.scan().await?;
     let by_key: HashMap<&str, &Record> = listing.rows.iter().map(|r| (r.key.as_str(), r)).collect();
     let unreadable: HashSet<&str> = listing.unreadable.iter().map(|(k, _)| k.as_str()).collect();
@@ -250,7 +250,8 @@ async fn alert_with(
                     serde_json::to_vec(&e).map_err(|x| BackendError::Other(x.to_string()))?;
                 backend.put_entry(&alert_key(&e.key), bytes).await
             };
-            match decide(&verdict, entry.as_ref()) {
+            let row_reason = row.and_then(|r| r.reason.as_deref());
+            match decide_listed(&verdict, row_reason, entry.as_ref(), &config.alert.states) {
                 Decision::Nothing => {}
                 Decision::Clear => {
                     match write(AlertEntry::new(&key, quotabus::State::Ok, None, now)).await {
