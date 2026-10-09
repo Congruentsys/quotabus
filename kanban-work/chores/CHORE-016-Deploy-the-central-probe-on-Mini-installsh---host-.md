@@ -6,7 +6,7 @@ status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
-depends_on: []
+depends_on: [HAZ-004]
 ---
 
 # Deploy the central probe on Mini (install.sh --host mini) and measure VOY-001's Definition of Done on the live bus
