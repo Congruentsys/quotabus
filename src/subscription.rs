@@ -58,7 +58,7 @@ pub(crate) async fn read(ctx: &Ctx<'_>, svc: &ServiceConfig, auth: Auth) -> Reco
         }
     }
     let listed = |name: &str| svc.sources.iter().any(|s| s == name);
-    let r = match svc.provider.as_str() {
+    let mut r = match svc.provider.as_str() {
         "anthropic" => {
             let (direct, fallback) = (listed(UNIFIED_HEADERS), listed(STREAM_JSON));
             let name = if direct || !fallback {
@@ -91,6 +91,8 @@ pub(crate) async fn read(ctx: &Ctx<'_>, svc: &ServiceConfig, auth: Auth) -> Reco
             &format!("no subscription reader for provider {other:?}"),
         ),
     };
+    // DESIGN §2 "a window ≥ warn %" (CHORE-010): one place for every subscription source
+    r.state = crate::classify::warn_state(r.state, r.headroom.as_ref(), ctx.config.probe.warn_pct);
     tracing::info!(key = %r.key, state = r.state.as_str(), probe = %r.probe.name, "subscription read");
     if let Some(e) = &r.error {
         tracing::debug!(key = %r.key, error = %e, "subscription error");

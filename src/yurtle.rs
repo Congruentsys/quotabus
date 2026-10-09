@@ -20,12 +20,12 @@
 //! | `Service`   | `#<service id>`, one per `[[service]]`      | `kind provider family account base-url protocol models roles cost-class secret sources publish-balance balance-url balance-path currency floor context` |
 //! | `Bus`       | `#bus` (at most one)                        | `url bucket` |
 //! | `File`      | `#file` (at most one)                       | `dir` |
-//! | `Probe`     | `#probe` (at most one)                      | `max-tokens degraded-latency-ms` |
+//! | `Probe`     | `#probe` (at most one)                      | `max-tokens degraded-latency-ms warn-pct` |
 //! | `Schedule`  | `#api`, `#balance`, `#subscription`         | `interval ttl` (`[intervals]` / `[ttl]`) |
 //! | `AlertSink` | `#nusy-kanban`, `#yurtle-kanban`, `#webhook` | `command item-type tags url` |
 //!
 //! List columns: `models roles sources tags context`; `context` entries are `<model>=<tokens>`. Numeric: `floor`,
-//! `max-tokens`, `degraded-latency-ms`. Boolean: `publish-balance` (`true` / `false`).
+//! `max-tokens`, `degraded-latency-ms`, `warn-pct`. Boolean: `publish-balance` (`true` / `false`).
 
 use toml::{Table, Value};
 
@@ -218,6 +218,7 @@ fn schema(ty: &str) -> Option<&'static [(&'static str, &'static str, Col)]> {
         "Probe" => &[
             ("max-tokens", "max_tokens", Int),
             ("degraded-latency-ms", "degraded_latency_ms", Int),
+            ("warn-pct", "warn_pct", Float),
         ],
         "Schedule" => &[("interval", "interval", Str), ("ttl", "ttl", Str)],
         "AlertSink" => &[

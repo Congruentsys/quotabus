@@ -21,6 +21,10 @@ subscription = "1h"                     # subscription account reads: hourly (EX
 
 [probe]
 max_tokens = 20
+# A row that would read ok reads degraded when any window (headroom.windows[].used_pct, or window_pct) is >= this %.
+# A number, 0 < warn_pct <= 100; default 90 (CHORE-010: decided by an agent session's steer pass, bucket 2,
+# 2026-10-08, open to the Captain's veto). Whether a near-limit degraded files an alert is SIG-010, still open.
+warn_pct = 90
 
 [[service]]
 id         = "glm"
