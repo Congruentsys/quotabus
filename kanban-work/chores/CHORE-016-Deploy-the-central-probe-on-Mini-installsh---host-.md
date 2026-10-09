@@ -36,3 +36,10 @@ VOY-001's Definition of Done says `quotabus status` on the hub shows every confi
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-09 02:59)
+
+Depends on HAZ-004: the README's fleet command names user admin and /usr/local paths, and none of them exist on Mini (measured). Read paths 1-3 of the DoD as the corrected ones that HAZ-004 lands: binary under /Users/hankh19/.local/bin, config at /Users/hankh19/.config/quotabus/quotabus.toml.
