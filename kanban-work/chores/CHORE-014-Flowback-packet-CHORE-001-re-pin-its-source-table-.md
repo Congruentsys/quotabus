@@ -6,7 +6,7 @@ status: backlog
 priority: medium
 assignee: null
 created: 2026-10-09
-depends_on: []
+depends_on: [CHORE-010]
 ---
 
 # Flowback packet CHORE-001: re-pin its source-table cites to current main (after CHORE-010)
