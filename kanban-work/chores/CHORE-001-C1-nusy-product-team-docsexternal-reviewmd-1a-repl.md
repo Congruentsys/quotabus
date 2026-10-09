@@ -63,3 +63,7 @@ Packet amended by CHORE-013 (PR #20, e8a7eda, merged at 6f6ce98): the seat rule 
 ### M5-MBP-2/s-72a67d16 (2026-10-09 01:57)
 
 Packet re-pinned by CHORE-014 (PR #22, merged at 84204b3): every quotabus cite now holds on quotabus 8213424. nusy-product-team should take the packet as it is on quotabus main.
+
+### Mac-mini/s-e7976c42 (2026-10-09 13:36)
+
+[steer] bucket-1 read (Mac-mini, 2026-10-09, quotabus 9005df3): nusy-product-team origin/main d5c0ced739 (2026-10-09 12:30 UTC) — `git show origin/main:docs/external-review.md | grep -ci quotabus` → 0; its last change to that file is still f03397e352 (the 2026-09-24 hand-probe §1a). Not landed there, so this stays stranded on nusy-product-team.
