@@ -8,7 +8,7 @@ meet VOY-001's Definition of Done?
 > refuses with rc 3; an outage files exactly one alert.
 
 **Answer: yes.**
-- Mini's launchd unit published 18 rows over two ticks, and `status` lists all 16 configured (service, model) rows
+- Mini's launchd unit published 18 rows on tick 1 (and rewrote 1 on tick 2: 19 writes to 18 distinct keys), and `status` lists all 16 configured (service, model) rows
   with their ages.
 - A missing row reads UNKNOWN: the empty-bus run before the first tick shows all 16 as `UNKNOWN … absent`. A stale
   row was not produced live here; the freshness tests cover it (`tests/freshness_rule.rs`).
@@ -70,6 +70,20 @@ retrieve value from system keyring", because the token is in the login keychain.
 `gui/501` counted the 7 subscription token names (count only, no values read), and the job was then removed. The
 unit loads into `gui/501`.
 
+```
+# over plain ssh (the login keychain is not available):
+$ ssh mini '/opt/homebrew/bin/doppler secrets --project nusy-product-team --config dev --only-names 2>&1 | grep -iE "error|keyring" | head -2'
+Unable to retrieve value from system keyring
+Doppler Error: exit status 36
+# a throwaway job in gui/501 (Label com.congruentsys.qb-doppler-test, RunAtLoad), whose ProgramArguments ran:
+#   cd /tmp; doppler secrets --project nusy-product-team --config dev --only-names 2>/tmp/qbdt.err \
+#     | grep -cE "NUSY_CLAUDE_TOKEN_|GITHUB_TOKEN" > /tmp/qbdt.out; grep -iE "error|keyring" /tmp/qbdt.err >> /tmp/qbdt.out
+$ ssh mini 'launchctl bootstrap gui/501 /tmp/com.congruentsys.qb-doppler-test.plist; echo boot=$?; …; cat /tmp/qbdt.out;
+    launchctl bootout gui/501/com.congruentsys.qb-doppler-test; rm -f /tmp/com.congruentsys.qb-doppler-test.plist /tmp/qbdt.out'
+boot=0
+7
+```
+
 ## 2. Tick 1 (RunAtLoad, 03:12 UTC): rows and alerts
 
 `~/Library/Logs/quotabus/probe.out.log` on Mini, verbatim (nothing in it needed redacting):
@@ -102,8 +116,18 @@ alert: 16 keys checked, 4 crossings filed, 0 re-armed
 ```
 
 The standing negative control, xai (its key is disabled), reads `auth_failed`, never `ok`. Every subscription read
-used its first source (`probe=unified_headers` for Claude, `copilot_internal` for Copilot, per `probe.err.log`), so
-the stream-json fallback was not exercised on this run.
+used its first source, so the stream-json fallback was not exercised on this run:
+
+```
+$ grep -E "probe=(unified_headers|stream_json|copilot_internal)" probe.err.log | sed -E 's/^[^ ]+ +INFO //'
+quotabus::subscription: subscription read key=subscription.anthropic.hankh95.claude-hankh95 state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.hankh1995.claude-hankh1995 state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.hankxu95.claude-hankxu95 state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.hankh1844.claude-hankh1844 state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.hanssantiago1995.claude-hanssantiago1995 state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.github.hankh95.copilot state="ok" probe=copilot_internal
+quotabus::subscription: subscription read key=subscription.anthropic.hankh19.claude-hankh19 state="ok" probe=unified_headers
+```
 
 ## 3. `quotabus status` on the hub (03:12:24 UTC, 12 s after tick 1)
 
