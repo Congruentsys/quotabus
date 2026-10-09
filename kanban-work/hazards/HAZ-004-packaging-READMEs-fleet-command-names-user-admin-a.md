@@ -2,7 +2,7 @@
 id: HAZ-004
 title: "packaging README's fleet command names user 'admin' and /usr/local paths that do not exist on Mini"
 type: hazard
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -27,3 +27,14 @@ Run as written, the command fails at SSH. Run with the right user, it would inst
 1. `packaging/README.md`'s fleet command (and the `quotabus-cycle` wrapper's paths) uses the measured user, home and user-owned paths above. Any other doc that repeats them (DESIGN §5, the wiring note, CHORE-008's tests or fixtures) is brought in line. A test that pins the old command is changed only as a ruled test edit, by the test partner.
 2. `install.sh --render-to <dir>` run with the corrected command renders a plist whose ProgramArguments and log paths are all under `/Users/hankh19`; the output is quoted in the PR.
 3. `make check` is green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T02:59:27+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
