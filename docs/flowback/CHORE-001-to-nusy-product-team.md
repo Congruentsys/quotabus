@@ -1,10 +1,10 @@
 # Flowback packet: CHORE-001 → nusy-product-team `docs/external-review.md` §1a
 
-**From** quotabus CHORE-001 (VOY-001, DESIGN §9 row C1, `docs/DESIGN.md:427`). **To** nusy-product-team, tracked
+**From** quotabus CHORE-001 (VOY-001, DESIGN §9 row C1, `docs/DESIGN.md:431`). **To** nusy-product-team, tracked
 there by nusy-product-team IDEA-13333. **Written** 2026-10-08 by M5-MBP-2/s-72a67d16, in the quotabus repo only.
 No quotabus session edits nusy-product-team: this packet is the whole of the ask, and a session of that repo lands
 it under that repo's own rules (its `CLAUDE.md`, `nk`, its review). DESIGN §9 calls the change "doc-only, straight
-to main" (`docs/DESIGN.md:427`). That is how quotabus describes the change. It does not override nusy-product-team's
+to main" (`docs/DESIGN.md:431`). That is how quotabus describes the change. It does not override nusy-product-team's
 own landing rule.
 
 **Depends on quotabus** `origin/main` at `6f5a5fa8ae6730360e347b6f8adde0d1a83bfe27` (the `status` and `select`
@@ -63,21 +63,21 @@ keep.
 **Two measured pitfalls (M5, 2026-09-24, from the hand-probe session this section replaced):**
 ````
 
-Every command, flag and exit code above exists on quotabus `6f5a5fa`:
+Every command, flag and exit code above exists on quotabus `8213424`:
 
 | claim in the new text | source on quotabus main |
 |---|---|
-| bucket `ai_status`, Mini's url | `docs/DESIGN.md:119-120`, `:255`; `examples/quotabus.toml:8-10`; `src/config.rs:211` (`DEFAULT_BUCKET`) |
+| bucket `ai_status`, Mini's url | `docs/DESIGN.md:119-120`, `:256`; `examples/quotabus.toml:8-10`; `src/config.rs:218` (`DEFAULT_BUCKET`) |
 | `--config`, else `$QUOTABUS_CONFIG`, else `./quotabus.toml` | `src/main.rs:23-25` |
-| `status --json`, `--kind api\|local\|subscription`, `--stale`, `--check <id>` | `src/main.rs:37-51`; `README.md:17-18`; `docs/DESIGN.md:257` |
-| `--check` rc 0 ok · 1 not ok · 2 CANNOT-ASSESS · 3 UNKNOWN | `src/main.rs:50`; `src/freshness.rs:25-33`; `docs/DESIGN.md:257` |
+| `status --json`, `--kind api\|local\|subscription`, `--stale`, `--check <id>` | `src/main.rs:37-51`; `README.md:17-18`; `docs/DESIGN.md:258` |
+| `--check` rc 0 ok · 1 not ok · 2 CANNOT-ASSESS · 3 UNKNOWN | `src/main.rs:50`; `src/freshness.rs:25-33`; `docs/DESIGN.md:258` |
 | plain `status` rc 0, or 2 when the store cannot be read | `src/main.rs:748-752`, `:78` (`CANNOT_ASSESS = 2`) |
 | table columns SERVICE MODEL STATE AGE SOURCE DETAIL | `src/main.rs:853` |
 | the state words | `src/record.rs:12-20` (snake_case); UNKNOWN / CANNOT-ASSESS labels `src/freshness.rs:37-43` |
 | only configured services are listed | `src/main.rs:686-691` |
-| `select --role review --exclude-family anthropic`, rc 0/2/3, empty stdout on 2 and 3 | `src/main.rs:54-70`; `docs/DESIGN.md:258`, `:333-337`; `docs/wiring/nusy-product-team.md:23`, `:37-39` |
-| only a fresh `ok` is chosen, `degraded` refused | `docs/DESIGN.md:318-320` |
-| a seat is never a candidate, decided on SIG-009 by `steer` bucket 2 (2026-10-08; not a Captain ruling; open to veto) | `docs/DESIGN.md:321-328` (main at `f6cb5d5`); `kanban-work/signals/SIG-009-*.md:5` (`status: arrived`), `:30-38` (the bucket-2 comment) |
+| `select --role review --exclude-family anthropic`, rc 0/2/3, empty stdout on 2 and 3 | `src/main.rs:54-70`; `docs/DESIGN.md:259`, `:337-341`; `docs/wiring/nusy-product-team.md:23`, `:39-41` |
+| only a fresh `ok` is chosen, `degraded` refused | `docs/DESIGN.md:319-321` |
+| a seat is never a candidate, decided on SIG-009 by `steer` bucket 2 (2026-10-08; not a Captain ruling; open to veto) | `docs/DESIGN.md:322-329`; `kanban-work/signals/SIG-009-*.md:5` (`status: arrived`), `:30-38` (the bucket-2 comment) |
 | UNKNOWN = absent or expired, CANNOT-ASSESS = unreachable bus | `README.md:8-9`; `src/main.rs:47` |
 | §3's Smoke and "a 404 names the model as missing, a 401 names the key" | nusy-product-team `f03397e352:docs/external-review.md:33`, `:137-145` |
 
@@ -89,7 +89,7 @@ Every command, flag and exit code above exists on quotabus `6f5a5fa`:
    own.
 2. **It is what nusy-product-team's own design asked for.** IDEA-13333's design, row C1, says "`docs/external-review.md`
    §1a replaced by 'run `quotabus status`'; the hand probe retired" (nusy-product-team
-   `origin/main:docs/design/IDEA-13333-PROVIDER-STATUS-MONITOR.md:259`, the same row as quotabus `docs/DESIGN.md:427`).
+   `origin/main:docs/design/IDEA-13333-PROVIDER-STATUS-MONITOR.md:259`, the same row as quotabus `docs/DESIGN.md:431`).
 3. **An honest "no" is better than a hand pick.** `select` refuses rather than guesses. That is the property §0
    rule (2) wants.
 
@@ -122,7 +122,7 @@ Every command, flag and exit code above exists on quotabus `6f5a5fa`:
 
 On 2026-10-08 at 21:42Z, **Mini's `ai_status` held no API row**, only the 7 subscription rows above. The central
 `probe` writes API rows, and it is not yet running on Mini. CHORE-008 (`arrived`) built `packaging/install.sh` and
-records Mini as the probe host (`packaging/README.md:30-40`). That follows Captain 2026-10-08, on SIG-001: "If this is FOSS, the config will have to ask to run locally or on another host. In this case, run on mini" (`kanban-work/signals/SIG-001-*.md:26`). Mini is the host that was recommended. Making the host a config choice was not the recommended default (`docs/DESIGN.md:446`). The re-read above shows nothing has run it there.
+records Mini as the probe host (`packaging/README.md:30-40`). That follows Captain 2026-10-08, on SIG-001: "If this is FOSS, the config will have to ask to run locally or on another host. In this case, run on mini" (`kanban-work/signals/SIG-001-*.md:26`). Mini is the host that was recommended. Making the host a config choice was not the recommended default (`docs/DESIGN.md:450`). The re-read above shows nothing has run it there.
 `quotabus` was also not on M5's `PATH` (`which quotabus` printed "quotabus not found"). If nusy-product-team lands
 this text before the probe runs on Mini, `status --kind api` reads UNKNOWN for every API model and `select` exits 3.
 That reading is true, and the new text sends the reader to §3's Smoke for exactly that case. But it does remove
