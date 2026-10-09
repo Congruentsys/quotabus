@@ -31,13 +31,21 @@ refuses a launcher word that looks like one (`KEY=…`, `TOKEN=…`, `SECRET=…
 
 The fleet's central probe host is **Mini** (the Captain, 2026-10-08, on SIG-001: "If this is FOSS, the config will
 have to ask to run locally or on another host. In this case, run on mini"). This command, run from a checkout on any
-fleet host with SSH to Mini, installs the unit EXP-001 shipped for Mini as CHORE-007 changed it (the 300 s tick), field for field:
+fleet host with SSH to Mini, installs the unit EXP-001 shipped for Mini as CHORE-007 changed it (the 300 s tick), field for field except
+the user, home and paths, which HAZ-004 moved to the ones measured on Mini:
 
 ```
-packaging/install.sh --host mini --user admin --home /Users/admin --os macos --launcher "/opt/homebrew/bin/doppler run --project nusy-product-team --config dev --" --quotabus /usr/local/bin/quotabus --probe-config /usr/local/etc/quotabus/quotabus.toml --interval 300
+packaging/install.sh --host mini --user hankh19 --home /Users/hankh19 --os macos --launcher "/opt/homebrew/bin/doppler run --project nusy-product-team --config dev --" --quotabus /Users/hankh19/.local/bin/quotabus --probe-config /Users/hankh19/.config/quotabus/quotabus.toml --interval 300
 ```
 
 Add `--render-to <dir>` to see the plist and the plan without touching Mini.
+
+The user, home and paths are measured, not assumed (HAZ-004, from M5 over `ssh mini`, 2026-10-09): Mini has no
+`admin` user (its only login is `hankh19`, uid 501), and `/usr/local/bin` and `/usr/local/etc` do not exist there, so
+the binary goes to `~/.local/bin/` and the config to `~/.config/quotabus/`, user-owned paths that need no sudo.
+The unit must load in the GUI domain (`gui/501`, the user logged in at the GUI), not from a plain SSH session:
+Doppler's token is in the login keychain, and measured on Mini a `doppler run` over plain `ssh` fails with
+"Unable to retrieve value from system keyring" while a job in `gui/501` reads it.
 
 ## Alerts: `quotabus alert` after each probe cycle
 
@@ -48,14 +56,18 @@ pointing `--quotabus` at a two-line wrapper, which receives `probe --config <fil
 
 ```sh
 #!/bin/sh
-# /usr/local/bin/quotabus-cycle — one probe cycle, then the alert over its rows; exits non-zero if either failed
+# /Users/hankh19/.local/bin/quotabus-cycle — one probe cycle, then the alert over its rows; exits non-zero if either failed
 shift                                   # drop "probe"; "$@" is now --config <file>
-/usr/local/bin/quotabus probe "$@"; rc=$?
-/usr/local/bin/quotabus alert "$@" || rc=$?
+export QUOTABUS_CLAUDE_BIN=/opt/homebrew/bin/claude   # the unit's PATH has no /opt/homebrew/bin (HAZ-004)
+/Users/hankh19/.local/bin/quotabus probe "$@"; rc=$?
+/Users/hankh19/.local/bin/quotabus alert "$@" || rc=$?
 exit $rc
 ```
 
-and install with `--quotabus /usr/local/bin/quotabus-cycle` (every other flag as above). Running the alert on every
+and install with `--quotabus /Users/hankh19/.local/bin/quotabus-cycle` (every other flag as above). The probe's
+stream-json fallback finds `claude` through `QUOTABUS_CLAUDE_BIN`, else `PATH`, and a unit's `PATH` is minimal: measured
+on Mini (HAZ-004, 2026-10-09), `claude` is at `/opt/homebrew/bin/claude` while a launchd unit's default `PATH` is
+`/usr/bin:/bin:/usr/sbin:/sbin`, so without the export the fallback records "no claude binary". Running the alert on every
 tick, including ticks where nothing was due, is cheap and safe: it reads the store, files only a crossing (a service
 going bad), keeps its dedup state at `alert.<key>` in the same bucket, and writes nothing else. A sink that fails
 leaves the crossing unrecorded, so the next tick retries it; its rc is 1 and its line is in the unit's error log.

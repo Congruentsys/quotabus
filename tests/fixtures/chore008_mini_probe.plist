@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- CHORE-008 fixture: the EXP-001 Mini plist (packaging/launchd/com.congruentsys.quotabus-probe.plist) as CHORE-007
-     changed it (71bebe7): StartInterval is the 300 s tick. Verbatim otherwise. -->
+     changed it (71bebe7): StartInterval is the 300 s tick. Verbatim otherwise, except HAZ-004 (ruled test edit):
+     Mini's measured user is hankh19, so the binary, config and logs are under /Users/hankh19 (user-owned, no sudo). -->
 <plist version="1.0">
 <dict>
     <key>Label</key>
@@ -15,18 +16,18 @@
         <string>--config</string>
         <string>dev</string>
         <string>--</string>
-        <string>/usr/local/bin/quotabus</string>
+        <string>/Users/hankh19/.local/bin/quotabus</string>
         <string>probe</string>
         <string>--config</string>
-        <string>/usr/local/etc/quotabus/quotabus.toml</string>
+        <string>/Users/hankh19/.config/quotabus/quotabus.toml</string>
     </array>
     <key>StartInterval</key>
     <integer>300</integer>
     <key>RunAtLoad</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/Users/admin/Library/Logs/quotabus/probe.out.log</string>
+    <string>/Users/hankh19/Library/Logs/quotabus/probe.out.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/admin/Library/Logs/quotabus/probe.err.log</string>
+    <string>/Users/hankh19/Library/Logs/quotabus/probe.err.log</string>
 </dict>
 </plist>
