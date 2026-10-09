@@ -54,3 +54,7 @@ Released. Decided — open to the Captain's veto.
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+### M5-MBP-2/s-72a67d16 (2026-10-09 01:37)
+
+tests red at f8ae737: tests/chore010_warn_pct.rs — 19 red (warn_pct key unknown / default 0.0 stub; warn_state todo!(); 0.90/0.97 subscription rows still ok; DESIGN/example lack warn_pct), 7 green on purpose (89.9 ok, worse states not softened, select/alert pins + controls).
