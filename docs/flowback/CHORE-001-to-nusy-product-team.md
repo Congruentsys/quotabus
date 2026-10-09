@@ -52,9 +52,9 @@ Without `--check` it exits 0, or 2 when the bus cannot be read. A state is `ok`,
 `docs/wiring/nusy-product-team.md`. It chooses only a fresh `ok` model whose family is not excluded. rc 0 means
 chosen. rc 2 means CANNOT-ASSESS (bus unreadable). rc 3 means nothing qualifies. On rc 2 or rc 3, **do not run the
 review, and never fall back to a hand-picked model**; that is §0 rule (2)'s false all-clear. A subscription seat
-(a Claude account, the Copilot seat) appears in `status` but is never a `select` candidate. This is the interim rule
-while quotabus SIG-009 is open ("Can a subscription seat (a Claude account, Copilot) be a 'select' candidate — and as
-which model?").
+(a Claude account, the Copilot seat) appears in `status` but is never a `select` candidate. quotabus decided this on
+SIG-009 ("Can a subscription seat (a Claude account, Copilot) be a 'select' candidate — and as which model?") by an
+agent session's `steer` pass, bucket 2, on 2026-10-08: not a Captain ruling, and open to the Captain's veto.
 
 **Only if the bus is down** (`status` rc 2 / CANNOT-ASSESS): probe by hand with §3's Smoke, one tiny call per model
 (a 404 names the model as missing, a 401 names the key). Treat the result as that moment's reading, not a table to
@@ -77,7 +77,7 @@ Every command, flag and exit code above exists on quotabus `6f5a5fa`:
 | only configured services are listed | `src/main.rs:686-691` |
 | `select --role review --exclude-family anthropic`, rc 0/2/3, empty stdout on 2 and 3 | `src/main.rs:54-70`; `docs/DESIGN.md:258`, `:333-337`; `docs/wiring/nusy-product-team.md:23`, `:37-39` |
 | only a fresh `ok` is chosen, `degraded` refused | `docs/DESIGN.md:318-320` |
-| a seat is never a candidate, pending SIG-009 (open) | `docs/DESIGN.md:321-325`; `kanban-work/signals/SIG-009-*.md:3-5` (`status: backlog`) |
+| a seat is never a candidate, decided on SIG-009 by `steer` bucket 2 (2026-10-08; not a Captain ruling; open to veto) | `docs/DESIGN.md:321-328` (main at `f6cb5d5`); `kanban-work/signals/SIG-009-*.md:5` (`status: arrived`), `:30-38` (the bucket-2 comment) |
 | UNKNOWN = absent or expired, CANNOT-ASSESS = unreachable bus | `README.md:8-9`; `src/main.rs:47` |
 | §3's Smoke and "a 404 names the model as missing, a 401 names the key" | nusy-product-team `f03397e352:docs/external-review.md:33`, `:137-145` |
 
