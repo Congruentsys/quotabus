@@ -2,12 +2,13 @@
 id: SIG-010
 title: "Should 'degraded' (and 'rate_limited') file an alert at all — or only hard failures?"
 type: signal
-status: backlog
+status: arrived
 priority: medium
 assignee: null
 created: 2026-10-08
 tags: [captain-decision, design]
 depends_on: []
+resolution: completed
 ---
 
 # Should 'degraded' (and 'rate_limited') file an alert at all — or only hard failures?
@@ -34,3 +35,16 @@ Left open.
 ### Mac-mini/s-e7976c42 (2026-10-09 13:38)
 
 Captain 2026-10-09: "SIG-010: go with the recommended default, option 3". This is the recommended default (the [steer] bucket-3 comment above, M5-MBP-2/s-72a67d16 2026-10-08 21:57): a configurable `[alert] states`, defaulting to the hard failures (quota_exhausted, auth_failed, model_missing, unreachable) PLUS a near-limit window (degraded because a window's used_pct >= [probe] warn_pct, CHORE-010). Latency-degraded and rate_limited stay on the bus and are refused by select, but file no signal. Built by the chore filed next; DESIGN §10 Q8 / §3 alert row amended there. Closed with --force: signals sit in harbor and 3.4.0's table allows only harbor → provisioning/stranded; --force skips the transition table only (no gate, no holder).
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:done ;
+    kb:at "2026-10-09T13:38:17+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:forcedMove "true"^^xsd:boolean ;
+    kb:resolution "completed" ;
+  ] .
+```
