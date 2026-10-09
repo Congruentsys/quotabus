@@ -38,6 +38,10 @@ pub struct ProbeConfig {
     pub max_tokens: u32,
     /// A 200 slower than this reads `degraded`. Default 10000.
     pub degraded_latency_ms: u64,
+    /// CHORE-010: a row that would read `ok` reads `degraded` when any window is at or above this %. STUB (test
+    /// partner): the field exists so the tests compile; the default, the `[probe] warn_pct` key and its range check
+    /// are the implementer's.
+    pub warn_pct: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -203,6 +207,8 @@ impl Default for ProbeConfig {
         ProbeConfig {
             max_tokens: 20,
             degraded_latency_ms: 10_000,
+            // STUB (CHORE-010 test partner): placeholder, not the designed default
+            warn_pct: 0.0,
         }
     }
 }

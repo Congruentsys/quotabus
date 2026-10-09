@@ -128,3 +128,11 @@ pub fn headroom_from_headers(headers: &[(String, String)]) -> Option<Headroom> {
     };
     (h != Headroom::default()).then_some(h)
 }
+
+/// CHORE-010 (DESIGN §2 "a window ≥ warn %"): `state` as the warn rule leaves it. An `ok` reads `degraded` when ANY
+/// window in `headroom` (`windows[].used_pct`, or `window_pct`) is ≥ `warn_pct`; every other state is returned as it
+/// is (a worse state is never softened). STUB (test partner): the implementer writes it and applies it to every row.
+pub fn warn_state(state: State, headroom: Option<&Headroom>, warn_pct: f64) -> State {
+    let _ = (state, headroom, warn_pct);
+    todo!("CHORE-010: warn_state")
+}
