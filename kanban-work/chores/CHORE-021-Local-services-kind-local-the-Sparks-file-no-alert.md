@@ -1,0 +1,31 @@
+---
+id: CHORE-021
+title: "Local services (kind = local, the Sparks) file no alert — Captain 2026-10-09"
+type: chore
+status: backlog
+priority: medium
+assignee: null
+created: 2026-10-09
+depends_on: []
+---
+
+# Local services (kind = local, the Sparks) file no alert — Captain 2026-10-09
+
+Part of VOY-001. The Captain ruled on 2026-10-09, in this repo's Mini session (Mac-mini/s-e7976c42), after saying:
+"Local qwen should be on http on DGX1 or DGX2 or both - should not need an API key - but does go up and down as they
+do different work". Asked "When a local Spark (DGX1/DGX2) goes down or switches models, should quotabus file an
+alert?", the Captain chose the option offered as recommended: Captain 2026-10-09: "No alert for local (Recommended)",
+whose text was: "kind = "local" rows are still published and select still refuses a down box, but
+unreachable/model_missing on a local service files no signal. API and subscription alerts keep your SIG-010 default."
+
+Today (CHORE-018, `src/alert.rs` `decide_listed`) the `[alert] states` default includes `unreachable`, and a local
+service's `model_missing` (a Spark switched models) also files: both are routine for the Sparks.
+
+## Definition of Done
+1. `quotabus alert` files no signal for a row whose service has `kind = "local"`, whatever its state; such a row does
+   not arm or clear an alert. API and subscription rows are unchanged (SIG-010's default and `[alert] states`).
+2. Local rows are still published, and `select` still refuses a local row that is not `ok` (a test pins both).
+3. Tests: a local service crossing ok → unreachable, ok → model_missing and back, over several cycles, files 0; an API
+   service with the same crossings still files per SIG-010; controls show each check can fail.
+4. DESIGN.md §3 alert row (and §10 Q8 where it lists what files) records the ruling verbatim, named and dated, and
+   says it was the recommended option. `make check` green.
