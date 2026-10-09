@@ -30,3 +30,7 @@ Raised by the EXP-004 review (`reviews/EXP-004-r1.md` F2, PR #15). Under the agr
 The Captain's SIG-006 ruling, 'Signal per crossing' (DESIGN §10 Q8), is built as one signal per state crossing into ANY bad state. Filing only hard failures would narrow what that ruling files, and that is the Captain's call, not a session's.
 Recommended default: option 3 with option 2 as the default: `[alert] states`, defaulting to the hard failures (quota_exhausted, auth_failed, model_missing, unreachable) PLUS a near-limit window (see CHORE-010, decided alongside). Latency-degraded and rate_limited stay on the bus and are refused by select, but file no signal.
 Left open.
+
+### Mac-mini/s-e7976c42 (2026-10-09 13:38)
+
+Captain 2026-10-09: "SIG-010: go with the recommended default, option 3". This is the recommended default (the [steer] bucket-3 comment above, M5-MBP-2/s-72a67d16 2026-10-08 21:57): a configurable `[alert] states`, defaulting to the hard failures (quota_exhausted, auth_failed, model_missing, unreachable) PLUS a near-limit window (degraded because a window's used_pct >= [probe] warn_pct, CHORE-010). Latency-degraded and rate_limited stay on the bus and are refused by select, but file no signal. Built by the chore filed next; DESIGN §10 Q8 / §3 alert row amended there. Closed with --force: signals sit in harbor and 3.4.0's table allows only harbor → provisioning/stranded; --force skips the transition table only (no gate, no holder).
