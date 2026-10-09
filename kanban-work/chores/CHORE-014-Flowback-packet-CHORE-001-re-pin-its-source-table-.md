@@ -2,7 +2,7 @@
 id: CHORE-014
 title: "Flowback packet CHORE-001: re-pin its source-table cites to current main (after CHORE-010)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -17,3 +17,14 @@ Found landing CHORE-013 (PR #20): `docs/flowback/CHORE-001-to-nusy-product-team.
 1. Every `path:line` cite in the packet's source table is re-counted against quotabus main at one named sha, and the "holds on quotabus <sha>" sentence names that sha.
 2. Each claim still holds at that sha. A claim that no longer holds is changed and named in the PR body.
 3. No other text changes. A comment on CHORE-001 gives the new sha. `make check` is green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T01:40:52+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
