@@ -2,7 +2,7 @@
 id: CHORE-012
 title: "DESIGN §3 + wiring note: SIG-009 decided — subscription seats are never select candidates (no longer 'interim')"
 type: chore
-status: underway
+status: arrived
 priority: low
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -30,5 +30,11 @@ DESIGN §3 (the select section) and the wiring note state the rule as decided, c
     kb:status kb:in_progress ;
     kb:at "2026-10-09T01:32:48+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T01:37:42+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/19> ;
   ] .
 ```
