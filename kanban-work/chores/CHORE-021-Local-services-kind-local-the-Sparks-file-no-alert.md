@@ -2,7 +2,7 @@
 id: CHORE-021
 title: "Local services (kind = local, the Sparks) file no alert — Captain 2026-10-09"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -29,3 +29,14 @@ service's `model_missing` (a Spark switched models) also files: both are routine
    service with the same crossings still files per SIG-010; controls show each check can fail.
 4. DESIGN.md §3 alert row (and §10 Q8 where it lists what files) records the ruling verbatim, named and dated, and
    says it was the recommended option. `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T22:31:49+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
