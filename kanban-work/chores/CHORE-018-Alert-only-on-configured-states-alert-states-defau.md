@@ -2,9 +2,9 @@
 id: CHORE-018
 title: "Alert only on configured states: [alert] states, default hard failures + near-limit window (Captain SIG-010)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-09
 depends_on: []
 ---
@@ -47,6 +47,11 @@ by guessing.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-09T13:38:37+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-09T13:49:54+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
