@@ -63,21 +63,21 @@ keep.
 **Two measured pitfalls (M5, 2026-09-24, from the hand-probe session this section replaced):**
 ````
 
-Every command, flag and exit code above exists on quotabus `6f5a5fa`:
+Every command, flag and exit code above exists on quotabus `8213424`:
 
 | claim in the new text | source on quotabus main |
 |---|---|
-| bucket `ai_status`, Mini's url | `docs/DESIGN.md:119-120`, `:255`; `examples/quotabus.toml:8-10`; `src/config.rs:211` (`DEFAULT_BUCKET`) |
+| bucket `ai_status`, Mini's url | `docs/DESIGN.md:119-120`, `:256`; `examples/quotabus.toml:8-10`; `src/config.rs:218` (`DEFAULT_BUCKET`) |
 | `--config`, else `$QUOTABUS_CONFIG`, else `./quotabus.toml` | `src/main.rs:23-25` |
-| `status --json`, `--kind api\|local\|subscription`, `--stale`, `--check <id>` | `src/main.rs:37-51`; `README.md:17-18`; `docs/DESIGN.md:257` |
-| `--check` rc 0 ok · 1 not ok · 2 CANNOT-ASSESS · 3 UNKNOWN | `src/main.rs:50`; `src/freshness.rs:25-33`; `docs/DESIGN.md:257` |
+| `status --json`, `--kind api\|local\|subscription`, `--stale`, `--check <id>` | `src/main.rs:37-51`; `README.md:17-18`; `docs/DESIGN.md:258` |
+| `--check` rc 0 ok · 1 not ok · 2 CANNOT-ASSESS · 3 UNKNOWN | `src/main.rs:50`; `src/freshness.rs:25-33`; `docs/DESIGN.md:258` |
 | plain `status` rc 0, or 2 when the store cannot be read | `src/main.rs:748-752`, `:78` (`CANNOT_ASSESS = 2`) |
 | table columns SERVICE MODEL STATE AGE SOURCE DETAIL | `src/main.rs:853` |
 | the state words | `src/record.rs:12-20` (snake_case); UNKNOWN / CANNOT-ASSESS labels `src/freshness.rs:37-43` |
 | only configured services are listed | `src/main.rs:686-691` |
-| `select --role review --exclude-family anthropic`, rc 0/2/3, empty stdout on 2 and 3 | `src/main.rs:54-70`; `docs/DESIGN.md:258`, `:333-337`; `docs/wiring/nusy-product-team.md:23`, `:37-39` |
-| only a fresh `ok` is chosen, `degraded` refused | `docs/DESIGN.md:318-320` |
-| a seat is never a candidate, decided on SIG-009 by `steer` bucket 2 (2026-10-08; not a Captain ruling; open to veto) | `docs/DESIGN.md:321-328` (main at `f6cb5d5`); `kanban-work/signals/SIG-009-*.md:5` (`status: arrived`), `:30-38` (the bucket-2 comment) |
+| `select --role review --exclude-family anthropic`, rc 0/2/3, empty stdout on 2 and 3 | `src/main.rs:54-70`; `docs/DESIGN.md:259`, `:337-341`; `docs/wiring/nusy-product-team.md:23`, `:39-41` |
+| only a fresh `ok` is chosen, `degraded` refused | `docs/DESIGN.md:319-321` |
+| a seat is never a candidate, decided on SIG-009 by `steer` bucket 2 (2026-10-08; not a Captain ruling; open to veto) | `docs/DESIGN.md:322-329`; `kanban-work/signals/SIG-009-*.md:5` (`status: arrived`), `:30-38` (the bucket-2 comment) |
 | UNKNOWN = absent or expired, CANNOT-ASSESS = unreachable bus | `README.md:8-9`; `src/main.rs:47` |
 | §3's Smoke and "a 404 names the model as missing, a 401 names the key" | nusy-product-team `f03397e352:docs/external-review.md:33`, `:137-145` |
 
