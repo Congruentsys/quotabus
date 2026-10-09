@@ -78,8 +78,12 @@ lists what was kept, adapted and cut).
   `pairit` has four lanes and the picker names the one an item takes: **code** (partner tests, an implementer, a PR,
   a distinct `claude -p` reviewer, merge), **docs** (an author, a check against "Done when", a PR), **measure** (a
   findings file with the exact command and its output, a PR reviewed like code) and **other-repo** (a change that
-  lands in another repo: the change is written here as a packet, and the item waits `stranded` (blocked) on that
-  repo).
+  lands in another repo: the change is written here as a packet, ONE chore asking for it is filed on that repo's
+  board, and the item waits `stranded` (blocked) on that repo, naming the chore's id).
+- **Cross-repo rule:** filing that one chore on the receiving repo's board is the ONE sanctioned write in another
+  repo. Captain 2026-10-09 (a direction, not a default an agent offered): "Can you create a chore in
+  nusy-product-team for this - this is how we move work between repos" (CHORE-001 → nusy-product-team CH-13371).
+  A quotabus session still never edits another repo's files: the change itself is made there, under its own rules.
 - **`steer`** (the outer loop above `quotabus-loop`; ported 2026-10-08 from yurtle-kanban@ecf76fa, MIT): sweeps the
   open signals, the harbor items waiting on a decision and the `stranded` items; decides buckets 1–2 on the board
   against quotabus's goals (G1 honesty and safety, G2 the fleet's use, G3 simplicity and FOSS) and puts only bucket 3

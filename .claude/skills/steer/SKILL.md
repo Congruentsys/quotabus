@@ -74,8 +74,9 @@ engine, not a dashboard product) are not goals to weigh: crossing one is a featu
 > Before escalating, **name the trigger**: the feature or goal it changes, or the authority it needs. If you can't
 > name one, it is bucket 1 or 2: decide it.
 
-A change in another repo is NOT bucket 3 by itself: it is pairit's other-repo lane (a packet, the item `stranded` on
-that repo). Whether that repo has landed it is a bucket-1 read.
+A change in another repo is NOT bucket 3 by itself: it is pairit's other-repo lane (a packet, a chore filed on that
+repo's board, the item `stranded` on that repo). Whether that repo has landed it is a bucket-1 read; a `stranded`
+item with no chore filed there is finished by filing it (pairit § The other-repo lane, step 3).
 
 ## One pass
 
@@ -147,4 +148,5 @@ If there are zero bucket-3 items, escalate nothing and say the queue is clear; q
   `claude -p` reviewer, a GitHub PR.
 - **Secrets:** a `[steer]` comment quotes no key, auth header, raw provider error body or email; a measurement's
   output is redacted before it is pasted. The board is public.
-- **Other repos are read-only** from here: measure there, never write; a change there is an other-repo packet.
+- **Other repos are read-only** from here: measure there, never edit a file there; a change there is an other-repo
+  packet, and its one chore on that repo's board (pairit § The other-repo lane, step 3) is the only write.

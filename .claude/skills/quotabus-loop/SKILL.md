@@ -14,7 +14,8 @@ repeat:
             (rc 8), remote trouble (rc 4/5/6) or every candidate refused (rc 1) → stop and report one line naming
             what it waits on. rc 3 (lost the race) is NOT a stop: claim the next candidate
   3. LAND   by lane, through pairit: code → steps 0–5; docs → § The docs lane; measure → § The measure lane;
-            other-repo → § The other-repo lane (it parks the item `stranded`, which is NOT a stop)
+            other-repo → § The other-repo lane (it files a chore on that repo's board and parks the item
+            `stranded`, which is NOT a stop)
   4. CARRY  a finding that BLOCKS this item is filed and landed first; every other finding is FILED
             (`.venv/bin/yurtle-kanban create … --push`; ids come from origin), released per the rule below,
             unclaimed. A finding about another repo is an other-repo item, never an edit there

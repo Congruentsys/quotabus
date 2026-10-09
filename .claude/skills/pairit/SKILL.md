@@ -212,12 +212,26 @@ because other work is built on it.
 
 ## The other-repo lane (an item whose change lands in another repo)
 
-This repo's sessions never edit another repo; the change flows ONE hop, as a packet, and is made there by whoever
-works there under that repo's own rules.
+This repo's sessions never edit another repo's files; the change flows ONE hop, as a packet, and is made there by
+whoever works there under that repo's own rules. The ONE sanctioned write in the other repo is the chore of step 3, on
+its board (Captain 2026-10-09: "Can you create a chore in nusy-product-team for this - this is how we move work
+between repos", quoted in CHORE-017's body).
 
 1. Any half that is built or measured HERE goes through its own lane first.
 2. The packet is a doc, landed by the docs lane: `docs/flowback/<ID>-to-<repo>.md` with the exact change asked of the
    receiving repo (the file, the section, the new text), why, and the quotabus sha and finding it depends on.
-3. The item is NOT done: it waits on the other repo. `.venv/bin/yurtle-kanban move <ID> blocked --agent "$ME" -m
-   "packet at docs/flowback/<ID>-to-<repo>.md; waits on <repo> landing it"`, and the loop picks again. Whoever records
-   the receiving repo's landing commit moves it back and closes it, citing that commit.
+3. Once the packet is on quotabus `main`, file ONE chore on the receiving repo's board, so someone there is asked to
+   land it. Its body links the packet (its URL on quotabus `main`), quotes the Captain's direction above, and asks for
+   the landing sha back (a comment on the quotabus item, or a reply on their chore). Write the body to a file in your
+   scratchpad first; it names no key, email or private detail (both boards are read by others).
+   - **nusy-product-team** (nusy-kanban; `--relate` takes a typed edge `predicate:TARGET-ID`, repeatable):
+     `nusy-kanban --server "${NUSY_FLEET_KANBAN_SERVER:-nats://192.168.8.110:4222}" create chore "<title>"
+     --body-file <file> --relate related:<their tracking item>` (quotabus's is nusy-product-team IDEA-13333).
+   - **a yurtle-kanban repo:** in THAT repo's own checkout, `.venv/bin/yurtle-kanban create chore "<title>"
+     --body-file <file> --push` (its own `.venv`, its own id allocation; never a file edited by hand there).
+   - Worked example: CHORE-001's packet `docs/flowback/CHORE-001-to-nusy-product-team.md` was filed as
+     nusy-product-team CH-13371, related to nusy-product-team IDEA-13333 (CHORE-001's comment of 2026-10-09).
+4. The item is NOT done: it waits on the other repo. `.venv/bin/yurtle-kanban move <ID> blocked --agent "$ME" -m
+   "packet at docs/flowback/<ID>-to-<repo>.md; filed as <repo> <THEIR-ID>; waits on <repo> landing it"` (the other
+   repo's id is on the item from here on), and the loop picks again. Whoever records the receiving repo's landing
+   commit moves it back and closes it, citing that commit.
