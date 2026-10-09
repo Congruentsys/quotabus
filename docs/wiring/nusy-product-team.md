@@ -27,8 +27,10 @@ It prints `provider model` on one line: the first candidate in `--prefer` order 
 then latency, then context; DESIGN §3, "selector"). Every candidate is equally healthy: a model whose service lists
 the `review` role, whose family is not excluded, and whose row on the bus is a fresh `ok` (never `degraded`, never an
 expired row, never `unknown`). It reads the bus and never writes it. **A subscription seat is never chosen** (a Claude account, the Copilot seat),
-pending the Captain's ruling on quotabus SIG-009: today the selector names only API and local models, so the Copilot
-CLI route of external-review §4.2 is not a pick, and the provider map below needs no `github` arm.
+decided on quotabus SIG-009 by an agent session's `steer` pass (bucket 2, 2026-10-08; not a Captain ruling, and open
+to the Captain's veto; `kanban-work/signals/SIG-009-*.md:30-38`): the selector names only API and local models, so the
+Copilot CLI route of external-review §4.2 is not a pick, and the provider map below needs no `github` arm. Routing
+reviews to a seat would be a new feature, a new item for the Captain to file.
 
 ## Exit codes, and what the caller does
 

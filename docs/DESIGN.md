@@ -319,10 +319,13 @@ pick is over the configured (service, model slot) pairs, each matched to its row
   expired row, a CANNOT-ASSESS (`unknown`) row, and every other state are refused, **`degraded` included**
   [INFERENCE: the design asks for "a healthy model" and says nothing that admits `degraded`].
 - **A subscription seat is never a candidate** (`kind = "subscription"`, a Claude account or the Copilot seat), even
-  fresh, `ok` and listing the role. This is the interim rule pending the Captain's SIG-009 (open: can a seat be a
-  candidate, and as which model?): a seat's row is per ACCOUNT with the service id in the model slot (§2), so there is
-  no model to print as `provider model` (review r1 F1, `reviews/EXP-003-r1.md`). A healthy model that a seat serves
-  is chosen only when it is configured as its own API service.
+  fresh, `ok` and listing the role. **Decided** on SIG-009 (can a seat be a candidate, and as which model?) by an
+  agent session's `steer` pass, bucket 2, on 2026-10-08, not by a Captain ruling, and open to the Captain's veto:
+  "option 1. A subscription seat is NEVER a select candidate" (`kanban-work/signals/SIG-009-*.md:30-38`). A seat's
+  row is per ACCOUNT with the service id in the model slot (§2), so there is no model to print as `provider model`
+  (review r1 F1, `reviews/EXP-003-r1.md`). A healthy model that a seat serves is chosen only when it is configured as
+  its own API service. Routing work to a seat (by a model configured per seat) would be a new feature, a new item for
+  the Captain to file, not a change to this rule.
 - **The role must be listed** on the service. A family is refused when it is the service's or the row's `family`, compared without case; any number
   of `--exclude-family` may be given; a refused family is refused even when it is the only healthy one.
 - **Ordering.** `--prefer` sets the first key, the other two break ties, then the row key, so the answer is total
