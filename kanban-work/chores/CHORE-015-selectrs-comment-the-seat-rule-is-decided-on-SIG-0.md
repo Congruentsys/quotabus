@@ -2,7 +2,7 @@
 id: CHORE-015
 title: "select.rs comment: the seat rule is decided on SIG-009, no longer 'pending'"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
@@ -31,5 +31,11 @@ Found landing CHORE-014: `src/select.rs:75` has a code comment saying "a subscri
     kb:status kb:in_progress ;
     kb:at "2026-10-09T01:57:12+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T02:03:23+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/23> ;
   ] .
 ```
