@@ -2,9 +2,9 @@
 id: CHORE-017
 title: "pairit other-repo lane: file a chore on the receiving repo's board (the Captain's cross-repo rule, 2026-10-09)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-09
 depends_on: []
 ---
@@ -32,5 +32,10 @@ pairit's other-repo lane (`.claude/skills/pairit/SKILL.md` § The other-repo lan
     kb:status kb:ready ;
     kb:at "2026-10-09T13:37:40+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-09T13:38:47+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
