@@ -1,0 +1,19 @@
+---
+id: CHORE-014
+title: "Flowback packet CHORE-001: re-pin its source-table cites to current main (after CHORE-010)"
+type: chore
+status: backlog
+priority: medium
+assignee: null
+created: 2026-10-09
+depends_on: []
+---
+
+# Flowback packet CHORE-001: re-pin its source-table cites to current main (after CHORE-010)
+
+Found landing CHORE-013 (PR #20): `docs/flowback/CHORE-001-to-nusy-product-team.md` says (line ~66) that every claim in its replacement text holds on quotabus `6f5a5fa`. Its source table cites `docs/DESIGN.md` lines (e.g. `:318-320`, `:333-337`, `:427`) taken at that sha. DESIGN has moved since then (CHORE-012, and CHORE-010 adds warn_pct text to §2/§3), so those cites can point at the wrong lines. A receiving session checks the cites against main.
+
+## Done when
+1. Every `path:line` cite in the packet's source table is re-counted against quotabus main at one named sha, and the "holds on quotabus <sha>" sentence names that sha.
+2. Each claim still holds at that sha. A claim that no longer holds is changed and named in the PR body.
+3. No other text changes. A comment on CHORE-001 gives the new sha. `make check` is green.
