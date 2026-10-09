@@ -55,3 +55,10 @@ by guessing.
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-09 13:57)
+
+tests red at 2694eff (branch chore/CHORE-018-alert-states): tests/chore018_alert_states.rs — 17 red (states key refused/absent, default set, unknown-name refusal, reason window_near_limit, only listed states file and arm, EXP-004 ok↔latency flapping 5 → must be 0, unreachable = unknown+cannot_assess:unreachable files under default, DESIGN §3/§10 Q8 quote SIG-010, example config), 7 green controls. Ruled edits to existing tests that asserted the overturned every-bad-state rule: exp004_alert.rs (CANNOT-ASSESS case now not_found), exp004_r1.rs (rig lists degraded/rate_limited), exp004_config.rs (per-sink compare), chore010_warn_pct.rs (dropped the decide-level 'files as any bad state' test; covered by the new file).
