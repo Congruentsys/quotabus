@@ -2,7 +2,7 @@
 id: CHORE-017
 title: "pairit other-repo lane: file a chore on the receiving repo's board (the Captain's cross-repo rule, 2026-10-09)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -23,3 +23,14 @@ pairit's other-repo lane (`.claude/skills/pairit/SKILL.md` § The other-repo lan
    - The quotabus item records the other repo's id when it moves to `stranded`.
 2. CLAUDE.md says plainly that filing that one chore is the sanctioned cross-repo write, citing the Captain's words above. A quotabus session still never edits another repo's files.
 3. `tests/test_skills_port.py`, or a new test, pins the step if the skill tests pin lane steps. `make check` is green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T13:37:40+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
