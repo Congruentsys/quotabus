@@ -2,7 +2,7 @@
 id: CHORE-013
 title: "Flowback packet CHORE-001: restate the seat rule as decided (SIG-009), fix the DESIGN §3 line cite"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
@@ -31,5 +31,11 @@ Found landing CHORE-012 (PR #19): `docs/flowback/CHORE-001-to-nusy-product-team.
     kb:status kb:in_progress ;
     kb:at "2026-10-09T01:38:07+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T01:40:38+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/20> ;
   ] .
 ```
