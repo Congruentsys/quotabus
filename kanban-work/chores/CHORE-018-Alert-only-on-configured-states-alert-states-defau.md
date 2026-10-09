@@ -2,7 +2,7 @@
 id: CHORE-018
 title: "Alert only on configured states: [alert] states, default hard failures + near-limit window (Captain SIG-010)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-09
@@ -53,6 +53,12 @@ by guessing.
     kb:status kb:in_progress ;
     kb:at "2026-10-09T13:49:54+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T14:13:29+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/27> ;
   ] .
 ```
 
