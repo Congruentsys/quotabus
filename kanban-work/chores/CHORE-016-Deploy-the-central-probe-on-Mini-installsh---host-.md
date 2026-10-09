@@ -2,7 +2,7 @@
 id: CHORE-016
 title: "Deploy the central probe on Mini (install.sh --host mini) and measure VOY-001's Definition of Done on the live bus"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
@@ -39,6 +39,12 @@ VOY-001's Definition of Done says `quotabus status` on the hub shows every confi
     kb:status kb:in_progress ;
     kb:at "2026-10-09T03:10:57+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T03:26:49+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/25> ;
   ] .
 ```
 
