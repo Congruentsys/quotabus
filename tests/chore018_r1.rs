@@ -189,3 +189,21 @@ async fn f1_a_latency_degraded_row_is_untouched_and_files_nothing() {
     assert!(!files(&r), "{:?}", decide_default(&r));
 }
 
+// ── F3: probe → alert, end to end ──────────────────────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn f3_a_probed_near_limit_window_files_under_the_default() {
+    let r = unified_row(0.97, "allowed").await;
+    assert_eq!(r.state, State::Degraded, "{}", json(&r));
+    assert_eq!(
+        decide_default(&r),
+        Decision::File {
+            state: State::Degraded,
+            skip: vec![]
+        }
+    );
+    // control: the same probed row with its reason dropped files nothing — the reason is what files it
+    let mut bare = r.clone();
+    bare.reason = None;
+    assert_eq!(decide_default(&bare), Decision::Nothing);
+}
