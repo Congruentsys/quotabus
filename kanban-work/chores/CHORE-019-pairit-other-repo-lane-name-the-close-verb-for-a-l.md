@@ -2,7 +2,7 @@
 id: CHORE-019
 title: "pairit other-repo lane: name the close verb for a landed stranded item (3.4.0 refuses stranded → done)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -24,3 +24,14 @@ pairit step 4 names the exact close command for a landed other-repo item (`move 
 repo's landing commit, and the read that shows it>"`, or another route that 3.4.0 accepts and CLAUDE.md allows) and
 why `--force` is needed there; the stranded-close rule in CLAUDE.md, steer and quotabus-loop agrees with it.
 `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T16:37:27+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
