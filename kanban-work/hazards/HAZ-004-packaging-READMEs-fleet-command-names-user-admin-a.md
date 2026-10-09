@@ -2,9 +2,9 @@
 id: HAZ-004
 title: "packaging README's fleet command names user 'admin' and /usr/local paths that do not exist on Mini"
 type: hazard
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
 depends_on: []
 ---
@@ -35,6 +35,11 @@ Run as written, the command fails at SSH. Run with the right user, it would inst
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-09T02:59:27+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-09T02:59:37+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
