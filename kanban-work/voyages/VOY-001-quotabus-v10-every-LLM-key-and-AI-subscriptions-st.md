@@ -26,3 +26,9 @@ The probe runner + KV + CLI (E1), the doc-pointer chore (C1), the measurement ch
 
 ## Definition of Done
 `quotabus status` on the hub shows every configured API key and every host's subscription state with ages; a stale or missing row reads unknown; `quotabus select --role review --exclude-family anthropic` returns a healthy model or refuses with rc 3; an outage files exactly one alert.
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-09 03:26)
+
+VOY-001's Definition of Done is measured MET on the live bus (CHORE-016, PR #25, docs/findings/CHORE-016-mini-deploy.md, 2026-10-09). Alerts go to stdout until SIG-010 is ruled and a board sink is chosen. Closing the voyage and a v1.0 release are the Captain's call.
