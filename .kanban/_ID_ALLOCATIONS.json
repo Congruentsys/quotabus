@@ -257,5 +257,12 @@
     "number": 16,
     "allocated_at": "2026-10-09T02:58:50.198719",
     "allocated_by": "Hank Head"
+  },
+  {
+    "id": "HAZ-004",
+    "prefix": "HAZ",
+    "number": 4,
+    "allocated_at": "2026-10-09T02:59:25.020882",
+    "allocated_by": "Hank Head"
   }
 ]
