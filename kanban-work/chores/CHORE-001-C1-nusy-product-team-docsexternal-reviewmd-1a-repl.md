@@ -59,3 +59,7 @@ Correction to my last comment: EXP-001 landed in PR #2, not '#6?'. EXP-002 is #1
 ### M5-MBP-2/s-72a67d16 (2026-10-09 01:40)
 
 Packet amended by CHORE-013 (PR #20, e8a7eda, merged at 6f6ce98): the seat rule is now stated as decided on SIG-009 (steer bucket 2, open to the Captain's veto), no longer 'interim'. nusy-product-team should take the packet as it is on quotabus main.
+
+### M5-MBP-2/s-72a67d16 (2026-10-09 01:57)
+
+Packet re-pinned by CHORE-014 (PR #22, merged at 84204b3): every quotabus cite now holds on quotabus 8213424. nusy-product-team should take the packet as it is on quotabus main.
