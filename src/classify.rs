@@ -128,3 +128,19 @@ pub fn headroom_from_headers(headers: &[(String, String)]) -> Option<Headroom> {
     };
     (h != Headroom::default()).then_some(h)
 }
+
+/// CHORE-010 (DESIGN §2 "a window ≥ warn %"): `state` as the warn rule leaves it. An `ok` reads `degraded` when ANY
+/// window in `headroom` (`windows[].used_pct`, or `window_pct`) is ≥ `warn_pct`; every other state is returned as it
+/// is (a worse state is never softened). Applied to every row the probe builds (API and subscription).
+pub fn warn_state(state: State, headroom: Option<&Headroom>, warn_pct: f64) -> State {
+    if state != State::Ok {
+        return state;
+    }
+    let Some(h) = headroom else { return state };
+    let near = h
+        .window_pct
+        .into_iter()
+        .chain(h.windows.iter().map(|w| w.used_pct))
+        .any(|p| p >= warn_pct);
+    if near { State::Degraded } else { state }
+}

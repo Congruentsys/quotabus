@@ -9,7 +9,7 @@ use reqwest::header::HeaderValue;
 use serde_json::json;
 
 use crate::balance::{apply_floor, exhaust, extract_amount};
-use crate::classify::{HttpOutcome, Outcome, Thresholds, classify};
+use crate::classify::{HttpOutcome, Outcome, Thresholds, classify, warn_state};
 use crate::config::{BalanceEndpoint, BalanceSpec, Config, Protocol, ServiceConfig};
 use crate::freshness::{Verdict, freshness};
 use crate::record::{Balance, CONTRACT, Kind, Probe, ProbeSource, Record, State, record_key};
@@ -423,6 +423,7 @@ async fn probe_model(
         h.reset_at = h.reset_at.map(|s| ctx.redactor.redact_error(&s));
         h
     });
+    r.state = warn_state(r.state, r.headroom.as_ref(), ctx.config.probe.warn_pct);
     r.latency_ms = c.latency_ms;
     r.error = match (&outcome, transport_error) {
         (_, Some(e)) => Some(ctx.redactor.redact_error(&e)),

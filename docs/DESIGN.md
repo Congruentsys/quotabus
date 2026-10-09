@@ -48,7 +48,7 @@ seat) and writes one row, `subscription.<provider>.<account>.<service id>`: the 
 | `kind` | `api` \| `subscription` \| `local` | API key · subscription account (Claude Max, Copilot), read centrally with the account's own token · self-hosted endpoint (DGX1 Qwen) |
 | `provider`, `account`, `model` | string | `account` is the LABEL from config (`nusy-product-team`, `hankh95`), never an email unless the operator chose one |
 | `family` | string | `anthropic` \| `openai` \| `zhipu` \| `deepseek` \| `moonshot` \| `qwen` … — what the selector's exclusion rule reads (`external-review.md:20`) |
-| `state` | enum | `ok` · `auth_failed` (401/403) · `model_missing` (404 on the model id) · `quota_exhausted` (402; 429 with no retry window; "exceeded your monthly quota"; balance ≤ floor) · `rate_limited` (429 with `retry-after`/reset) · `degraded` (200 but latency > threshold, or a window ≥ warn %) · `unknown` |
+| `state` | enum | `ok` · `auth_failed` (401/403) · `model_missing` (404 on the model id) · `quota_exhausted` (402; 429 with no retry window; "exceeded your monthly quota"; balance ≤ floor) · `rate_limited` (429 with `retry-after`/reset) · `degraded` (200 but latency > threshold, or a window ≥ warn %: a row that would read `ok` reads `degraded` when any window — `headroom.windows[].used_pct` or `window_pct` — is ≥ `[probe] warn_pct`, default 90; a worse state is never softened. CHORE-010, decided by steer bucket 2 on 2026-10-08, open to the Captain's veto; whether a near-limit `degraded` files an alert is SIG-010, open) · `unknown` |
 | `reason` | string | required when `state=unknown`: `cannot_assess:<why>` written by a probe that could not measure (unreachable, unparseable, no endpoint by design, token login exposes no usage); `absent` / `expired` are **reader-derived**, never written |
 | `balance` | `{amount, currency, source}`? | only where a provider exposes one (§4); `source` names the endpoint |
 | `headroom` | `{requests_remaining, tokens_remaining, reset_at, window_pct, window, windows}`? | from `x-ratelimit-*` / `anthropic-ratelimit-*` headers or a subscription's windows. `windows[]` (subscriptions, EXP-002): `{window: five_hour \| seven_day \| monthly, used_pct (0–100), reset_at (RFC 3339), reset_in_s, pace}`, `reset_in_s = reset_at − checked_at`, `pace = (used_pct/100) / (elapsed/len)` with `elapsed = len − reset_in_s` and `len` 5 h, 7 d, or the month before a `monthly` reset (1.0 empties the window exactly at its reset). Only the windows the source carried are written: an absent window is left out, **never 0 %**. `window` / `window_pct` / `reset_at` repeat the most-used window |
@@ -121,6 +121,7 @@ bucket  = "ai_status"
 
 [probe]          # `interval` / `ttl` here are retired and refused, naming [intervals] / [ttl]
 max_tokens = 20            # the 8-token smoke of docs/external-review.md:33
+warn_pct   = 90            # any window ≥ this % turns an `ok` row `degraded` (§2; 0 < x ≤ 100; CHORE-010, steer bucket 2)
 
 [intervals]      # one per query kind, each set on its own; none is shared (§10 Q5)
 api          = "12h"       # messages probe, per model

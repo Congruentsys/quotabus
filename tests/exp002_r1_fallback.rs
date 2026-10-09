@@ -118,10 +118,15 @@ async fn f1_the_fallback_child_does_not_inherit_an_unconfigured_variable() {
 }
 
 async fn fallback_with_status(status: &str) -> quotabus::Record {
+    fallback_with(status, 1.0).await
+}
+
+/// The F3 event with its `status` and its five-hour `utilization` (0..1) set; seven-day stays 0.12.
+async fn fallback_with(status: &str, five_hour_util: f64) -> quotabus::Record {
     let s = bare_stub().await;
     let dir = tempfile::tempdir().unwrap();
     let ev = format!(
-        r#"{{"type":"rate_limit_event","rate_limit_info":{{"status":"{status}","resetsAt":{RESET_5H},"rateLimitType":"five_hour","unifiedWindows":{{"five_hour":{{"utilization":1.0,"resetsAt":{RESET_5H}}},"seven_day":{{"utilization":0.12,"resetsAt":{RESET_7D}}}}}}}}}"#
+        r#"{{"type":"rate_limit_event","rate_limit_info":{{"status":"{status}","resetsAt":{RESET_5H},"rateLimitType":"five_hour","unifiedWindows":{{"five_hour":{{"utilization":{five_hour_util},"resetsAt":{RESET_5H}}},"seven_day":{{"utilization":0.12,"resetsAt":{RESET_7D}}}}}}}}}"#
     );
     let bin = fake_claude(dir.path(), &stream(Some(&ev)), 0);
     let cfg = config(&claude_svc(
@@ -157,11 +162,37 @@ async fn f3_a_rejected_rate_limit_event_reads_quota_exhausted() {
 }
 
 #[tokio::test]
-async fn f3_control_an_allowed_rate_limit_event_reads_ok() {
-    // the same event with only `status` changed: it is the status, not the 100 % window, that exhausts
+async fn f3_control_an_allowed_rate_limit_event_is_not_quota_exhausted() {
+    // the same event with only `status` changed: it is the status, not the 100 % window, that exhausts.
+    // Under CHORE-010 (DoD 2) the 100 % window is >= warn_pct (default 90), so the row reads
+    // `degraded`, never `quota_exhausted` and never `ok`.
     let r = fallback_with_status("allowed").await;
     assert_eq!(r.probe.name, "stream_json");
+    assert_ne!(r.state, State::QuotaExhausted, "{}", json(&r));
+    assert_eq!(r.state, State::Degraded, "{}", json(&r));
+    assert!(approx(
+        f(&must_window(&r, "five_hour")["used_pct"]),
+        100.0,
+        1e-6
+    ));
+    assert!(approx(
+        f(&must_window(&r, "seven_day")["used_pct"]),
+        12.0,
+        1e-6
+    ));
+}
+
+#[tokio::test]
+async fn f3_control_an_allowed_rate_limit_event_below_warn_pct_reads_ok() {
+    // the allowed event with its five-hour window below warn_pct (50 % < 90): nothing degrades it
+    let r = fallback_with("allowed", 0.5).await;
+    assert_eq!(r.probe.name, "stream_json");
     assert_eq!(r.state, State::Ok, "{}", json(&r));
+    assert!(approx(
+        f(&must_window(&r, "five_hour")["used_pct"]),
+        50.0,
+        1e-6
+    ));
     assert!(approx(
         f(&must_window(&r, "seven_day")["used_pct"]),
         12.0,

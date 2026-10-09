@@ -38,6 +38,9 @@ pub struct ProbeConfig {
     pub max_tokens: u32,
     /// A 200 slower than this reads `degraded`. Default 10000.
     pub degraded_latency_ms: u64,
+    /// A row that would read `ok` reads `degraded` when any window is at or above this % (DESIGN §2 "a window ≥
+    /// warn %"; CHORE-010, steer bucket 2). Default 90; 0 < x ≤ 100.
+    pub warn_pct: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -203,9 +206,13 @@ impl Default for ProbeConfig {
         ProbeConfig {
             max_tokens: 20,
             degraded_latency_ms: 10_000,
+            warn_pct: DEFAULT_WARN_PCT,
         }
     }
 }
+
+/// `[probe] warn_pct`'s default (CHORE-010, steer bucket 2, 2026-10-08).
+pub const DEFAULT_WARN_PCT: f64 = 90.0;
 
 /// The default bucket name.
 pub const DEFAULT_BUCKET: &str = "ai_status";
@@ -252,6 +259,26 @@ fn alert_config(raw: Option<raw::Alert>) -> Result<AlertConfig, ConfigError> {
         yurtle_kanban: kanban("yurtle-kanban", a.yurtle_kanban)?,
         webhook,
     })
+}
+
+/// `[probe] warn_pct`: a number, 0 < x ≤ 100 (CHORE-010).
+fn warn_pct(v: &toml::Value) -> Result<f64, ConfigError> {
+    let n = match v {
+        toml::Value::Float(f) => *f,
+        toml::Value::Integer(i) => *i as f64,
+        _ => {
+            return Err(ConfigError(format!(
+                "[probe] warn_pct must be a number (0 < warn_pct <= 100), not {v}"
+            )));
+        }
+    };
+    if n.is_finite() && n > 0.0 && n <= 100.0 {
+        Ok(n)
+    } else {
+        Err(ConfigError(format!(
+            "[probe] warn_pct = {n} is out of range: 0 < warn_pct <= 100"
+        )))
+    }
 }
 
 /// `<n><unit>` with unit `ms`, `s`, `m`, `h` or `d` (e.g. `90s`, `15m`, `2h`).
@@ -349,6 +376,8 @@ mod raw {
         pub ttl: Option<toml::Value>,
         pub max_tokens: Option<u32>,
         pub degraded_latency_ms: Option<u64>,
+        /// Read as a value so a non-number is refused with an error that names the key.
+        pub warn_pct: Option<toml::Value>,
     }
 
     /// `[intervals]` / `[ttl]`: one duration per query kind.
@@ -435,6 +464,9 @@ impl Config {
             }
             if let Some(d) = p.degraded_latency_ms {
                 probe.degraded_latency_ms = d;
+            }
+            if let Some(w) = p.warn_pct {
+                probe.warn_pct = warn_pct(&w)?;
             }
         }
         let mut intervals = PerKind::default();
