@@ -855,7 +855,10 @@ fn table_out(entries: &[Entry], now: chrono::DateTime<Utc>) -> String {
     let mut lines: Vec<[String; 6]> = vec![header.map(String::from)];
     for e in entries {
         let row = e.row.as_ref();
-        let mut detail = e.verdict.reason().unwrap_or_default();
+        // a measured row's own reason (`window_near_limit`, CHORE-018 r1 F2) when the verdict carries none
+        let mut detail = (e.verdict.reason())
+            .or_else(|| row.and_then(|r| r.reason.clone()))
+            .unwrap_or_default();
         if let Some(b) = row.and_then(|r| r.balance.as_ref()) {
             if !detail.is_empty() {
                 detail.push(' ');

@@ -207,3 +207,52 @@ async fn f3_a_probed_near_limit_window_files_under_the_default() {
     bare.reason = None;
     assert_eq!(decide_default(&bare), Decision::Nothing);
 }
+
+// ── F2: the `status` table shows the near-limit reason ─────────────────────────────────────────────────────────
+
+#[test]
+fn f2_the_status_table_names_window_near_limit_in_detail() {
+    use quotabus::{Backend, FileBackend, Headroom};
+    let dir = tempfile::tempdir().unwrap();
+    let state_dir = dir.path().join("state");
+    let cfg = dir.path().join("quotabus.toml");
+    std::fs::write(
+        &cfg,
+        format!(
+            "[file]\ndir = {:?}\n\n[ttl]\napi = \"2m\"\n\n\
+             [[service]]\nid = \"kimi\"\nkind = \"api\"\nprovider = \"moonshot\"\nfamily = \"moonshot\"\n\
+             account = \"nusy-product-team\"\nbase_url = \"http://127.0.0.1:1/kimi\"\nprotocol = \"anthropic\"\n\
+             models = [\"kimi-k2.5\"]\nroles = [\"review\"]\nsecret = \"QB_KIMI\"\n",
+            state_dir.display().to_string()
+        ),
+    )
+    .unwrap();
+    let key = "api.moonshot.nusy-product-team.kimi-k2-5";
+    let table = |reason: Option<&str>| {
+        let mut r = common::record(key, State::Degraded, chrono::Utc::now(), 600);
+        r.reason = reason.map(str::to_string);
+        r.headroom = Some(Headroom {
+            window_pct: Some(97.0),
+            window: Some("five_hour".into()),
+            ..Headroom::default()
+        });
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(FileBackend::new(&state_dir).put(&r)).unwrap();
+        let out = common::run_cli(
+            &cfg,
+            &["status"],
+            &[("PATH", "/usr/bin:/bin"), ("QB_KIMI", common::FAKE_PLAIN)],
+            Duration::from_secs(60),
+        );
+        common::text(&out)
+    };
+    let t = table(Some(NEAR));
+    let line = t
+        .lines()
+        .find(|l| l.contains("kimi-k2.5"))
+        .unwrap_or_else(|| panic!("no kimi line: {t}"));
+    assert!(line.contains("degraded") && line.contains(NEAR), "{t}");
+    // control: a degraded row with no reason shows none
+    let t = table(None);
+    assert!(!t.contains(NEAR), "{t}");
+}
