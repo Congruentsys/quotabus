@@ -2,7 +2,7 @@
 id: CHORE-017
 title: "pairit other-repo lane: file a chore on the receiving repo's board (the Captain's cross-repo rule, 2026-10-09)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-09
@@ -37,5 +37,11 @@ pairit's other-repo lane (`.claude/skills/pairit/SKILL.md` § The other-repo lan
     kb:status kb:in_progress ;
     kb:at "2026-10-09T13:38:47+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T13:49:48+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/26> ;
   ] .
 ```
