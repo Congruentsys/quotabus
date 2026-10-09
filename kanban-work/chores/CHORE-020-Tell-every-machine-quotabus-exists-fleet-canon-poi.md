@@ -2,9 +2,9 @@
 id: CHORE-020
 title: "Tell every machine quotabus exists: fleet canon pointer + nusy-product-team CLAUDE.md (raw nats kv reads)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
 depends_on: []
 ---
@@ -69,6 +69,11 @@ is not installed on M5.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-09T18:13:50+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-09T18:13:52+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
