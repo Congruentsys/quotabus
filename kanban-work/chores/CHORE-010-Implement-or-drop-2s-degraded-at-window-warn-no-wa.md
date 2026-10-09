@@ -2,9 +2,9 @@
 id: CHORE-010
 title: "Implement §2's 'degraded at window ≥ warn %': [probe] warn_pct = 90 (steer bucket 2)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001, design]
 depends_on: []
@@ -46,6 +46,11 @@ Released. Decided — open to the Captain's veto.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T21:58:05+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-09T01:32:24+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
