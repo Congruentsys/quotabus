@@ -48,3 +48,7 @@ Captain 2026-10-09: "SIG-010: go with the recommended default, option 3". This i
     kb:resolution "completed" ;
   ] .
 ```
+
+### Mac-mini/s-e7976c42 (2026-10-09 13:38)
+
+Built by CHORE-018 (released).
