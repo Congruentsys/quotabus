@@ -72,7 +72,7 @@ def test_f1_local_macos_install_bootstraps_into_gui_uid_domain(tmp_path):
 
 
 def test_f1_host_macos_install_computes_uid_on_target_and_bootstraps(tmp_path):
-    proc, calls, _ = run(tmp_path, ["--host", "mini", "--user", "admin", "--home", "/Users/admin", "--os", "macos"])
+    proc, calls, _ = run(tmp_path, ["--host", "mini", "--user", "hankh19", "--home", "/Users/hankh19", "--os", "macos"])
     assert proc.returncode == 0, proc.stderr
     remote = " ; ".join(remote_commands(calls))
     assert "launchctl bootstrap gui/$(id -u)" in remote, remote

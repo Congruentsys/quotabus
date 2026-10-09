@@ -126,10 +126,10 @@ fn control_readme_mini_command_needs_a_mini_host_line() {
     );
     assert_eq!(
         readme_mini_command(
-            "```\n$ packaging/install.sh --host mini --user admin --interval 300\n```"
+            "```\n$ packaging/install.sh --host mini --user hankh19 --interval 300\n```"
         )
         .as_deref(),
-        Some("packaging/install.sh --host mini --user admin --interval 300")
+        Some("packaging/install.sh --host mini --user hankh19 --interval 300")
     );
 }
 
