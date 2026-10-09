@@ -234,4 +234,16 @@ between repos", quoted in CHORE-017's body).
 4. The item is NOT done: it waits on the other repo. `.venv/bin/yurtle-kanban move <ID> blocked --agent "$ME" -m
    "packet at docs/flowback/<ID>-to-<repo>.md; filed as <repo> <THEIR-ID>; waits on <repo> landing it"` (the other
    repo's id is on the item from here on), and the loop picks again. Whoever records the receiving repo's landing
-   commit moves it back and closes it, citing that commit.
+   commit closes it, citing that commit and the read that shows the change is there:
+   `.venv/bin/yurtle-kanban move <ID> done --force --resolution completed --agent "$ME" -m "<ID> done: landed in
+   <repo> as <their sha> (<date>, '<their subject>'). Check: <the command> → <its output>. Closed with --force: 3.4.0
+   refuses stranded → arrived; --force skips the transition table, WIP limits and gates (none configured here), not
+   the holder"`. `-m` is the commit message, so the citation is the close's record (CHORE-001's close, 5f570b8,
+   which had no `--resolution`). **Why `--force`:** 3.4.0's table allows from `stranded` only `provisioning`,
+   `underway` and `harbor` (`workflow.py` 64–68, `BLOCKED: [READY, IN_PROGRESS, BACKLOG]`), and the one route to
+   `arrived` runs through `underway`, which CLAUDE.md forbids by hand. Measured 2026-10-09 on Mac-mini in a throwaway
+   clone pushing to a throwaway bare origin (quotabus b21fcd8), the item held by the session that parked it and closed
+   by another `--agent`: a plain `move <ID> done` → "Illegal move CHORE-019: stranded → arrived. Legal from stranded:
+   provisioning, underway, harbor.", rc 1; the forced move above → "…: pushed to origin/main", rc 0, the item
+   `arrived`, `resolution: completed`, `kb:forcedMove true`, its `assignee:` unchanged. The holder guard covers
+   in-progress items only (`move --help`), so any session may close a stranded one; the claimant stays the record.
