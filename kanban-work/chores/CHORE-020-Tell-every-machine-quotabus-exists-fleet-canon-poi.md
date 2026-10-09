@@ -2,7 +2,7 @@
 id: CHORE-020
 title: "Tell every machine quotabus exists: fleet canon pointer + nusy-product-team CLAUDE.md (raw nats kv reads)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -61,3 +61,14 @@ is not installed on M5.
       linking the packet, quoting the Captain and asking for the landing sha. Each machine's re-sync follows that
       repo's recipe.
 - [ ] This item is moved `stranded`, naming that chore's id.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T18:13:50+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
