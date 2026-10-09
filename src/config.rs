@@ -128,6 +128,8 @@ pub struct AlertConfig {
     pub yurtle_kanban: Option<KanbanSink>,
     /// `[alert.webhook]`.
     pub webhook: Option<WebhookSink>,
+    /// `[alert] states`: the names a crossing files for (CHORE-018, SIG-010). STUB (tests red): not read yet.
+    pub states: Vec<String>,
 }
 
 /// `[alert.nusy-kanban]` / `[alert.yurtle-kanban]`: the command run, the item type it creates and the tags it carries.
@@ -258,6 +260,7 @@ fn alert_config(raw: Option<raw::Alert>) -> Result<AlertConfig, ConfigError> {
         nusy_kanban: kanban("nusy-kanban", a.nusy_kanban)?,
         yurtle_kanban: kanban("yurtle-kanban", a.yurtle_kanban)?,
         webhook,
+        states: Vec::new(),
     })
 }
 

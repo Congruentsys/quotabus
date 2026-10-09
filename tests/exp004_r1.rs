@@ -5,6 +5,9 @@
 //!   does not name (what `doppler run` injects beyond the config's `secret`s) never reaches the sink. PATH and HOME
 //!   do.
 //!
+//! CHORE-018 (SIG-010): `degraded` and `rate_limited` file nothing under the default `[alert] states`; the F1 dedup
+//! cases below list them in `[alert] states` so the bad->bad rule is still exercised on them.
+//!
 //! Fakes only: the kanban sinks are scripts that record their argv, stdin and environment NAMES (never values) and
 //! touch no board; the store is the file backend in a temp dir.
 
@@ -113,6 +116,7 @@ fn rig() -> Rig {
              [[service]]\nid = \"kimi\"\nkind = \"api\"\nprovider = \"moonshot\"\nfamily = \"moonshot\"\n\
              account = \"nusy-product-team\"\nbase_url = \"http://127.0.0.1:1/kimi\"\nprotocol = \"anthropic\"\n\
              models = [\"kimi-k2.5\"]\nroles = [\"review\"]\nsecret = \"QB_KIMI\"\n\n\
+             [alert]\nstates = [\"quota_exhausted\", \"auth_failed\", \"model_missing\", \"rate_limited\", \"degraded\"]\n\n\
              [alert.nusy-kanban]\ncommand = {:?}\nitem_type = \"signal\"\ntags = [\"provider-status\"]\n",
             state.display().to_string(),
             fake.path().display().to_string(),

@@ -212,6 +212,14 @@ fn row(state: State) -> Record {
     common::record(KEY, state, Utc::now(), 600)
 }
 
+/// A fresh CANNOT-ASSESS row that is NOT unreachable (`cannot_assess:not_found`). CHORE-018 (SIG-010): under the
+/// default `[alert] states` an unreachable row files, so the CANNOT-ASSESS cases here use a reason that never does.
+fn cannot_assess_row() -> Record {
+    let mut r = row(State::Unknown);
+    r.reason = Some("cannot_assess:not_found".into());
+    r
+}
+
 /// An expired row: checked 2 h ago with a 60 s TTL.
 fn expired(state: State) -> Record {
     common::record(KEY, state, Utc::now() - chrono::Duration::hours(2), 60)
@@ -495,7 +503,7 @@ async fn an_expired_or_absent_row_is_unknown_and_does_not_clear_it() {
 async fn a_healthy_or_cannot_assess_first_row_files_nothing() {
     let rig = file_rig("");
     put_and_alert(&rig, &row(State::Ok)).await;
-    put_and_alert(&rig, &row(State::Unknown)).await;
+    put_and_alert(&rig, &cannot_assess_row()).await;
     assert_eq!(total(&rig.f), 0, "only a service going bad is a crossing");
     // control: the same rig files the moment the row goes bad
     put_and_alert(&rig, &row(State::QuotaExhausted)).await;
@@ -641,7 +649,12 @@ async fn the_alert_never_auto_closes_anything() {
         State::ModelMissing,
         State::Ok,
     ] {
-        put_and_alert(&rig, &row(st)).await;
+        let r = if st == State::Unknown {
+            cannot_assess_row()
+        } else {
+            row(st)
+        };
+        put_and_alert(&rig, &r).await;
     }
     let calls: Vec<Call> = rig
         .f
