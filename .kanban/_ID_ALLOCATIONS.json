@@ -285,5 +285,12 @@
     "number": 19,
     "allocated_at": "2026-10-09T16:37:23.150867",
     "allocated_by": "hankh1844"
+  },
+  {
+    "id": "CHORE-020",
+    "prefix": "CHORE",
+    "number": 20,
+    "allocated_at": "2026-10-09T18:13:43.945332",
+    "allocated_by": "Hank Head"
   }
 ]
