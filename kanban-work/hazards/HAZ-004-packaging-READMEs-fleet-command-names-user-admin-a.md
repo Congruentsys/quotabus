@@ -43,3 +43,10 @@ Run as written, the command fails at SSH. Run with the right user, it would inst
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-09 03:02)
+
+tests red at cdbf453 (ruled pin edits at 4afac5c: fixture plist, test_install_target.py, test_install_r1.py, tick_and_docs.rs now use hankh19 and user-owned paths). Five tests fail on README assertions (tests/test_haz004_mini_paths.py, plus test_installing_for_mini_yields_todays_plist); the four controls pass. Also measured on Mini 2026-10-09: doppler over plain ssh fails with 'Unable to retrieve value from system keyring'. A throwaway launchd job bootstrapped into gui/501 read the 7 subscription token names (count only), so the unit must load in gui/501, as install.sh does.
