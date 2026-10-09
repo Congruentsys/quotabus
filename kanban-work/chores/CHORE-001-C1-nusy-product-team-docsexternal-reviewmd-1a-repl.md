@@ -2,7 +2,7 @@
 id: CHORE-001
 title: "C1: nusy-product-team docs/external-review.md §1a — replace the hand probe with 'run quotabus status'"
 type: chore
-status: stranded
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
@@ -45,6 +45,12 @@ Hold met: EXP-001, EXP-002, EXP-003 and EXP-004 have all landed (PRs #6?/12/14/1
     kb:status kb:blocked ;
     kb:at "2026-10-08T21:48:41+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T16:37:11+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:forcedMove "true"^^xsd:boolean ;
   ] .
 ```
 
