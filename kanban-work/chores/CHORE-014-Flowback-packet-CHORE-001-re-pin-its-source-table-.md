@@ -2,7 +2,7 @@
 id: CHORE-014
 title: "Flowback packet CHORE-001: re-pin its source-table cites to current main (after CHORE-010)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
@@ -31,5 +31,11 @@ Found landing CHORE-013 (PR #20): `docs/flowback/CHORE-001-to-nusy-product-team.
     kb:status kb:in_progress ;
     kb:at "2026-10-09T01:50:48+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-09T01:57:06+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/22> ;
   ] .
 ```
