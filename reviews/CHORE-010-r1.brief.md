@@ -1,0 +1,17 @@
+You are an INDEPENDENT reviewer, a fresh claude -p session that wrote none of this work, of quotabus PR #21 (https://github.com/Congruentsys/quotabus/pull/21), branch `chore/CHORE-010-warn-pct`. Review the branch tip (the commit adding this brief; its parent is f2bb72314b9c49c019aa8b1e3ddfda9054bd1534), in your OWN scratch worktree: `cd /Users/hankh95/Projects/quotabus && git fetch -q origin && git worktree add -q --detach /tmp/rv-CHORE-010 origin/chore/CHORE-010-warn-pct && ln -s /Users/hankh95/Projects/quotabus/.venv /tmp/rv-CHORE-010/.venv`. Use CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-010 and PATH=/Users/hankh95/.cargo/bin:$PATH. Remove the worktree when done, after pushing your review.
+
+The item is kanban-work/chores/CHORE-010-*.md; read its Definition of Done and the docs/DESIGN.md sections it cites (§2 state table, §3). Tests (red) were committed at f8ae737 (tests/chore010_warn_pct.rs); the code at 1d8ff4e; a RULED TEST EDIT by the test partner at 37b4b93 (tests/exp002_r1_fallback.rs, an older test whose expectation the new rule changes); then a merge of origin/main and this brief.
+
+Check:
+1. The tests in f8ae737 match the item body and the DESIGN sections, not the code.
+2. `git diff f8ae737..<tip> -- tests/chore010_warn_pct.rs` is empty.
+3. The ruled edit 37b4b93 keeps its control's purpose (the status word, not the window, decides quota_exhausted) and does not weaken it.
+4. The code does not special-case the tests. The rule applies to EVERY row the probe builds (API and all subscription sources), and a worse state is never softened.
+5. Mutate the code at two points (e.g. ≥ → > in warn_state; skip the warn_state call in subscription::read or probe.rs) and see a test go red each time; restore the code after each.
+6. Secret rules: no key on argv, in a row, a log, an error or a fixture; outputs pass the redactor; nothing in the diff looks like a real key.
+7. Docs: DESIGN §2/§3 and examples/quotabus.toml document warn_pct, citing CHORE-010 and the steer decision accurately (an agent session's steer bucket 2, 2026-10-08, open to the Captain's veto, NOT a Captain ruling), and SIG-010 is quoted as open.
+8. Run the gate YOURSELF in your worktree: `make check`.
+
+Rules: run EVERY command in the FOREGROUND (no background, &, nohup). Make NO board writes, NO GitHub writes, and no commits other than the review file. Every finding quotes the command it ran and its output.
+
+Write reviews/CHORE-010-r1.md: line 1 `reviewed-at-sha: <tip>`; line 2 `verdict: approve` or `verdict: changes`; line 3 `gate: make check rc=<N> at <SHA> on <host>` (or `gate: NOT RUN — <reason>`); line 4 `brief: reviews/CHORE-010-r1.brief.md @ <tip>`. Then an `Authorship:` paragraph: all the work and this review were done by LLM agent sessions (Claude Opus 5.5); no human reviewed it; "distinct" means a separate claude -p process with a fresh context that wrote none of the work, of the SAME model family, briefed by the driver (the author) with this committed brief; the commissioning session is M5-MBP-2/s-72a67d16, which drove the item, briefed the test partner and the implementer and merged origin/main (it wrote no tests or code). Then numbered findings F1… with commands and outputs, or "No findings". Commit as `CHORE-010: review r1` (git -c user.name="Hank Head" -c user.email=237287+hankh95@users.noreply.github.com commit) and push with `git push -q origin HEAD:chore/CHORE-010-warn-pct`.
