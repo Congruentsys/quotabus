@@ -7,9 +7,14 @@
 //! state is `unknown`, an unreadable row) and UNKNOWN (absent, expired — the freshness rule, §2) never clear it and
 //! never file. Nothing is ever closed, moved or updated on a board: the only call is `create`.
 //!
+//! **Which states file** (CHORE-018; Captain 2026-10-09: "SIG-010: go with the recommended default, option 3"): only a
+//! crossing into a state listed in `[alert] states` files and arms the key ([`listed_as`], [`decide_listed`]). The
+//! default is `quota_exhausted`, `auth_failed`, `model_missing`, `unreachable` (a CANNOT-ASSESS row whose reason is
+//! `cannot_assess:unreachable`) and `window_near_limit` (a `degraded` row whose reason the warn rule wrote). An
+//! unlisted state — under the default a latency-degraded row or `rate_limited` — files nothing, does not arm and does
+//! not clear; any other CANNOT-ASSESS never files and never clears.
+//!
 //! [INFERENCE] decisions the design does not make, documented in `docs/DESIGN.md` §3 alert:
-//! - `degraded` and `rate_limited` are not `ok`, so they are crossings like any other bad state (open as the
-//!   Captain's SIG-010; review r1 F2). Until it is ruled, every bad state files.
 //! - Partial sink failure: the crossing is recorded only when every sink succeeded. The sinks that did succeed are
 //!   remembered in the entry's `pending`, so the next run retries only the ones that failed — a failed webhook does
 //!   not file a second kanban item.
@@ -20,8 +25,12 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::classify::WINDOW_NEAR_LIMIT;
 use crate::freshness::Verdict;
 use crate::record::{Record, State};
+
+/// The reason an unreachable service's row carries (`classify` on `Outcome::Unreachable`).
+pub const UNREACHABLE_REASON: &str = "cannot_assess:unreachable";
 
 /// The `contract` of an `alert.<key>` entry.
 pub const ALERT_CONTRACT: &str = "quotabus-alert/1";
@@ -100,6 +109,56 @@ pub fn decide(verdict: &Verdict, entry: Option<&AlertEntry>) -> Decision {
     Decision::File {
         state: *state,
         skip,
+    }
+}
+
+/// The `[alert] states` names a verdict reads as (`row_reason` is the row's `reason`); empty for `ok`, UNKNOWN and any
+/// CANNOT-ASSESS that is not unreachable. A near-limit `degraded` reads as both `degraded` and `window_near_limit`.
+pub fn listed_as(verdict: &Verdict, row_reason: Option<&str>) -> Vec<&'static str> {
+    match verdict {
+        Verdict::State { state, .. } => match state {
+            State::Ok | State::Unknown => vec![],
+            State::Degraded if row_reason == Some(WINDOW_NEAR_LIMIT) => {
+                vec!["degraded", WINDOW_NEAR_LIMIT]
+            }
+            s => vec![s.as_str()],
+        },
+        Verdict::CannotAssess { reason } if reason == UNREACHABLE_REASON => vec!["unreachable"],
+        _ => vec![],
+    }
+}
+
+/// The crossing rule under `[alert] states`: a measured `ok` decides as [`decide`]; a reading listed in `states`
+/// decides as a bad state (an unreachable one as `unknown`); anything else (unlisted, other CANNOT-ASSESS, UNKNOWN)
+/// is [`Decision::Nothing`] — it files nothing, does not arm and does not clear.
+pub fn decide_listed(
+    verdict: &Verdict,
+    row_reason: Option<&str>,
+    entry: Option<&AlertEntry>,
+    states: &[String],
+) -> Decision {
+    if matches!(
+        verdict,
+        Verdict::State {
+            state: State::Ok,
+            ..
+        }
+    ) {
+        return decide(verdict, entry);
+    }
+    let names = listed_as(verdict, row_reason);
+    if !names.iter().any(|n| states.iter().any(|s| s == n)) {
+        return Decision::Nothing;
+    }
+    match verdict {
+        Verdict::State { .. } => decide(verdict, entry),
+        _ => decide(
+            &Verdict::State {
+                state: State::Unknown,
+                age: chrono::Duration::zero(),
+            },
+            entry,
+        ),
     }
 }
 
@@ -320,6 +379,75 @@ mod tests {
         );
         // a measured ok drops the pending crossing
         assert_eq!(decide(&fresh(State::Ok), Some(&e)), Decision::Clear);
+    }
+
+    #[test]
+    fn only_listed_states_file() {
+        let default: Vec<String> = crate::config::DEFAULT_ALERT_STATES
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+        let file = |s| Decision::File {
+            state: s,
+            skip: vec![],
+        };
+        let ok = Some(entry(State::Ok, None));
+        assert_eq!(
+            decide_listed(&fresh(State::ModelMissing), None, ok.as_ref(), &default),
+            file(State::ModelMissing)
+        );
+        assert_eq!(
+            decide_listed(
+                &fresh(State::Degraded),
+                Some(WINDOW_NEAR_LIMIT),
+                ok.as_ref(),
+                &default
+            ),
+            file(State::Degraded)
+        );
+        for (v, r) in [
+            (fresh(State::Degraded), None),
+            (fresh(State::RateLimited), None),
+        ] {
+            assert_eq!(
+                decide_listed(&v, r, ok.as_ref(), &default),
+                Decision::Nothing
+            );
+        }
+        let unreachable = Verdict::CannotAssess {
+            reason: UNREACHABLE_REASON.into(),
+        };
+        assert_eq!(
+            decide_listed(&unreachable, None, ok.as_ref(), &default),
+            file(State::Unknown)
+        );
+        let other = Verdict::CannotAssess {
+            reason: "cannot_assess:not_found".into(),
+        };
+        let alerted = entry(State::ModelMissing, None);
+        assert_eq!(
+            decide_listed(&other, None, None, &default),
+            Decision::Nothing
+        );
+        assert_eq!(
+            decide_listed(&other, None, Some(&alerted), &default),
+            Decision::Nothing
+        );
+        // only a measured ok re-arms
+        assert_eq!(
+            decide_listed(&fresh(State::Ok), None, Some(&alerted), &default),
+            Decision::Clear
+        );
+        // a configured list replaces the default
+        let rl = vec!["rate_limited".to_string()];
+        assert_eq!(
+            decide_listed(&fresh(State::RateLimited), None, None, &rl),
+            file(State::RateLimited)
+        );
+        assert_eq!(
+            decide_listed(&fresh(State::ModelMissing), None, None, &rl),
+            Decision::Nothing
+        );
     }
 
     #[test]

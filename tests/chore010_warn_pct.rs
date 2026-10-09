@@ -18,9 +18,8 @@ mod exp002;
 
 use chrono::{Duration, Utc};
 use exp002::*;
-use quotabus::alert::{Decision, decide};
 use quotabus::classify::warn_state;
-use quotabus::{Config, Headroom, Kind, Query, Record, State, Verdict, Window, record_key, select};
+use quotabus::{Config, Headroom, Kind, Query, Record, State, Window, record_key, select};
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -453,22 +452,8 @@ fn an_ok_api_row_at_97_through_the_rule_is_refused_by_select() {
     assert_eq!(picks(&rows), vec!["kimi-k3".to_string()]);
 }
 
-#[test]
-fn alert_files_a_near_limit_degraded_as_any_bad_state() {
-    let fresh = |state| Verdict::State {
-        state,
-        age: Duration::zero(),
-    };
-    assert_eq!(
-        decide(&fresh(State::Degraded), None),
-        Decision::File {
-            state: State::Degraded,
-            skip: vec![]
-        }
-    );
-    // control: ok files nothing
-    assert_eq!(decide(&fresh(State::Ok), None), Decision::Nothing);
-}
+// `alert_files_a_near_limit_degraded_as_any_bad_state` was retired by CHORE-018 (Captain on SIG-010): whether a
+// degraded row files now depends on `[alert] states` and the row's reason; see tests/chore018_alert_states.rs.
 
 // ── DoD 4: the docs ─────────────────────────────────────────────────────────────────────────────────────────────
 

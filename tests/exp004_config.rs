@@ -247,7 +247,15 @@ fn the_reader_maps_ids_lists_empties_and_numbers_as_yurtle_does() {
     assert!(claude.roles.is_empty(), "an empty roles cell is no roles");
     // nothing outside the block was read: no bus, no alert sinks
     assert!(c.bus.is_none());
-    assert_eq!(c.alert, AlertConfig::default());
+    // (CHORE-018: compared sink by sink; `states` has its own default, tests/chore018_alert_states.rs)
+    assert_eq!(
+        (
+            &c.alert.nusy_kanban,
+            &c.alert.yurtle_kanban,
+            &c.alert.webhook
+        ),
+        (&None, &None, &None)
+    );
 }
 
 #[test]
@@ -304,6 +312,8 @@ fn the_alert_tables_load_into_the_config() {
             webhook: Some(WebhookSink {
                 url: "https://example.invalid/hook".into(),
             }),
+            // CHORE-018: `[alert] states` is not set here, so it holds its default (tests/chore018_alert_states.rs)
+            states: c.alert.states.clone(),
         }
     );
 }
@@ -312,7 +322,15 @@ fn the_alert_tables_load_into_the_config() {
 fn control_no_alert_tables_means_no_sinks() {
     // the known answer above is not a constant: without the tables there is no sink
     let c = Config::from_toml_str("").unwrap();
-    assert_eq!(c.alert, AlertConfig::default());
+    // (CHORE-018: compared sink by sink; `states` has its own default, tests/chore018_alert_states.rs)
+    assert_eq!(
+        (
+            &c.alert.nusy_kanban,
+            &c.alert.yurtle_kanban,
+            &c.alert.webhook
+        ),
+        (&None, &None, &None)
+    );
     assert_ne!(c.alert, Config::from_toml_str(ALERT_TABLES).unwrap().alert);
 }
 

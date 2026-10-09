@@ -23,7 +23,8 @@ subscription = "1h"                     # subscription account reads: hourly (EX
 max_tokens = 20
 # A row that would read ok reads degraded when any window (headroom.windows[].used_pct, or window_pct) is >= this %.
 # A number, 0 < warn_pct <= 100; default 90 (CHORE-010: decided by an agent session's steer pass, bucket 2,
-# 2026-10-08, open to the Captain's veto). Whether a near-limit degraded files an alert is SIG-010, still open.
+# 2026-10-08, open to the Captain's veto). Such a row carries reason "window_near_limit"; whether it files an alert is
+# `[alert] states` below (SIG-010, ruled).
 warn_pct = 90
 
 [[service]]
@@ -165,6 +166,13 @@ sources    = []                         # off: the only source is undocumented
 # the same bucket, and only a measured `ok` re-arms it. stdout is always a sink. A sink left out is not used.
 # `command` is run as given (use an absolute path under launchd/systemd, whose PATH is minimal); yurtle-kanban files
 # on the board of the directory it runs in, so run `quotabus alert` from that repo, or point `command` at a wrapper.
+
+[alert]
+# The states a crossing files for (CHORE-018; Captain 2026-10-09: "SIG-010: go with the recommended default, option 3").
+# Valid: quota_exhausted, auth_failed, model_missing, rate_limited, degraded, unreachable, window_near_limit. A list
+# here replaces the default (this one): the hard failures plus a near-limit window. Latency-degraded and rate_limited
+# stay on the bus (select refuses them) but file nothing; an unlisted state does not arm, and only a measured ok re-arms.
+states = ["quota_exhausted", "auth_failed", "model_missing", "unreachable", "window_near_limit"]
 
 [alert.nusy-kanban]
 command   = "nusy-kanban"               # the sink gets PATH, HOME, TMPDIR, USER, LANG, TERM only: to name a

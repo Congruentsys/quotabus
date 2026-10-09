@@ -120,7 +120,7 @@ pub struct Config {
 
 /// `[alert.*]`: the sinks `quotabus alert` files one item per crossing to (DESIGN §3 alert, §10 Q8; EXP-004). A sink
 /// left out is not used; stdout is always written.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct AlertConfig {
     /// `[alert.nusy-kanban]`.
     pub nusy_kanban: Option<KanbanSink>,
@@ -128,7 +128,42 @@ pub struct AlertConfig {
     pub yurtle_kanban: Option<KanbanSink>,
     /// `[alert.webhook]`.
     pub webhook: Option<WebhookSink>,
+    /// `[alert] states`: the names a crossing files for (CHORE-018; Captain 2026-10-09 on SIG-010). A configured
+    /// list replaces [`DEFAULT_ALERT_STATES`]; every name is one of [`ALERT_STATE_NAMES`].
+    pub states: Vec<String>,
 }
+
+impl Default for AlertConfig {
+    fn default() -> Self {
+        AlertConfig {
+            nusy_kanban: None,
+            yurtle_kanban: None,
+            webhook: None,
+            states: DEFAULT_ALERT_STATES.iter().map(|s| s.to_string()).collect(),
+        }
+    }
+}
+
+/// Every name `[alert] states` accepts: the bad row states but `unknown`, plus `unreachable` (a CANNOT-ASSESS row
+/// whose reason is `cannot_assess:unreachable`) and `window_near_limit` (a `degraded` row the warn rule wrote).
+pub const ALERT_STATE_NAMES: [&str; 7] = [
+    "quota_exhausted",
+    "auth_failed",
+    "model_missing",
+    "rate_limited",
+    "degraded",
+    "unreachable",
+    "window_near_limit",
+];
+
+/// `[alert] states` when it is absent (SIG-010, the recommended default): the hard failures plus a near-limit window.
+pub const DEFAULT_ALERT_STATES: [&str; 5] = [
+    "quota_exhausted",
+    "auth_failed",
+    "model_missing",
+    "unreachable",
+    "window_near_limit",
+];
 
 /// `[alert.nusy-kanban]` / `[alert.yurtle-kanban]`: the command run, the item type it creates and the tags it carries.
 #[derive(Debug, Clone, PartialEq)]
@@ -258,7 +293,31 @@ fn alert_config(raw: Option<raw::Alert>) -> Result<AlertConfig, ConfigError> {
         nusy_kanban: kanban("nusy-kanban", a.nusy_kanban)?,
         yurtle_kanban: kanban("yurtle-kanban", a.yurtle_kanban)?,
         webhook,
+        states: alert_states(a.states)?,
     })
+}
+
+/// `[alert] states`: absent → the default; each name must be one of [`ALERT_STATE_NAMES`].
+fn alert_states(raw: Option<Vec<String>>) -> Result<Vec<String>, ConfigError> {
+    let Some(names) = raw else {
+        return Ok(AlertConfig::default().states);
+    };
+    if let Some(bad) = names
+        .iter()
+        .find(|n| !ALERT_STATE_NAMES.contains(&n.as_str()))
+    {
+        return Err(ConfigError(format!(
+            "[alert] states: unknown name {bad:?}; valid names are {}",
+            ALERT_STATE_NAMES.join(", ")
+        )));
+    }
+    let mut out: Vec<String> = Vec::new();
+    for n in names {
+        if !out.contains(&n) {
+            out.push(n);
+        }
+    }
+    Ok(out)
 }
 
 /// `[probe] warn_pct`: a number, 0 < x ≤ 100 (CHORE-010).
@@ -335,6 +394,7 @@ mod raw {
         #[serde(rename = "yurtle-kanban")]
         pub yurtle_kanban: Option<Kanban>,
         pub webhook: Option<Webhook>,
+        pub states: Option<Vec<String>>,
     }
 
     /// `[alert.nusy-kanban]` / `[alert.yurtle-kanban]`.
