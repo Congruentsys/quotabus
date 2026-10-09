@@ -2,9 +2,9 @@
 id: CHORE-012
 title: "DESIGN §3 + wiring note: SIG-009 decided — subscription seats are never select candidates (no longer 'interim')"
 type: chore
-status: provisioning
+status: underway
 priority: low
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001, design]
 depends_on: []
@@ -24,6 +24,11 @@ DESIGN §3 (the select section) and the wiring note state the rule as decided, c
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T21:58:24+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-09T01:32:48+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
