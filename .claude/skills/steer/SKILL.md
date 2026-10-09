@@ -114,7 +114,9 @@ for i in json.load(sys.stdin):
                          or the measurement's command and output>`
                close    .venv/bin/yurtle-kanban move <SIG> done --force --resolution completed --agent "$ME"
              on a work item: the same comment, then move it on (harbor → provisioning when it is now well defined,
-             per the release rule; stranded → back per pairit's other-repo lane, citing the landing commit)
+             per the release rule; stranded, once the other repo has landed it → closed with pairit's other-repo
+             lane step 4 command, `move <ID> done --force --resolution completed`, its `-m` citing the landing
+             commit AND the read that shows the change is there)
 5. REFLECT   comment EVERY item the decision changes, saying what it changes for THAT item (a fresh session reads the
              comment, not your context); a decision that changes docs/DESIGN.md files a chore to amend it (a PR)
 6. ESCALATE  bucket 3: a comment on each SIG, `[steer] bucket-3: <trigger> — recommended default: <option>`, the SIG
@@ -127,9 +129,13 @@ for i in json.load(sys.stdin):
 `harbor → provisioning` and `harbor → stranded` (`workflow.py`, `BACKLOG: [READY, BLOCKED]`); a plain
 `move <SIG> done` is refused, rc 1: "Illegal move SIG-010: harbor → arrived. Legal from harbor: provisioning,
 stranded." (measured 2026-10-08 on M5 in a throwaway clone with no origin, `--no-commit`; with `--force` the same move
-printed "Moved SIG-010 to arrived", rc 0). `--force` skips the transition table and WIP
-limits only; it does not override a holder (`--take-over`) or the gates (`--skip-gates`, never used here). Say so
-in the close's comment so the forced move is not mistaken for a bypass.
+printed "Moved SIG-010 to arrived", rc 0). `--force` skips the transition table, the WIP limits AND the gates: 3.4.0
+passes `skip_gates=skip_gates or force` (`cli.py` 1040 and 1075), and this board configures no gates
+(`.kanban/config.yaml` has no `gates:`), so today the gates skipped are none. It does not override a holder of an
+in-progress item (`--take-over`; `move --help`: "--force does not override that"). Say so in the close's message so
+the forced move is not mistaken for a bypass. A `stranded` item is closed the same way only when it is a landed
+OTHER-REPO item whose close message carries the landing commit AND the read that shows it (pairit § The other-repo
+lane, step 4); any other `stranded` item is never closed with `--force`.
 
 If there are zero bucket-3 items, escalate nothing and say the queue is clear; quotabus-loop carries on.
 

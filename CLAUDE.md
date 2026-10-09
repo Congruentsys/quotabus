@@ -80,7 +80,10 @@ lists what was kept, adapted and cut).
   a distinct `claude -p` reviewer, merge), **docs** (an author, a check against "Done when", a PR), **measure** (a
   findings file with the exact command and its output, a PR reviewed like code) and **other-repo** (a change that
   lands in another repo: the change is written here as a packet, ONE chore asking for it is filed on that repo's
-  board, and the item waits `stranded` (blocked) on that repo, naming the chore's id).
+  board, and the item waits `stranded` (blocked) on that repo, naming the chore's id). Once that repo has landed it,
+  the item is closed with `move <ID> done --force --resolution completed --agent "$ME" -m "<their landing sha and
+  the read that shows it>"`: 3.4.0 refuses `stranded → arrived` without `--force`, and the only legal route runs
+  through `underway` (pairit § The other-repo lane, step 4, has the measurement).
 - **Cross-repo rule:** filing that one chore on the receiving repo's board is the ONE sanctioned write in another
   repo. Captain 2026-10-09 (a direction, not a default an agent offered): "Can you create a chore in
   nusy-product-team for this - this is how we move work between repos" (CHORE-001 → nusy-product-team CH-13371).
