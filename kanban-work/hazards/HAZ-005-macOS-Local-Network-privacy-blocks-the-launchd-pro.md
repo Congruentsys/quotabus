@@ -2,7 +2,7 @@
 id: HAZ-005
 title: "macOS Local Network privacy blocks the launchd probe from LAN hosts (No route to host to the Sparks)"
 type: hazard
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -26,3 +26,14 @@ self-hosted endpoint) reads unreachable on any macOS central host until it is gr
 2. Measured on Mini after the Captain grants it: the DGX1 row's state and error before and after, with the commands,
    recorded in a short finding or on this item. If replacing the binary (a redeploy) resets the grant, the README
    says so. `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T22:31:53+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
