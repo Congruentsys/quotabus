@@ -2,7 +2,7 @@
 id: CHORE-016
 title: "Deploy the central probe on Mini (install.sh --host mini) and measure VOY-001's Definition of Done on the live bus"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -25,3 +25,14 @@ VOY-001's Definition of Done says `quotabus status` on the hub shows every confi
    - `nats kv ls ai_status`: the row count;
    - the alert lines in the unit's log for any bad row: exactly one per crossing over two ticks.
 5. No key appears in the unit, in argv (`ps`), in the log or in the finding. Only the `ai_status` bucket is written.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T02:58:53+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
