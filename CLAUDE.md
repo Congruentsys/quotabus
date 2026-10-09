@@ -15,7 +15,8 @@
 ## Precedence
 This file governs this repo. The machine-global `~/.claude/CLAUDE.md` and nusy-product-team's canon (`nk`, `nk pr`
 proposals, verdict rows, the pre-push floor) govern nusy-product-team only. Here: work is tracked with yurtle-kanban
-on this repo's board (never `nk`), and code lands through `pairit` as a GitHub PR.
+on this repo's board (never `nk`), and code lands through `pairit` as a GitHub PR. The one exception: the other-repo
+lane files ONE chore on nusy-product-team's board with `nusy-kanban` (§ Skills, the cross-repo rule).
 
 ## Session start
 ```bash
