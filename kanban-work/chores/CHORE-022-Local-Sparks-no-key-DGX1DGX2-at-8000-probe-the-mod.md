@@ -2,7 +2,7 @@
 id: CHORE-022
 title: "Local Sparks: no key, DGX1/DGX2 at :8000, probe the model /v1/models serves (example + DESIGN §4 are stale)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-09
@@ -36,3 +36,14 @@ What is wrong in the repo (measured on Mini, 2026-10-09):
 3. Tests with a local HTTP stub: the served model is discovered and probed; a changed served model produces a row for
    the new id and no `model_missing`; no request carries an Authorization header; an unreachable stub reads
    `cannot_assess:unreachable`. Controls show each check can fail. `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-09T22:31:51+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
