@@ -151,6 +151,15 @@ fn headroom(windows: Vec<Window>, requests_remaining: Option<u64>) -> Option<Hea
     (h != Headroom::default()).then_some(h)
 }
 
+/// A unified status word → state and reason: `rejected` exhausts; `allowed_warning` (the provider's own near-limit
+/// warning) is degraded with reason `window_near_limit`, a near-limit window whatever the window's % (CHORE-018 r1 F1,
+/// SIG-010); anything else is ok.
+fn status_reading(statuses: &[&str]) -> (State, Option<String>) {
+    let state = status_state(statuses);
+    let reason = (state == State::Degraded).then(|| crate::classify::WINDOW_NEAR_LIMIT.to_string());
+    (state, reason)
+}
+
 /// A unified status word → state: `rejected` exhausts, `allowed_warning` is degraded, anything else is ok.
 fn status_state(statuses: &[&str]) -> State {
     if statuses.iter().any(|s| s.eq_ignore_ascii_case("rejected")) {
@@ -298,7 +307,7 @@ async fn claude_direct(
     }
     let statuses: Vec<&str> = statuses.iter().map(String::as_str).collect();
     let mut r = base_row(ctx, svc, UNIFIED_HEADERS);
-    r.state = status_state(&statuses);
+    (r.state, r.reason) = status_reading(&statuses);
     r.latency_ms = Some(h.latency_ms);
     r.headroom = headroom(windows, None);
     r.error = error_body(&h);
@@ -404,7 +413,7 @@ async fn claude_stream_json(
         }
     }
     let mut r = base_row(ctx, svc, STREAM_JSON);
-    r.state = status_state(&[info["status"].as_str().unwrap_or("")]);
+    (r.state, r.reason) = status_reading(&[info["status"].as_str().unwrap_or("")]);
     r.latency_ms = Some(latency);
     r.headroom = headroom(windows, None);
     r
