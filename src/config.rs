@@ -109,13 +109,16 @@ impl ServiceConfig {
     }
 
     /// The model slots to report for this service given the store's `rows`: [`slots`](Self::slots), or for a
-    /// discovering service the models of its own rows in `rows` (the served ids, and its id when the box could not
-    /// be listed); its id alone when `rows` hold none, so the service is still reported (absent).
+    /// discovering service the models of its rows from its NEWEST cycle in `rows` (the ids it served then, or its id
+    /// when the box could not be listed); its id alone when `rows` hold none, so the service is still reported
+    /// (absent). A cycle stamps every row it writes with one `checked_at`, so an older row (a model the box no
+    /// longer serves, or served before it went down) is never reported: its last `ok` would be a false `ok` until
+    /// its TTL (CHORE-022 review r1 F1).
     pub fn slots_in(&self, rows: &[crate::record::Record]) -> Vec<String> {
         if !self.discovers() {
             return self.slots();
         }
-        let mut found: Vec<String> = rows
+        let own: Vec<&crate::record::Record> = rows
             .iter()
             .filter(|r| {
                 r.kind == self.kind
@@ -123,6 +126,11 @@ impl ServiceConfig {
                     && r.account == self.account
                     && r.probe.name != BALANCE
             })
+            .collect();
+        let newest = own.iter().map(|r| r.checked_at).max();
+        let mut found: Vec<String> = own
+            .iter()
+            .filter(|r| Some(r.checked_at) == newest)
             .map(|r| r.model.clone())
             .collect();
         found.sort();
