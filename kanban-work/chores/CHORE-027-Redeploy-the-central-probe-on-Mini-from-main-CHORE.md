@@ -2,9 +2,9 @@
 id: CHORE-027
 title: "Redeploy the central probe on Mini from main (CHORE-021/022/024 live; DGX1/DGX2 discovery config)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-10
 depends_on: []
 ---
@@ -51,6 +51,11 @@ Mini only: the `hankh19` GUI login (the unit runs in `gui/501`; doppler's token 
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T20:27:27+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T20:27:35+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
