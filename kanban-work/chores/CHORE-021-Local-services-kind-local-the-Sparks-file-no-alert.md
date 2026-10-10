@@ -2,7 +2,7 @@
 id: CHORE-021
 title: "Local services (kind = local, the Sparks) file no alert — Captain 2026-10-09"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
@@ -43,6 +43,12 @@ service's `model_missing` (a Spark switched models) also files: both are routine
     kb:status kb:in_progress ;
     kb:at "2026-10-10T13:30:24+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-10T13:41:59+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/30> ;
   ] .
 ```
 
