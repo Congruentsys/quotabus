@@ -208,15 +208,20 @@ async fn alert_with(
         .build()
         .map_err(|e| BackendError::Other(format!("cannot build the HTTP client: {e}")))?;
     let mut rc = 0;
-    let (mut filed, mut cleared, mut checked) = (0usize, 0usize, 0usize);
+    // CHORE-024: `checked` counts the api and subscription slots alert examines; `skipped` counts the slots of local
+    // services (CHORE-021: never alerted), so `checked + skipped` is every slot. A local service that discovers its
+    // models counts its slots as `status` does (`slots_in`): the ids of its newest cycle in the store, or one slot
+    // (its id) when the store holds none of its rows.
+    let (mut filed, mut cleared, mut checked, mut skipped) = (0usize, 0usize, 0usize, 0usize);
     let mut out = std::io::stdout();
     for svc in &config.services {
+        if !quotabus::alert::alerts_for(svc.kind) {
+            // CHORE-021: a local service files no alert; its `alert.<key>` is neither read nor written
+            skipped += svc.slots_in(&listing.rows).len();
+            continue;
+        }
         for model in &svc.slots() {
             checked += 1;
-            if !quotabus::alert::alerts_for(svc.kind) {
-                // CHORE-021: a local service files no alert; its `alert.<key>` is neither read nor written
-                continue;
-            }
             let key = quotabus::record_key(svc.kind, &svc.provider, &svc.account, model);
             let row = by_key.get(key.as_str()).copied();
             let verdict = if unreadable.contains(key.as_str()) {
@@ -340,7 +345,9 @@ async fn alert_with(
         }
     }
     let _ = out.write_all(
-        format!("alert: {checked} keys checked, {filed} crossings filed, {cleared} re-armed\n")
+        format!(
+            "alert: {checked} keys checked, {skipped} local skipped, {filed} crossings filed, {cleared} re-armed\n"
+        )
             .as_bytes(),
     );
     Ok(rc)
