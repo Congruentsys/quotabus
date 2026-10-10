@@ -66,8 +66,9 @@ check.
 the cycle just wrote and runs under the same launcher (the redactor then knows every key, and the kanban CLIs get the
 environment they need). `install.sh` renders `<launcher> <quotabus> probe --config <file>`; chain the alert by
 pointing `--quotabus` at a short wrapper, which receives `probe --config <file>` (and `probe --force --config <file>`
-when run by hand for a one-shot cycle). The probe gets every argument; the alert gets only `--config <file>`, since it
-takes no other flag and exits 2 on `--force` (CHORE-026):
+when run by hand for a one-shot cycle). The probe gets every argument; the alert gets only `--config <file>` (none when
+none was given, so its `$QUOTABUS_CONFIG` / `./quotabus.toml` fallback applies), since it takes no other flag and exits
+2 on `--force` (CHORE-026):
 
 ```sh
 #!/bin/sh
@@ -80,7 +81,8 @@ for a in "$@"; do
 done
 export QUOTABUS_CLAUDE_BIN=/opt/homebrew/bin/claude   # the unit's PATH has no /opt/homebrew/bin (HAZ-004)
 /Users/hankh19/.local/bin/quotabus probe "$@"; rc=$?
-/Users/hankh19/.local/bin/quotabus alert --config "$cfg" || rc=$?
+set --; [ -n "$cfg" ] && set -- --config "$cfg"   # no --config given: a bare alert, so its own fallback applies
+/Users/hankh19/.local/bin/quotabus alert "$@" || rc=$?
 exit $rc
 ```
 
