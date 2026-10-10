@@ -493,6 +493,8 @@ mod raw {
         pub publish_balance: Option<bool>,
         #[serde(default)]
         pub context: std::collections::BTreeMap<String, u64>,
+        /// Read as a value so a non-boolean is refused with an error that names the key (CHORE-023).
+        pub probe: Option<toml::Value>,
     }
 }
 
@@ -601,6 +603,16 @@ impl Config {
                     s.id
                 )));
             }
+            let probe = match s.probe {
+                None => true,
+                Some(toml::Value::Boolean(b)) => b,
+                Some(v) => {
+                    return Err(ConfigError(format!(
+                        "service {:?}: probe must be true or false, not {v}",
+                        s.id
+                    )));
+                }
+            };
             services.push(ServiceConfig {
                 id: s.id,
                 kind: s.kind,
@@ -620,7 +632,7 @@ impl Config {
                 sources: s.sources,
                 publish_balance: s.publish_balance.unwrap_or(true),
                 context: s.context,
-                probe: true, // CHORE-023 stub: `probe = false` is not parsed yet
+                probe,
             });
         }
 

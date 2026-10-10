@@ -107,6 +107,13 @@ probe never triggers a balance read and vice versa (CHORE-007, `kanban-work/chor
 last fresh balance row. Until a `local` default is decided, a `local` service's probe runs on `[intervals] api`.
 `quotabus probe --force` runs every kind now.
 
+**Observe-only services (`probe = false`).** A `[[service]]` with `probe = false` (default `true`; a non-boolean is
+refused) is never probed by this process, scheduled or `--force`: no request, no row. `status`, `select` and `alert`
+still list it, reading the rows another process wrote under the normal freshness rule (no fresh row reads UNKNOWN).
+The fleet uses it for the Sparks on Mini: macOS Local Network privacy blocks the user agent from reaching them, so a
+root LaunchDaemon with its own key-free config probes them and the agent's config lists them `probe = false` (CHORE-023;
+HAZ-005, measured 2026-10-10; `packaging/README.md`).
+
 **Config — one model, two front-ends.** The binary's canonical format is TOML (outsiders; secretspec's `secretspec.toml`
 is the model, LIT §8.7). The Yurtle twin is the same rows as a `yurtle-table` block (Yurtle v2.1,
 `/Users/hankh95/Projects/yurtle/yurtle-spec.md:137-157`): the binary reads **only that block type** (fence + markdown

@@ -47,6 +47,29 @@ The unit must load in the GUI domain (`gui/501`, the user logged in at the GUI),
 Doppler's token is in the login keychain, and measured on Mini a `doppler run` over plain `ssh` fails with
 "Unable to retrieve value from system keyring" while a job in `gui/501` reads it.
 
+## The Sparks: a root LaunchDaemon, observe-only in the agent
+
+On macOS, Local Network privacy blocks `quotabus` from reaching the Sparks (LAN hosts) when it runs as a user
+LaunchAgent or as a LaunchDaemon with a `UserName`: measured on Mini 2026-10-10 (HAZ-005's comments), both wrote
+`cannot_assess:unreachable`, "No route to host (os error 65)", while the same binary and config from an interactive
+shell read `ok`. A **root** LaunchDaemon (no `UserName`) is exempt and reads `ok`. (M5 measured, the same day, that the
+user agent also reaches DGX1 when its program is `doppler` holding the Local Network grant; the Captain chose the root
+daemon.) A root daemon cannot read doppler's token ("Token not found in system keyring"), so the split is:
+
+- **root daemon** — the key-free Sparks only. `/Library/LaunchDaemons/com.congruentsys.quotabus-sparks.plist`, root,
+  `StartInterval` 300, `ProgramArguments` = `/usr/local/libexec/quotabus probe --config <root-owned sparks.toml>`
+  (binary and config root-owned; the exact paths are in HAZ-005's 2026-10-10 13:33 comment), logs in
+  `/Library/Logs/quotabus/sparks.{out,err}.log`. Its config lists only the `kind = "local"` services, with no `secret` and no launcher (a local probe is free, so
+  `[intervals] api = "5m"`), and the same `[bus]` as the agent's config, so it writes the same rows.
+- **user agent** (the unit above) — every keyed service, probed as before, plus the Sparks with `probe = false`
+  (`examples/quotabus.toml`'s `local-qwen`): it never probes them and writes no row for them, but its `status`,
+  `select` and `alert` list them, reading the daemon's rows under the normal freshness rule (no fresh row reads
+  UNKNOWN).
+
+Undo: `sudo launchctl bootout system/com.congruentsys.quotabus-sparks`, then remove the plist,
+`/usr/local/libexec/quotabus` and the daemon's `sparks.toml`, and drop `probe = false` from the agent's
+config.
+
 ## Alerts: `quotabus alert` after each probe cycle
 
 `quotabus alert` (DESIGN §3 alert; EXP-004) runs **after each probe cycle, in the same unit**, so it reads the rows

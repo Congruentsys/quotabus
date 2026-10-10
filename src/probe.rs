@@ -106,8 +106,9 @@ impl Runner {
     /// One scheduled cycle (CHORE-007): make a query kind's calls only when that kind is DUE, i.e. its own
     /// `[intervals]` entry has elapsed since that kind's last row in `store_rows` (no row = due); `force` runs every
     /// kind. Due-ness is per row: each (service, model) for the API probe, each service's balance row for the
-    /// balance read. `now` is the clock (injectable for tests): every returned row has `checked_at == now` and
-    /// `ttl_s` equal to its own kind's TTL. Rows are returned, not published.
+    /// balance read. A `probe = false` service is skipped: another process owns its rows (CHORE-023). `now` is the
+    /// clock (injectable for tests): every returned row has `checked_at == now` and `ttl_s` equal to its own kind's
+    /// TTL. Rows are returned, not published.
     pub async fn run_due(
         &self,
         store_rows: &[Record],
@@ -142,7 +143,7 @@ impl Runner {
             .config
             .services
             .iter()
-            .filter(|s| s.kind == Kind::Subscription)
+            .filter(|s| s.probe && s.kind == Kind::Subscription)
             .filter(|s| {
                 due(
                     QueryKind::Subscription,
@@ -154,7 +155,7 @@ impl Runner {
             .config
             .services
             .iter()
-            .filter(|s| s.kind != Kind::Subscription)
+            .filter(|s| s.probe && s.kind != Kind::Subscription)
             .map(|svc| {
                 let balance_key = balance_key(svc);
                 let due = Due {

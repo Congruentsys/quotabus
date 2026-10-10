@@ -17,7 +17,7 @@
 //!
 //! | `@type`     | `@id` rows                                  | columns |
 //! |-------------|---------------------------------------------|---------|
-//! | `Service`   | `#<service id>`, one per `[[service]]`      | `kind provider family account base-url protocol models roles cost-class secret sources publish-balance balance-url balance-path currency floor context` |
+//! | `Service`   | `#<service id>`, one per `[[service]]`      | `kind provider family account base-url protocol models roles cost-class secret sources publish-balance probe balance-url balance-path currency floor context` |
 //! | `Bus`       | `#bus` (at most one)                        | `url bucket` |
 //! | `File`      | `#file` (at most one)                       | `dir` |
 //! | `Probe`     | `#probe` (at most one)                      | `max-tokens degraded-latency-ms warn-pct` |
@@ -25,7 +25,7 @@
 //! | `AlertSink` | `#nusy-kanban`, `#yurtle-kanban`, `#webhook` | `command item-type tags url` |
 //!
 //! List columns: `models roles sources tags context`; `context` entries are `<model>=<tokens>`. Numeric: `floor`,
-//! `max-tokens`, `degraded-latency-ms`, `warn-pct`. Boolean: `publish-balance` (`true` / `false`).
+//! `max-tokens`, `degraded-latency-ms`, `warn-pct`. Boolean: `publish-balance`, `probe` (`true` / `false`).
 
 use toml::{Table, Value};
 
@@ -206,6 +206,7 @@ fn schema(ty: &str) -> Option<&'static [(&'static str, &'static str, Col)]> {
             ("secret", "secret", Str),
             ("sources", "sources", List),
             ("publish-balance", "publish_balance", Bool),
+            ("probe", "probe", Bool),
             // the [service.balance] table, flattened
             ("balance-url", "url", Str),
             ("balance-path", "path", Str),

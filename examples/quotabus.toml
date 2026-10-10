@@ -120,8 +120,13 @@ roles      = []
 cost_class = "metered"
 secret     = "XAI_API_KEY"
 
+# The Sparks are observe-only here (`probe = false`, CHORE-023): this config is the user agent's, and macOS Local
+# Network privacy blocks a user agent or user daemon from reaching them (HAZ-005, measured on Mini 2026-10-10). A ROOT
+# LaunchDaemon probes them with its own key-free config (packaging/README.md); this process only reads their rows, so
+# `status`, `select` and `alert` still list them. Only local services are observe-only; every keyed service is probed.
 [[service]]
 id         = "local-qwen"               # DGX1; unreachable from M5, so from there it reads cannot_assess:unreachable
+probe      = false                      # probed by the root daemon (packaging/README.md), never by this process
 kind       = "local"
 provider   = "qwen"
 family     = "qwen"
