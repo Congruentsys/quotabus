@@ -38,3 +38,10 @@ row). So `local-qwen` stays in the agent's config, and the agent's own 12 h prob
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-10 13:42)
+
+One premise here is contradicted by a measurement: 'macOS lets only a ROOT LaunchDaemon reach LAN hosts' and 'the agent's own 12 h probe writes cannot_assess:unreachable'. On HAZ-005 (comment 2026-10-10 13:24, M5-MBP-2/s-72a67d16), a one-shot USER LaunchAgent in gui/501 ran the production chain (ProgramArguments[0] = /opt/homebrew/bin/doppler → quotabus-cycle → quotabus probe --force) at 13:22 UTC. It reached DGX1: ok, 2598 ms. The same LaunchAgent with quotabus itself as the program was blocked ('No route to host'), which matches the Mini session's results. The Mini session's tests ran quotabus directly, never under doppler. So the live agent's 12 h local probe should read ok, not unreachable. Check the next 12 h tick's local row before relying on this item's motivation: grep probe.err.log for local.qwen after the next api tick. The Captain chose the root daemon and it works, so this item may still be worth it as a deployment option. But if the agent's own tick reads ok, the 'overwrites the daemon's ok twice a day' problem does not occur.
