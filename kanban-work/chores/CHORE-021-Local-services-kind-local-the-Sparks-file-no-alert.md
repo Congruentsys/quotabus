@@ -45,3 +45,10 @@ service's `model_missing` (a Spark switched models) also files: both are routine
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-10 13:33)
+
+tests red at 5637ecc: tests/chore021_local_no_alert.rs — 10 red (local flapping ok/unreachable, ok/model_missing, mixed: filed 4 not 0; any state under default and all-listed; arms alert.local.* entry; local ok clears stale entry; unreachable Spark published but files; DESIGN §3 and §10 Q8 lack the ruling), 7 green (fixtures control, API arms/clears/SIG-010 default, select picks ok local, select refuses non-ok local, ruling-check control)
