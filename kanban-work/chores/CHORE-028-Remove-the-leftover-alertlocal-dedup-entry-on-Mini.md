@@ -2,9 +2,9 @@
 id: CHORE-028
 title: "Remove the leftover alert.local.* dedup entry on Mini's bus (CHORE-027 r1 F5)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-10
 depends_on: []
 ---
@@ -26,6 +26,11 @@ Inputs: Mini's bus (nats://192.168.8.110:4222, bucket ai_status: this repo's own
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T20:42:19+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T20:42:28+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
