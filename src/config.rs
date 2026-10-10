@@ -101,6 +101,37 @@ impl ServiceConfig {
             _ => self.models.clone(),
         }
     }
+
+    /// CHORE-022: a `local` service with no `models` discovers what it serves (`GET <base_url>/models`) each cycle,
+    /// so a `spark-model switch` is a row for the new id, not `model_missing`.
+    pub fn discovers(&self) -> bool {
+        self.kind == Kind::Local && self.models.is_empty()
+    }
+
+    /// The model slots to report for this service given the store's `rows`: [`slots`](Self::slots), or for a
+    /// discovering service the models of its own rows in `rows` (the served ids, and its id when the box could not
+    /// be listed); its id alone when `rows` hold none, so the service is still reported (absent).
+    pub fn slots_in(&self, rows: &[crate::record::Record]) -> Vec<String> {
+        if !self.discovers() {
+            return self.slots();
+        }
+        let mut found: Vec<String> = rows
+            .iter()
+            .filter(|r| {
+                r.kind == self.kind
+                    && r.provider == self.provider
+                    && r.account == self.account
+                    && r.probe.name != BALANCE
+            })
+            .map(|r| r.model.clone())
+            .collect();
+        found.sort();
+        found.dedup();
+        if found.is_empty() {
+            found.push(self.id.clone());
+        }
+        found
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

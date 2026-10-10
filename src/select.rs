@@ -81,7 +81,7 @@ pub fn select(rows: &[Record], query: &Query, config: &Config) -> Vec<Candidate>
         {
             continue;
         }
-        for slot in svc.slots() {
+        for slot in svc.slots_in(rows) {
             let key = record_key(svc.kind, &svc.provider, &svc.account, &slot);
             // the newest row for the key, should the input hold more than one
             let Some(row) = rows

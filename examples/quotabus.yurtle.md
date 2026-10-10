@@ -46,7 +46,8 @@ Each query kind on its own schedule (SIG-004); an empty `ttl` is 3 × that kind'
 
 ## Services
 
-Model ids marked [unverified] in `quotabus.toml` (together, xai, local-qwen) were not confirmed against the provider.
+Model ids marked [unverified] in `quotabus.toml` (together, xai) were not confirmed against the provider. The two
+local Sparks name no `models` and no `secret`: each cycle lists what the box serves and probes that (CHORE-022).
 `xai` is the standing negative control: its key is disabled, so it must read `auth_failed`. The undocumented
 subscription sources are off (SIG-003).
 
@@ -61,7 +62,8 @@ subscription sources are off (SIG-003).
 | #openai         | api          | openai    | openai    | nusy-product-team | https://api.openai.com/v1          | openai    | gpt-5.6-sol                             | review       | metered    | OPENAI_API_KEY            |             |                                             |                                |          |       |
 | #together       | api          | together  | meta      | nusy-product-team | https://api.together.xyz/v1        | openai    | meta-llama/Llama-3.3-70B-Instruct-Turbo | review       | metered    | TOGETHER_API_KEY          |             |                                             |                                |          |       |
 | #xai            | api          | xai       | xai       | nusy-product-team | https://api.x.ai/v1                | openai    | grok-4                                  |              | metered    | XAI_API_KEY               |             |                                             |                                |          |       |
-| #local-qwen     | local        | qwen      | qwen      | dgx1              | http://192.168.8.180:30000/v1      | openai    | qwen3                                   | work         | local      | NUSY_LOCAL_QWEN           |             |                                             |                                |          |       |
+| #dgx1-qwen      | local        | qwen      | qwen      | dgx1              | http://192.168.8.120:8000/v1       | openai    |                                         | work         | local      |                           |             |                                             |                                |          |       |
+| #dgx2-qwen      | local        | qwen      | qwen      | dgx2              | http://192.168.8.121:8000/v1       | openai    |                                         | work         | local      |                           |             |                                             |                                |          |       |
 | #claude-hankh95 | subscription | anthropic | anthropic | hankh95           | https://api.anthropic.com          |           | claude-haiku-4-5                        |              |            | NUSY_CLAUDE_TOKEN_HANKH95 | stream_json |                                             |                                |          |       |
 | #copilot        | subscription | github    | openai    | hankh95           | https://api.github.com             |           |                                         |              |            | GITHUB_TOKEN              |             |                                             |                                |          |       |
 ```
