@@ -90,6 +90,9 @@ pub struct ServiceConfig {
     pub publish_balance: bool,
     /// `[service.context]`: each model's context window in tokens (the selector's `--prefer largest-context`).
     pub context: std::collections::BTreeMap<String, u64>,
+    /// `probe = false`: listed by `status`, `select` and `alert` (rows read from the store) but never probed by this
+    /// process; another process owns it (CHORE-023). Default true.
+    pub probe: bool,
 }
 
 impl ServiceConfig {
@@ -617,6 +620,7 @@ impl Config {
                 sources: s.sources,
                 publish_balance: s.publish_balance.unwrap_or(true),
                 context: s.context,
+                probe: true, // CHORE-023 stub: `probe = false` is not parsed yet
             });
         }
 
