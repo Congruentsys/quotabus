@@ -101,6 +101,45 @@ impl ServiceConfig {
             _ => self.models.clone(),
         }
     }
+
+    /// CHORE-022: a `local` service with no `models` discovers what it serves (`GET <base_url>/models`) each cycle,
+    /// so a `spark-model switch` is a row for the new id, not `model_missing`.
+    pub fn discovers(&self) -> bool {
+        self.kind == Kind::Local && self.models.is_empty()
+    }
+
+    /// The model slots to report for this service given the store's `rows`: [`slots`](Self::slots), or for a
+    /// discovering service the models of its rows from its NEWEST cycle in `rows` (the ids it served then, or its id
+    /// when the box could not be listed); its id alone when `rows` hold none, so the service is still reported
+    /// (absent). A cycle stamps every row it writes with one `checked_at`, so an older row (a model the box no
+    /// longer serves, or served before it went down) is never reported: its last `ok` would be a false `ok` until
+    /// its TTL (CHORE-022 review r1 F1).
+    pub fn slots_in(&self, rows: &[crate::record::Record]) -> Vec<String> {
+        if !self.discovers() {
+            return self.slots();
+        }
+        let own: Vec<&crate::record::Record> = rows
+            .iter()
+            .filter(|r| {
+                r.kind == self.kind
+                    && r.provider == self.provider
+                    && r.account == self.account
+                    && r.probe.name != BALANCE
+            })
+            .collect();
+        let newest = own.iter().map(|r| r.checked_at).max();
+        let mut found: Vec<String> = own
+            .iter()
+            .filter(|r| Some(r.checked_at) == newest)
+            .map(|r| r.model.clone())
+            .collect();
+        found.sort();
+        found.dedup();
+        if found.is_empty() {
+            found.push(self.id.clone());
+        }
+        found
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

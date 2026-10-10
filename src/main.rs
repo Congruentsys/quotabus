@@ -710,7 +710,7 @@ async fn status(config: &Config, redactor: &Redactor, args: &StatusArgs) -> u8 {
     let now = Utc::now();
     let mut entries = Vec::new();
     for svc in services {
-        for model in &svc.slots() {
+        for model in &svc.slots_in(&listing.rows) {
             let key = quotabus::record_key(svc.kind, &svc.provider, &svc.account, model);
             let row = by_key.get(key.as_str()).map(|r| (*r).clone());
             let verdict = match &failure {

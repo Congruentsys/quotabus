@@ -120,18 +120,31 @@ roles      = []
 cost_class = "metered"
 secret     = "XAI_API_KEY"
 
+# ── The local Sparks (CHORE-022; hosts and port from the spark-model skill: "Everything else is on :8000"). ──
+# No key: a local service with no `secret` is probed without one. No `models`: each cycle lists GET <base_url>/models
+# and probes every served id (one row each), so a `spark-model switch` is a row for the new id, not model_missing.
+# A box that is down (they go up and down with their work) is ONE cannot_assess:unreachable row, keyed by the id.
 [[service]]
-id         = "local-qwen"               # DGX1; unreachable from M5, so from there it reads cannot_assess:unreachable
+id         = "dgx1-qwen"                # DGX1
 kind       = "local"
 provider   = "qwen"
 family     = "qwen"
 account    = "dgx1"
-base_url   = "http://192.168.8.180:30000/v1"
+base_url   = "http://192.168.8.120:8000/v1"
 protocol   = "openai"
-models     = ["qwen3"]                  # [unverified]
 roles      = ["work"]
 cost_class = "local"
-secret     = "NUSY_LOCAL_QWEN"
+
+[[service]]
+id         = "dgx2-qwen"                # DGX2
+kind       = "local"
+provider   = "qwen"
+family     = "qwen"
+account    = "dgx2"
+base_url   = "http://192.168.8.121:8000/v1"
+protocol   = "openai"
+roles      = ["work"]
+cost_class = "local"
 
 # ── Subscription accounts, read centrally by `quotabus probe` on this host (DESIGN §4, EXP-002). ──
 # Nothing runs on any other host: each account's token is injected by the launcher like any API key.
