@@ -2,11 +2,15 @@
 id: HAZ-005
 title: "macOS Local Network privacy blocks the launchd probe from LAN hosts (No route to host to the Sparks)"
 type: hazard
-status: underway
+status: harbor
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: null
 created: 2026-10-09
 depends_on: []
+bounce_sha: "bf5f447be155e65ff93d09ecf895a4033f240de22b62a20cc90db964c1c94615"
+bounced_by: M5-MBP-2/s-72a67d16
+bounced_at: 2026-10-10T13:30:08+00:00
+bounces: 1
 ---
 
 # macOS Local Network privacy blocks the launchd probe from LAN hosts (No route to host to the Sparks)
@@ -40,6 +44,12 @@ self-hosted endpoint) reads unreachable on any macOS central host until it is gr
     kb:status kb:in_progress ;
     kb:at "2026-10-10T04:02:44+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:backlog ;
+    kb:at "2026-10-10T13:30:08+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:bounced "true"^^xsd:boolean ;
   ] .
 ```
 
@@ -73,3 +83,7 @@ Captain 2026-10-10: "2" — of three options offered (1 probe the Sparks from DG
 ### M5-MBP-2/s-72a67d16 (2026-10-10 13:29)
 
 Reconciling with Mac-mini/s-e7976c42's 04:05/13:21 measurements. Both sessions' data agree: quotabus launched DIRECTLY as a launchd job's program is blocked ('No route to host'), in their runs and in my cases 3 and 4. Their tests never ran the PRODUCTION chain, where ProgramArguments[0] is /opt/homebrew/bin/doppler. In my run at 13:22 UTC that chain reached DGX1: ok, 2598 ms. So the live LaunchAgent can already probe the Sparks, presumably because doppler (not quotabus) is the entry allowed under Local Network. That fits the Captain's 'It isn't listed' for quotabus. If so, the root LaunchDaemon (Captain's option 2) is not needed for the fleet unit. Open for the Captain: keep the LaunchAgent + doppler grant, or still move the key-free probe to a root daemon. My branch haz/HAZ-005-local-network (tests 77f24fc, docs and plan step 2cef9b5) documents the grant. It is held, not PR'd, until that is settled. M5-MBP-2/s-72a67d16 holds the claim.
+
+### M5-MBP-2/s-72a67d16 (2026-10-10 13:30)
+
+[bounce by M5-MBP-2/s-72a67d16, body-sha:bf5f447be155] Captain 2026-10-10: 'I just installed the daemon on mini and we are testing it probing DGX's' — the fix is being driven from Mini (Mac-mini/s-e7976c42), so M5 hands it back. Material, pushed and not merged: origin branch haz/HAZ-005-local-network. Tests at 77f24fc (tests/test_haz005_local_network.py); README + install.sh plan step + docs/findings/HAZ-005-local-network.md at 2cef9b5, which document the doppler-launcher grant (13:22 measurement). Reuse the finding's cases 1-5 whichever way the fix goes; the README/plan text assumes the LaunchAgent+launcher route and must change if the daemon becomes the unit.
