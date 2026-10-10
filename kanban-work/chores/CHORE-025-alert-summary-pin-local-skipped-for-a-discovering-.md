@@ -2,9 +2,9 @@
 id: CHORE-025
 title: "alert summary: pin 'local skipped' for a discovering local service (CHORE-024 r1 F6)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-10
 depends_on: []
 ---
@@ -24,6 +24,11 @@ From the CHORE-024 r1 review (reviews/CHORE-024-r1.md, PR #32), F6, non-blocking
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T14:16:06+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T14:16:21+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
