@@ -32,3 +32,10 @@ From the CHORE-024 r1 review (reviews/CHORE-024-r1.md, PR #32), F6, non-blocking
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-10 14:19)
+
+tests at 5123e5f: tests/chore025_alert_local_skipped_discovering.rs, 4 tests, all green on today's code. This item is test-only: it pins behaviour that already exists. Red proven by mutation instead, with each change reverted. (1) alert_with counting with svc.slots(): 3 of 4 red (M read 0, expected 1/3/2). (2) slots_in without its newest-cycle filter: the older-cycle control is red (M=5, expected 2).
