@@ -2,7 +2,7 @@
 id: CHORE-023
 title: "Observe-only services (probe = false): list a service probed by another process (the Sparks' root daemon) without probing it"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-10
@@ -27,3 +27,14 @@ row). So `local-qwen` stays in the agent's config, and the agent's own 12 h prob
    rule unchanged). Controls show each check can fail.
 3. `examples/quotabus.toml` / `packaging/README.md` show the split (agent: keyed services + the Sparks with
    `probe = false`; root daemon: the Sparks). DESIGN.md §3 names the setting. `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-10T13:34:06+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
