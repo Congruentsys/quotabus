@@ -47,6 +47,19 @@ The unit must load in the GUI domain (`gui/501`, the user logged in at the GUI),
 Doppler's token is in the login keychain, and measured on Mini a `doppler run` over plain `ssh` fails with
 "Unable to retrieve value from system keyring" while a job in `gui/501` reads it.
 
+**macOS Local Network (HAZ-005).** After install, allow the probe in System Settings → Privacy & Security → Local
+Network, at the GUI of the probe host; until then every LAN peer (the Sparks, any self-hosted endpoint) reads
+`cannot_assess:unreachable` with "No route to host (os error 65)". The grant attaches to the unit's first program
+(`ProgramArguments[0]`): under a launcher that is the launcher (e.g. `/opt/homebrew/bin/doppler`), not quotabus; with
+no launcher it is the quotabus binary itself, and that is what to allow. `install.sh`'s plan names the program on
+macOS. Measured on Mini (2026-10-10, `docs/findings/HAZ-005-local-network.md`): replacing the quotabus binary under a
+granted launcher did not reset the grant (a re-signed copy with a new identifier still reached the LAN), while
+quotabus launched directly with only doppler granted got "No route to host". Unmeasured: whether upgrading the
+launcher itself (e.g. `brew upgrade doppler`) resets it, and a grant given to quotabus directly (the no-launcher case
+is inferred from the block, not shown fixed). Confirm after the next cycle: a LAN row reads a real state, not
+"No route to host". Apple platform binaries such as `/usr/bin/curl` are exempt, so a `curl` from a launchd job is no
+check.
+
 ## Alerts: `quotabus alert` after each probe cycle
 
 `quotabus alert` (DESIGN §3 alert; EXP-004) runs **after each probe cycle, in the same unit**, so it reads the rows
