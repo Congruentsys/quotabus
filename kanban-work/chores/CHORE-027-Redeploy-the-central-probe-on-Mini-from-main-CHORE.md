@@ -2,7 +2,7 @@
 id: CHORE-027
 title: "Redeploy the central probe on Mini from main (CHORE-021/022/024 live; DGX1/DGX2 discovery config)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-10
@@ -43,3 +43,14 @@ Mini only: the `hankh19` GUI login (the unit runs in `gui/501`; doppler's token 
    - every API and subscription row from before the swap, present and fresh.
 4. The old `local.qwen.dgx1.qwen3` and `local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4` rows age out by their TTL; nothing purges the bucket (CLAUDE.md rule 4). Say how many hours remain on each.
 5. The commands, their redacted output, the host, the date and the sha are recorded on this item (or in a short `docs/findings/CHORE-027-*.md`). No key is printed.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-10T20:27:27+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
