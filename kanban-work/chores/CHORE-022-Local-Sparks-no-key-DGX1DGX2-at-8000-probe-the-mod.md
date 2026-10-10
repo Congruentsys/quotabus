@@ -52,3 +52,10 @@ What is wrong in the repo (measured on Mini, 2026-10-09):
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-10 13:45)
+
+tests red at 4b341de: tests/chore022_local_discovery.rs + tests/chore022_example_design.rs — 10 red (no-models local service discovers /v1/models and probes served id; one row per served model; switch reads new id, no model_missing; no Authorization; unreachable box is one row; two boxes independent; example has DGX1/DGX2 :8000 no secret/models; no stale :30000/NUSY_LOCAL_QWEN; DESIGN §4 row), 7 green (controls + configured-models and unset-secret behaviour kept). A ruled test edit to tests/examples_config.rs (it pins the retired local-qwen example) is going to the partner.
