@@ -2,9 +2,9 @@
 id: CHORE-026
 title: "quotabus-cycle wrapper passes --force to alert, which refuses it (found in HAZ-005 case 1)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-10
 depends_on: []
 ---
@@ -31,6 +31,11 @@ match (recorded on this item). `make check` green.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T15:12:17+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T15:12:24+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
