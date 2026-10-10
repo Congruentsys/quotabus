@@ -1,6 +1,6 @@
 [package]
 name = "quotabus"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 license = "MIT"
 description = "Does each LLM key and coding subscription work right now, and how much is left? Published on a NATS KV bucket with a freshness rule."
