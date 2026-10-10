@@ -39,3 +39,10 @@ match (recorded on this item). `make check` green.
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-10 15:13)
+
+tests red at 266f9ca (branch chore/CHORE-026-cycle-force): tests/test_chore026_cycle_wrapper.py runs the README's wrapper under /bin/sh against a clap-like stub quotabus — 2 red (probe --force --config X, in either order: alert gets '--force', stub exits 2 'unexpected argument'), 8 green (scheduled argv; failure still reported; stub and checker controls incl. mutants that skip alert or drop --force from probe).
