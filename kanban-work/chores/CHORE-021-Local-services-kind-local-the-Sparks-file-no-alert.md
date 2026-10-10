@@ -2,9 +2,9 @@
 id: CHORE-021
 title: "Local services (kind = local, the Sparks) file no alert — Captain 2026-10-09"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
 depends_on: []
 ---
@@ -38,5 +38,10 @@ service's `model_missing` (a Spark switched models) also files: both are routine
     kb:status kb:ready ;
     kb:at "2026-10-09T22:31:49+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T13:30:24+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
