@@ -2,7 +2,7 @@
 id: CHORE-027
 title: "Redeploy the central probe on Mini from main (CHORE-021/022/024 live; DGX1/DGX2 discovery config)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-10
@@ -57,5 +57,11 @@ Mini only: the `hankh19` GUI login (the unit runs in `gui/501`; doppler's token 
     kb:status kb:in_progress ;
     kb:at "2026-10-10T20:27:35+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-10T20:42:13+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/36> ;
   ] .
 ```
