@@ -2,9 +2,9 @@
 id: CHORE-023
 title: "Observe-only services (probe = false): list a service probed by another process (the Sparks' root daemon) without probing it"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-10
 depends_on: []
 ---
@@ -35,6 +35,11 @@ row). So `local-qwen` stays in the agent's config, and the agent's own 12 h prob
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T13:34:06+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T13:45:44+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
