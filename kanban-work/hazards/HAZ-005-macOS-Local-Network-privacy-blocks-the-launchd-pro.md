@@ -2,9 +2,9 @@
 id: HAZ-005
 title: "macOS Local Network privacy blocks the launchd probe from LAN hosts (No route to host to the Sparks)"
 type: hazard
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-09
 depends_on: []
 bounce_sha: "bf5f447be155e65ff93d09ecf895a4033f240de22b62a20cc90db964c1c94615"
@@ -64,6 +64,11 @@ installed earlier that day is removed (Captain-run sudo).
     kb:status kb:ready ;
     kb:at "2026-10-10T13:30:16+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T14:57:53+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
 
