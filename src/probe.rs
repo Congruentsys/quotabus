@@ -57,6 +57,9 @@ pub(crate) struct Ctx<'a> {
 struct Due<'a> {
     /// The models whose API probe is due.
     models: Vec<&'a str>,
+    /// CHORE-022: a discovering service (`ServiceConfig::discovers`) whose API probe is due: list what it serves,
+    /// then probe each served model.
+    discover: bool,
     /// Whether the balance read is due (false when the service has no balance endpoint).
     balance: bool,
     /// The service's last balance row in the store, if any: used for the floor when only the API probe is due.
@@ -169,6 +172,19 @@ impl Runner {
                         })
                         .map(String::as_str)
                         .collect(),
+                    discover: svc.discovers() && {
+                        // due when the newest of its own API rows (the served ids, or the service's id) is due
+                        let latest = store_rows
+                            .iter()
+                            .filter(|r| {
+                                r.kind == svc.kind
+                                    && r.provider == svc.provider
+                                    && r.account == svc.account
+                                    && r.probe.name != BALANCE
+                            })
+                            .max_by_key(|r| r.checked_at);
+                        force || is_due(latest, self.config.interval_for(QueryKind::Api), now)
+                    },
                     balance: matches!(svc.balance, BalanceSpec::Endpoint(_))
                         && due(QueryKind::Balance, &balance_key),
                     stored_balance: stored.get(balance_key.as_str()).copied(),
@@ -203,13 +219,19 @@ async fn probe_service(
         Some(Protocol::Anthropic) => "messages",
         Some(Protocol::Openai) | None => "chat_completions",
     };
+    // a discovering service that could not be measured writes one row, under its id
+    let unmeasured_slots: Vec<&str> = if due.discover {
+        vec![svc.id.as_str()]
+    } else {
+        due.models.clone()
+    };
     let (base, protocol) = match (&svc.base_url, svc.protocol) {
         (Some(b), Some(p)) => (b.trim_end_matches('/'), p),
         _ => {
             return unmeasured(
                 ctx,
                 svc,
-                &due.models,
+                &unmeasured_slots,
                 probe_name,
                 "no_endpoint",
                 "no base_url/protocol configured",
@@ -224,7 +246,14 @@ async fn probe_service(
                 Some(n) => format!("environment variable {n} is unset or empty; not probed"),
                 None => "no secret configured; not probed".to_string(),
             };
-            return unmeasured(ctx, svc, &due.models, probe_name, "secret_unset", &why);
+            return unmeasured(
+                ctx,
+                svc,
+                &unmeasured_slots,
+                probe_name,
+                "secret_unset",
+                &why,
+            );
         }
     };
 
@@ -236,11 +265,21 @@ async fn probe_service(
             _ => None,
         }
     };
-    let models = join_all(
-        due.models
-            .iter()
-            .map(|model| probe_model(ctx, svc, protocol, base, model, key.as_ref(), probe_name)),
-    );
+    let models =
+        async {
+            let models: Vec<String> = if due.discover {
+                match discover(ctx, svc, base, key.as_ref()).await {
+                    Ok(served) => served,
+                    Err(row) => return vec![*row],
+                }
+            } else {
+                due.models.iter().map(|m| m.to_string()).collect()
+            };
+            join_all(models.iter().map(|model| {
+                probe_model(ctx, svc, protocol, base, model, key.as_ref(), probe_name)
+            }))
+            .await
+        };
     let (balance, mut rows) = futures::join!(balance, models);
 
     // the floor and the published balance come from this cycle's read, else from the last read while it is fresh
@@ -259,6 +298,102 @@ async fn probe_service(
     }
     rows.extend(balance);
     rows
+}
+
+/// The `probe.name` of the row a discovering service writes when it could not list what it serves.
+const MODELS: &str = "models";
+
+/// CHORE-022: `GET <base>/models` (an OpenAI-shaped list) for a discovering service: the served ids, de-duplicated in
+/// the order served. When the list cannot be read, the one row the service writes this cycle, under its id: the
+/// transport or HTTP outcome classified as a probe's would be (`cannot_assess:unreachable` for a box that is down), or
+/// `cannot_assess:no_model_served` / `cannot_assess:bad_model_list` for a 2xx with no usable id.
+async fn discover(
+    ctx: &Ctx<'_>,
+    svc: &ServiceConfig,
+    base: &str,
+    key: Option<&Secret>,
+) -> Result<Vec<String>, Box<Record>> {
+    let mut req = ctx.client.get(format!("{base}/models"));
+    if let Some(k) = key {
+        req = req.header(
+            reqwest::header::AUTHORIZATION,
+            sensitive_str(&format!("Bearer {}", k.expose())),
+        );
+    }
+    let started = Instant::now();
+    let (outcome, transport_error) = match req.send().await {
+        Ok(resp) => {
+            let status = resp.status().as_u16();
+            match resp.text().await {
+                Ok(body) => (
+                    Outcome::Http(HttpOutcome {
+                        status,
+                        headers: Vec::new(),
+                        body,
+                        latency_ms: started.elapsed().as_millis() as u64,
+                    }),
+                    None,
+                ),
+                Err(e) => transport(e),
+            }
+        }
+        Err(e) => transport(e),
+    };
+    let mut r = row(ctx, svc, &svc.id, MODELS, QueryKind::Api);
+    r.state = State::Unknown;
+    match (&outcome, transport_error) {
+        (Outcome::Http(h), None) if (200..300).contains(&h.status) => {
+            let ids = serde_json::from_str::<serde_json::Value>(&h.body)
+                .ok()
+                .and_then(|v| {
+                    v.get("data")?.as_array().map(|data| {
+                        data.iter()
+                            .filter_map(|m| m.get("id")?.as_str())
+                            .filter(|id| !id.trim().is_empty())
+                            .map(str::to_string)
+                            .collect::<Vec<_>>()
+                    })
+                });
+            match ids {
+                Some(mut ids) if !ids.is_empty() => {
+                    let mut seen = std::collections::HashSet::new();
+                    ids.retain(|id| seen.insert(id.clone()));
+                    tracing::info!(service = %svc.id, served = ids.len(), "listed served models");
+                    return Ok(ids);
+                }
+                Some(_) => r.reason = Some("cannot_assess:no_model_served".to_string()),
+                None => {
+                    r.reason = Some("cannot_assess:bad_model_list".to_string());
+                    r.error = Some(ctx.redactor.redact_error(h.body.trim()));
+                }
+            }
+            r.latency_ms = Some(h.latency_ms);
+        }
+        (_, transport_error) => {
+            let c = classify(
+                &outcome,
+                &svc.id,
+                &Thresholds {
+                    degraded_latency_ms: ctx.config.probe.degraded_latency_ms,
+                },
+            );
+            // a 404 on the list is a wrong base URL, never a missing model
+            (r.state, r.reason) = match c.state {
+                State::ModelMissing => {
+                    (State::Unknown, Some("cannot_assess:not_found".to_string()))
+                }
+                s => (s, c.reason.map(|s| ctx.redactor.redact(&s))),
+            };
+            r.latency_ms = c.latency_ms;
+            r.error = match (&outcome, transport_error) {
+                (_, Some(e)) => Some(ctx.redactor.redact_error(&e)),
+                (Outcome::Http(h), None) => Some(ctx.redactor.redact_error(h.body.trim())),
+                _ => None,
+            };
+        }
+    }
+    tracing::info!(key = %r.key, state = r.state.as_str(), reason = ?r.reason, "served models not listed");
+    Err(Box::new(r))
 }
 
 /// The balance row: `quota_exhausted` at or below the floor, else `ok`; `unknown` when the read failed.

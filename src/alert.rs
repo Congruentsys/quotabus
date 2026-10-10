@@ -14,6 +14,11 @@
 //! unlisted state — under the default a latency-degraded row or `rate_limited` — files nothing, does not arm and does
 //! not clear; any other CANNOT-ASSESS never files and never clears.
 //!
+//! **Local services file nothing** (CHORE-021; Captain 2026-10-09: "No alert for local (Recommended)", the
+//! recommended option): a service with `kind = "local"` (the Sparks) is skipped by `alert` ([`alerts_for`]), whatever
+//! its state and whatever `[alert] states` lists. Its rows are still published and `select` still refuses one that is
+//! not `ok`; its `alert.<key>` is never read or written, so an entry left from before stays as it is.
+//!
 //! [INFERENCE] decisions the design does not make, documented in `docs/DESIGN.md` §3 alert:
 //! - Partial sink failure: the crossing is recorded only when every sink succeeded. The sinks that did succeed are
 //!   remembered in the entry's `pending`, so the next run retries only the ones that failed — a failed webhook does
@@ -27,7 +32,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::classify::WINDOW_NEAR_LIMIT;
 use crate::freshness::Verdict;
-use crate::record::{Record, State};
+use crate::record::{Kind, Record, State};
 
 /// The reason an unreachable service's row carries (`classify` on `Outcome::Unreachable`).
 pub const UNREACHABLE_REASON: &str = "cannot_assess:unreachable";
@@ -71,6 +76,12 @@ impl AlertEntry {
             pending,
         }
     }
+}
+
+/// Whether `alert` considers a service of this kind at all (CHORE-021): `local` files no alert, arms nothing and
+/// clears nothing; `api` and `subscription` follow `[alert] states`.
+pub fn alerts_for(kind: Kind) -> bool {
+    kind != Kind::Local
 }
 
 /// What to do for one key.
@@ -448,6 +459,13 @@ mod tests {
             decide_listed(&fresh(State::ModelMissing), None, None, &rl),
             Decision::Nothing
         );
+    }
+
+    #[test]
+    fn only_local_services_are_skipped() {
+        assert!(!alerts_for(Kind::Local));
+        assert!(alerts_for(Kind::Api));
+        assert!(alerts_for(Kind::Subscription));
     }
 
     #[test]

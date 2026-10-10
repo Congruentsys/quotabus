@@ -2,9 +2,9 @@
 id: CHORE-022
 title: "Local Sparks: no key, DGX1/DGX2 at :8000, probe the model /v1/models serves (example + DESIGN §4 are stale)"
 type: chore
-status: provisioning
+status: arrived
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
 depends_on: []
 ---
@@ -45,5 +45,23 @@ What is wrong in the repo (measured on Mini, 2026-10-09):
     kb:status kb:ready ;
     kb:at "2026-10-09T22:31:51+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T13:42:36+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-10T14:03:02+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/31> ;
   ] .
 ```
+
+
+## Comments
+
+### M5-MBP-2/s-72a67d16 (2026-10-10 13:45)
+
+tests red at 4b341de: tests/chore022_local_discovery.rs + tests/chore022_example_design.rs — 10 red (no-models local service discovers /v1/models and probes served id; one row per served model; switch reads new id, no model_missing; no Authorization; unreachable box is one row; two boxes independent; example has DGX1/DGX2 :8000 no secret/models; no stale :30000/NUSY_LOCAL_QWEN; DESIGN §4 row), 7 green (controls + configured-models and unset-secret behaviour kept). A ruled test edit to tests/examples_config.rs (it pins the retired local-qwen example) is going to the partner.

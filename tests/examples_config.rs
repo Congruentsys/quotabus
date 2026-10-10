@@ -22,7 +22,8 @@ fn api_secret_names(c: &Config) -> BTreeSet<&str> {
         .collect()
 }
 
-/// The known answer: the six key-bearing API services plus the xai control and local-qwen.
+/// The known answer: the six key-bearing API services plus the xai control. The local Sparks need no key
+/// (CHORE-022 DoD 2), so no local service names a secret.
 fn want_api_secrets() -> BTreeSet<&'static str> {
     [
         "NUSY_GLM",
@@ -31,7 +32,6 @@ fn want_api_secrets() -> BTreeSet<&'static str> {
         "OPENAI_API_KEY",
         "TOGETHER_API_KEY",
         "XAI_API_KEY",
-        "NUSY_LOCAL_QWEN",
     ]
     .into_iter()
     .collect()
@@ -62,7 +62,8 @@ fn example_lists_the_six_key_bearing_services_and_the_xai_control() {
         "openai",
         "together",
         "xai",
-        "local-qwen",
+        "dgx1-qwen",
+        "dgx2-qwen",
     ] {
         assert!(
             ids.contains(id),
@@ -81,8 +82,39 @@ fn example_lists_the_six_key_bearing_services_and_the_xai_control() {
             assert!(!s.models.is_empty(), "{} needs a model", s.id);
         }
     }
-    let qwen = c.services.iter().find(|s| s.id == "local-qwen").unwrap();
-    assert_eq!(qwen.kind, Kind::Local);
+    // CHORE-022 DoD 2: the two Sparks, keyless, with the served model discovered (no `models`)
+    for (id, url) in [
+        ("dgx1-qwen", "http://192.168.8.120:8000/v1"),
+        ("dgx2-qwen", "http://192.168.8.121:8000/v1"),
+    ] {
+        let s = c.services.iter().find(|s| s.id == id).unwrap();
+        assert_eq!(s.kind, Kind::Local, "{id}");
+        assert_eq!(s.base_url.as_deref(), Some(url), "{id}");
+        assert!(s.protocol.is_some(), "{id} needs a protocol");
+        assert_eq!(s.secret, None, "{id}: a local Spark needs no key");
+        assert!(
+            s.models.is_empty(),
+            "{id}: the served model is discovered, not listed"
+        );
+    }
+    assert_eq!(
+        c.services.iter().filter(|s| s.kind == Kind::Local).count(),
+        2,
+        "exactly the two Sparks are local"
+    );
+}
+
+#[test]
+fn control_a_local_service_given_a_secret_fails_the_secret_check() {
+    // re-add a key NAME to a local Spark (the stale NUSY_LOCAL_QWEN shape): the scoped set no longer matches
+    let (_, mut c) = example();
+    let s = c
+        .services
+        .iter_mut()
+        .find(|s| s.kind == Kind::Local)
+        .expect("the example has a local service");
+    s.secret = Some("NUSY_LOCAL_QWEN".into());
+    assert_ne!(api_secret_names(&c), want_api_secrets());
 }
 
 #[test]

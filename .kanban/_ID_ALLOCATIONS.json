@@ -313,5 +313,26 @@
     "number": 5,
     "allocated_at": "2026-10-09T22:31:41.088170",
     "allocated_by": "hankh1844"
+  },
+  {
+    "id": "CHORE-023",
+    "prefix": "CHORE",
+    "number": 23,
+    "allocated_at": "2026-10-10T13:34:01.560762",
+    "allocated_by": "hankh1844"
+  },
+  {
+    "id": "CHORE-024",
+    "prefix": "CHORE",
+    "number": 24,
+    "allocated_at": "2026-10-10T13:42:10.009566",
+    "allocated_by": "Hank Head"
+  },
+  {
+    "id": "CHORE-025",
+    "prefix": "CHORE",
+    "number": 25,
+    "allocated_at": "2026-10-10T14:16:04.914148",
+    "allocated_by": "Hank Head"
   }
 ]
