@@ -2,7 +2,7 @@
 id: CHORE-024
 title: "alert: pin subscription alerting end to end and report skipped local slots in the summary (CHORE-021 r1 nits)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-10
@@ -33,6 +33,12 @@ From the CHORE-021 r1 review (reviews/CHORE-021-r1.md, PR #30), both non-blockin
     kb:status kb:in_progress ;
     kb:at "2026-10-10T14:04:18+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-10T14:16:03+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/32> ;
   ] .
 ```
 
