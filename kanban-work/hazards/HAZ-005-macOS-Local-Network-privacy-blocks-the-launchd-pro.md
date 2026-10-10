@@ -42,3 +42,10 @@ self-hosted endpoint) reads unreachable on any macOS central host until it is gr
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-10 04:05)
+
+Measured on Mini 2026-10-10 04:04 UTC, after the Captain reported granting Local Network ('done'): still blocked. A one-off LaunchAgent (gui/<uid> domain, same as the unit) running '/Users/hankh19/.local/bin/quotabus probe --force --config <scratch: local-qwen only, [file] backend in the session scratchpad>' wrote cannot_assess:unreachable, error 'tcp connect error: No route to host (os error 65)'; the test agent was then booted out and its plist deleted. Same minute from an interactive shell: curl http://192.168.8.120:8000/v1/models → 200; ping 0.35 ms. codesign -dv on the binary: Signature=adhoc, Identifier=quotabus-10fbf5d6df46eac1 (a hash-derived id, so each rebuild is a new identity to macOS). No Local Network denial appears in 'log show --last 4m' for quotabus. Candidate fixes for the DoD: a stable signing identifier at install (codesign -s - -i com.congruentsys.quotabus), or a LaunchDaemon (Apple TN3179: local network privacy applies to agents, not launchd daemons) — the latter changes install.sh and needs sudo.
