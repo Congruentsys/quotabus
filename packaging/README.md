@@ -65,15 +65,22 @@ check.
 `quotabus alert` (DESIGN §3 alert; EXP-004) runs **after each probe cycle, in the same unit**, so it reads the rows
 the cycle just wrote and runs under the same launcher (the redactor then knows every key, and the kanban CLIs get the
 environment they need). `install.sh` renders `<launcher> <quotabus> probe --config <file>`; chain the alert by
-pointing `--quotabus` at a two-line wrapper, which receives `probe --config <file>`:
+pointing `--quotabus` at a short wrapper, which receives `probe --config <file>` (and `probe --force --config <file>`
+when run by hand for a one-shot cycle). The probe gets every argument; the alert gets only `--config <file>`, since it
+takes no other flag and exits 2 on `--force` (CHORE-026):
 
 ```sh
 #!/bin/sh
 # /Users/hankh19/.local/bin/quotabus-cycle — one probe cycle, then the alert over its rows; exits non-zero if either failed
-shift                                   # drop "probe"; "$@" is now --config <file>
+shift                                   # drop "probe"; "$@" is the probe's flags: --config <file>, maybe --force
+cfg= prev=                              # the alert takes only --config <file>, wherever it sits in "$@"
+for a in "$@"; do
+  case $a in --config=*) cfg=${a#--config=} ;; *) [ "$prev" = --config ] && cfg=$a ;; esac
+  prev=$a
+done
 export QUOTABUS_CLAUDE_BIN=/opt/homebrew/bin/claude   # the unit's PATH has no /opt/homebrew/bin (HAZ-004)
 /Users/hankh19/.local/bin/quotabus probe "$@"; rc=$?
-/Users/hankh19/.local/bin/quotabus alert "$@" || rc=$?
+/Users/hankh19/.local/bin/quotabus alert --config "$cfg" || rc=$?
 exit $rc
 ```
 
