@@ -2,9 +2,9 @@
 id: HAZ-005
 title: "macOS Local Network privacy blocks the launchd probe from LAN hosts (No route to host to the Sparks)"
 type: hazard
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
 depends_on: []
 ---
@@ -35,5 +35,10 @@ self-hosted endpoint) reads unreachable on any macOS central host until it is gr
     kb:status kb:ready ;
     kb:at "2026-10-09T22:31:53+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-10T04:02:44+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
