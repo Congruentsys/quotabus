@@ -28,7 +28,7 @@ program is `/opt/homebrew/bin/doppler`, and with doppler granted the unit reache
 `haz/HAZ-005-local-network` at 2cef9b5, `docs/findings/HAZ-005-local-network.md`; confirmed by Mac-mini/s-e7976c42 at
 14:57 UTC: a one-shot user LaunchAgent with the production chain → DGX1 ok, 2750 ms). `quotabus` launched directly is
 blocked. The Captain chose one unit: "One unit, remove daemon (Recommended)" (2026-10-10); the root Sparks daemon
-installed earlier that day is removed (Captain-run sudo).
+installed earlier that day is to be removed by a Captain-run sudo script (pending at 15:00 UTC; it still runs).
 
 ## Definition of Done
 1. `packaging/README.md` and `install.sh`'s macOS plan output state the Local Network step: grant the unit's PROGRAM
