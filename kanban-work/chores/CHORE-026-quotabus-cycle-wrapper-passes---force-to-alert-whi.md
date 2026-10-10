@@ -2,7 +2,7 @@
 id: CHORE-026
 title: "quotabus-cycle wrapper passes --force to alert, which refuses it (found in HAZ-005 case 1)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-10
@@ -37,6 +37,12 @@ match (recorded on this item). `make check` green.
     kb:status kb:in_progress ;
     kb:at "2026-10-10T15:12:24+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-10T15:27:20+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/35> ;
   ] .
 ```
 
