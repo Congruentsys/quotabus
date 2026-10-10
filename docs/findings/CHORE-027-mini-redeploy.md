@@ -49,7 +49,7 @@ Mini in `~/.local/state/quotabus-work/CHORE-027/`. Its last exit code was 0 and 
 ```
 local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 ok
 local.qwen.dgx2.dgx2-qwen unknown (cannot_assess:timeout)
-… (10 api rows, 7 subscription rows; states as in step 6)
+… (10 api keys: 8 model rows + 2 balance rows; 7 subscription rows; states as in step 6)
 published 19 rows to bucket ai_status
 alert: 15 keys checked, 2 local skipped, 0 crossings filed, 0 re-armed
 ```
@@ -80,7 +80,7 @@ $ quotabus select --role work --prefer cheapest
 qwen nvidia/Qwen3-32B-NVFP4
 ```
 
-The 8 API rows and 7 subscription rows are unchanged:
+The 8 API model rows (the 2 balance keys are folded into deepseek and kimi's DETAIL) and 7 subscription rows are unchanged:
 - glm ×2, deepseek ×2, and all six Claude accounts and Copilot read `ok`.
 - kimi reads `quota_exhausted`, because its balance is below the floor.
 - openai, together and the xai control read `auth_failed`.
@@ -102,6 +102,22 @@ local.qwen.dgx2.dgx2-qwen                unknown cannot_assess:timeout      2026
   TTL removes it in about 9.8 h, around 2026-10-11T06:19Z.
 - **It does no harm meanwhile.** It is `unknown`, never `ok`, and no configured service lists the slot, so `status`
   and `select` do not read it. Nothing was purged (CLAUDE.md rule 4).
+
+**8. A leftover alert dedup entry** (r1 F5). The old binary wrote one entry before CHORE-021: it alerted on local
+rows, and the new one never touches their entries.
+
+```
+$ nats --server nats://192.168.8.110:4222 kv get ai_status alert.local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw
+{"contract":"quotabus-alert/1","key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","at":"2026-10-10T13:26:51.305370Z"}
+$ nats --server nats://192.168.8.110:4222 kv info ai_status | grep -E 'Maximum Age|Limit Marker'
+       Limit Marker TTL: 5m0s
+            Maximum Age: unlimited
+```
+
+The entry will NOT age out. Alert dedup entries are written with no per-key TTL (`docs/DESIGN.md:268`), and the
+bucket's maximum age is unlimited. It is harmless: it holds state `ok`, it is not a status row, and no reader treats
+`alert.*` as status. But it is permanent clutter, so its removal is filed as its own item. The removal is a delete of
+one of this repo's own keys, which rule 4 allows only when an item says so. This item did not say so.
 
 ## What this changes
 
