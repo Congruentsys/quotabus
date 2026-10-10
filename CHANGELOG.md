@@ -6,17 +6,23 @@ All notable changes to quotabus are recorded here. The format follows
 
 ## [1.0.0] - 2026-10-10
 
-The first release. It meets VOY-001's Definition of Done: `quotabus status` on the hub shows every configured API
-key and every subscription account with ages; a stale or missing row reads unknown; `quotabus select --role review
---exclude-family anthropic` returns a healthy model or refuses with rc 3; an outage files exactly one alert. This was
-measured on the fleet's live bus in CHORE-016 (#25) and re-read on 2026-10-10.
+The first release. It meets VOY-001's Definition of Done:
+
+> `quotabus status` on the hub shows every configured API key and every host's subscription state with ages; a stale
+> or missing row reads unknown; `quotabus select --role review --exclude-family anthropic` returns a healthy model or
+> refuses with rc 3; an outage files exactly one alert.
+
+Since EXP-002 (#12), subscription state is read centrally per account by the probe host, not per host. The Definition
+of Done was measured on the fleet's live bus in CHORE-016 (#25) and re-read on Mini at 2026-10-10T21:49Z: `status`
+rc 0, and `select --role review --exclude-family anthropic` returned `deepseek deepseek-v4-flash`, rc 0 (#37).
 
 ### Added
 - `quotabus probe`: one probe cycle over the configured API services (anthropic and openai protocols), with balance
   adapters for DeepSeek and Kimi, writing one `ai-status/1` row per (service, model) (#2).
 - Two backends: a NATS KV bucket created with per-key TTL, or a file backend when `[bus]` is omitted (#2).
-- `quotabus status [--json] [--kind] [--check <service>]` with the freshness rule: an absent or expired row reads
-  UNKNOWN, an unreachable bus reads CANNOT-ASSESS; `--check` exits 0 ok, 1 not ok, 2 CANNOT-ASSESS, 3 UNKNOWN (#2).
+- `quotabus status [--json] [--kind] [--stale] [--check <service>]` with the freshness rule: an absent or expired row
+  reads UNKNOWN, an unreachable bus reads CANNOT-ASSESS; `--stale` lists only the UNKNOWN entries; `--check` exits 0
+  ok, 1 not ok, 2 CANNOT-ASSESS, 3 UNKNOWN (#2).
 - Separate probe intervals per query kind in `[intervals]` (`api` and `balance` default 12 h) and per-kind TTLs in
   `[ttl]` (default 3 × the kind's interval); `probe` runs only the kinds that are due, `--force` runs all; a balance
   read writes its own `.balance` row (#9).
@@ -75,7 +81,8 @@ measured on the fleet's live bus in CHORE-016 (#25) and re-read on 2026-10-10.
 
 ### Known limits
 - v1.0 reports and alerts only. Pausing a provider is not a v1.0 feature (EXP-007).
-- `serve`, spend via `ccusage`, key expiry and the model-drift sweep are not built (EXP-005).
+- `serve`, spend via `ccusage`, key expiry, the model-drift sweep and polish of the file backend for outsiders without
+  NATS are not built (EXP-005).
 - The crate is not published to crates.io and there are no prebuilt binaries: build from source and install with
   `packaging/install.sh`.
 

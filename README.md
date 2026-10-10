@@ -18,8 +18,8 @@ to pick a healthy model before spending a long prompt on it.
 >   on other hosts), and local model servers, which discover the model they serve from `GET <base>/models`. Each
 >   query kind has its own `[intervals]` entry and TTL. Run it under your key manager so keys arrive by environment
 >   only: `doppler run -- quotabus probe` or `secretspec run -- quotabus probe`.
-> - `quotabus status [--json] [--kind api|local|subscription] [--check <service>]` reads the rows with the freshness
->   rule.
+> - `quotabus status [--json] [--kind api|local|subscription] [--stale] [--check <service>]` reads the rows with the
+>   freshness rule; `--stale` lists only the UNKNOWN (absent or expired) entries.
 > - `quotabus select --role R --exclude-family F` picks a healthy model, or exits 3 when nothing qualifies.
 > - `quotabus alert`, run after each probe cycle, files one `signal` per crossing (a service going bad into a state
 >   in `[alert] states`) to nusy-kanban, yurtle-kanban, a webhook and stdout, deduplicated at `alert.<key>`; only a
@@ -43,7 +43,7 @@ to pick a healthy model before spending a long prompt on it.
 - **Outputs:** NATS KV (with per-key TTL) and change subjects (`ai.status.changed.<key>`); a CLI table; alerts filed
   to yurtle-kanban or nusy-kanban, deduplicated so one outage files one item.
 - **It reports; it does not act.** Not in v1.0 (CHANGELOG, Known limits): pausing a provider (EXP-007); `serve`, spend
-  via `ccusage`, key expiry and the model-drift sweep (EXP-005).
+  via `ccusage`, key expiry, the model-drift sweep and polish of the file backend for outsiders without NATS (EXP-005).
 
 ## Licence
 
