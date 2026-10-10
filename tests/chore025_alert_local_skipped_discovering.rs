@@ -10,7 +10,7 @@
 //! DoD 1: `quotabus alert` over a discovering local service reads M=1 when the store holds none of its rows (the
 //! service is still one slot, its id), and M = the served-id count when the newest cycle wrote several. Control: the
 //! ids of an OLDER cycle are not counted (older cycle larger than the newest, so a count of either all rows or the
-//! older cycle reads a different M).
+//! older cycle reads a different M; the two cycles share no id, so each wrong count is reachable).
 //!
 //! DoD 2: counting with `svc.slots()` (empty for a discovering service, so M=0) turns these red.
 //!
@@ -182,11 +182,12 @@ async fn discovering_local_service_skips_every_id_of_its_newest_cycle() {
 async fn control_an_older_cycles_ids_are_not_counted() {
     let rig = rig();
     let now = Utc::now();
-    // older cycle: four ids; newest cycle: two (one shared with the older cycle)
+    // older cycle: four ids; newest cycle: two, disjoint from the older (a key shared by both cycles would carry
+    // the newer stamp, so the older cycle would yield fewer ids than it wrote; r1 F5)
     cycle(
         &rig,
         now - chrono::Duration::seconds(60),
-        &["old-1", "old-2", "old-3", "model-a"],
+        &["old-1", "old-2", "old-3", "old-4"],
     )
     .await;
     cycle(&rig, now, &["model-a", "model-b"]).await;
@@ -194,10 +195,10 @@ async fn control_an_older_cycles_ids_are_not_counted() {
     let m = m_of(&o);
     assert_ne!(
         m,
-        5,
+        6,
         "every distinct id in the store (older cycle counted)\n{}",
         text(&o)
     );
-    assert_ne!(m, 4, "the older cycle's ids\n{}", text(&o));
+    assert_ne!(m, 4, "the older cycle's four ids\n{}", text(&o));
     assert_eq!(m, 2, "only the newest cycle's ids\n{}", text(&o));
 }
