@@ -2,7 +2,7 @@
 id: CHORE-025
 title: "alert summary: pin 'local skipped' for a discovering local service (CHORE-024 r1 F6)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-10
@@ -16,3 +16,14 @@ From the CHORE-024 r1 review (reviews/CHORE-024-r1.md, PR #32), F6, non-blocking
 ## Done when
 1. A test runs `quotabus alert` over a discovering local service. It asserts M=1 when the store holds none of its rows, and M = the served-id count when the newest cycle wrote several. It includes a control: an older cycle's ids are not counted.
 2. The test goes red if alert counts with `slots()` (shown once, then reverted). `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-10T14:16:06+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
