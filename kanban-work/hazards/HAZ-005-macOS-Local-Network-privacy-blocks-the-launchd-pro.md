@@ -2,7 +2,7 @@
 id: HAZ-005
 title: "macOS Local Network privacy blocks the launchd probe from LAN hosts (No route to host to the Sparks)"
 type: hazard
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-09
@@ -69,6 +69,12 @@ installed earlier that day is to be removed by a Captain-run sudo script (pendin
     kb:status kb:in_progress ;
     kb:at "2026-10-10T14:57:53+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-10T15:11:59+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/34> ;
   ] .
 ```
 
