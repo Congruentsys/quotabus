@@ -2,7 +2,7 @@
 id: CHORE-022
 title: "Local Sparks: no key, DGX1/DGX2 at :8000, probe the model /v1/models serves (example + DESIGN §4 are stale)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: M5-MBP-2/s-72a67d16
 created: 2026-10-09
@@ -50,6 +50,12 @@ What is wrong in the repo (measured on Mini, 2026-10-09):
     kb:status kb:in_progress ;
     kb:at "2026-10-10T13:42:36+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-10T14:03:02+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/31> ;
   ] .
 ```
 
