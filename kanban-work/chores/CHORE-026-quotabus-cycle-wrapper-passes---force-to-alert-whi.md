@@ -2,7 +2,7 @@
 id: CHORE-026
 title: "quotabus-cycle wrapper passes --force to alert, which refuses it (found in HAZ-005 case 1)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-10
@@ -23,3 +23,14 @@ The wrapper in `packaging/README.md` passes only `--config <file>` to `alert` (o
 `--force`, if that is the smaller change), with a test that runs the wrapper with `probe --force --config <file>`
 against stub `quotabus` binaries on PATH and shows both steps get valid argv; Mini's installed wrapper is updated to
 match (recorded on this item). `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-10T15:12:17+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
