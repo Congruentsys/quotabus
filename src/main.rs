@@ -213,6 +213,10 @@ async fn alert_with(
     for svc in &config.services {
         for model in &svc.slots() {
             checked += 1;
+            if !quotabus::alert::alerts_for(svc.kind) {
+                // CHORE-021: a local service files no alert; its `alert.<key>` is neither read nor written
+                continue;
+            }
             let key = quotabus::record_key(svc.kind, &svc.provider, &svc.account, model);
             let row = by_key.get(key.as_str()).copied();
             let verdict = if unreadable.contains(key.as_str()) {
