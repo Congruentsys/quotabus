@@ -23,13 +23,22 @@ privacy (macOS 15+): a launchd agent needs Local Network access granted in Syste
 Local Network. A false CANNOT-ASSESS is honest (never a false ok), but every LAN service (the Sparks, and any
 self-hosted endpoint) reads unreachable on any macOS central host until it is granted.
 
+**Resolved route (2026-10-10).** The Local Network grant attaches to the launchd job's PROGRAM. The live unit's
+program is `/opt/homebrew/bin/doppler`, and with doppler granted the unit reaches the Sparks (M5's finding, branch
+`haz/HAZ-005-local-network` at 2cef9b5, `docs/findings/HAZ-005-local-network.md`; confirmed by Mac-mini/s-e7976c42 at
+14:57 UTC: a one-shot user LaunchAgent with the production chain → DGX1 ok, 2750 ms). `quotabus` launched directly is
+blocked. The Captain chose one unit: "One unit, remove daemon (Recommended)" (2026-10-10); the root Sparks daemon
+installed earlier that day is removed (Captain-run sudo).
+
 ## Definition of Done
-1. `packaging/README.md` (and `install.sh`'s plan output on macOS) state the Local Network step: after install, allow
-   the probe in System Settings → Privacy & Security → Local Network (or the first prompt), and how to confirm it (the
-   local row reads ok / a real state, not "No route to host").
-2. Measured on Mini after the Captain grants it: the DGX1 row's state and error before and after, with the commands,
-   recorded in a short finding or on this item. If replacing the binary (a redeploy) resets the grant, the README
-   says so. `make check` green.
+1. `packaging/README.md` and `install.sh`'s macOS plan output state the Local Network step: grant the unit's PROGRAM
+   (the launcher, e.g. doppler; `quotabus` itself when there is no launcher) under System Settings → Privacy &
+   Security → Local Network, and how to confirm it (the local row reads a real state, not "No route to host").
+2. The finding records the measured cases (M5's 1-5 and the 14:57 confirmation) with commands, host and date; it says
+   replacing the quotabus binary does not reset the grant (M5 case 2) and that a root LaunchDaemon also works but is
+   not the fleet's unit (Captain 2026-10-10).
+3. M5's branch (tests 77f24fc, docs 2cef9b5) is the starting point; it lands by a PR reviewed by a distinct session.
+   `make check` green.
 
 ```yurtle
 @prefix kb: <https://yurtle.dev/kanban/> .
