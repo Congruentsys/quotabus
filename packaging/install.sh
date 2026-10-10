@@ -219,6 +219,27 @@ print_plan() {
     [ -z "$log_dir" ] || echo "logs: $log_dir/"
     if [ -n "$launcher" ]; then echo "launcher: $launcher"; else echo "launcher: (none: the unit's environment must carry the keys)"; fi
     echo "tick: ${interval}s (per-kind intervals are in the config)"
+    if [ "$os" = "macos" ]; then
+        # HAZ-005 (measured on Mini, 2026-10-10): macOS Local Network privacy attaches to the job's FIRST program
+        # (ProgramArguments[0]): the launcher when there is one, else quotabus itself. Ungranted, a LAN peer reads
+        # "No route to host (os error 65)".
+        local first_program why
+        if [ -n "$launcher" ]; then
+            set -f
+            # shellcheck disable=SC2086
+            set -- $launcher
+            set +f
+            first_program="$1"
+            why="the launcher, the unit's first program: the grant attaches to it, not to quotabus"
+        else
+            first_program="$qb_bin"
+            why="the unit's first program: with no launcher, quotabus itself"
+        fi
+        echo
+        echo "Local Network (macOS): after install, on ${host:-this host} at the GUI, allow it in System Settings > Privacy & Security > Local Network:"
+        echo "  allow $first_program ($why)"
+        echo "  confirm: after the next cycle a LAN/local row reads a real state, not \"No route to host\""
+    fi
 }
 
 # ---- dry run
