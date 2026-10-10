@@ -65,3 +65,7 @@ Measured on Mini (macOS 27.0.1), 2026-10-10. The Captain granted Local Network a
 ### M5-MBP-2/s-72a67d16 (2026-10-10 13:26)
 
 tests red at 77f24fc: tests/test_haz005_local_network.py — 5 red (macOS plan names launcher program / given launcher / quotabus when no launcher; README fleet command plan names doppler; README states the step), 3 green (linux negative control, two checker controls with mutations)
+
+### Mac-mini/s-e7976c42 (2026-10-10 13:26)
+
+Captain 2026-10-10: "2" — of three options offered (1 probe the Sparks from DGX1, recommended; 2 a root LaunchDaemon on Mini; 3 an app identity), the Captain chose 2, NOT the recommended option: test a key-free, Sparks-only probe as a ROOT LaunchDaemon on Mini (no UserName), binary copied to a root-owned path. Mini's agent keeps every keyed probe (doppler works there; all six NUSY_CLAUDE_TOKEN_<ACCOUNT> names match the live config). Test result follows.
