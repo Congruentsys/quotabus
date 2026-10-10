@@ -2,7 +2,7 @@
 id: CHORE-024
 title: "alert: pin subscription alerting end to end and report skipped local slots in the summary (CHORE-021 r1 nits)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-10
@@ -19,3 +19,14 @@ From the CHORE-021 r1 review (reviews/CHORE-021-r1.md, PR #30), both non-blockin
 1. An integration test (fake nusy-kanban, file backend) drives a subscription service through the same crossings as tests/chore021_local_no_alert.rs. It files per SIG-010's default, with a control that goes red if subscription is skipped like local.
 2. The alert summary line reports skipped local slots separately (e.g. `N keys checked, M local skipped`), or excludes them and says so. A test pins the counts.
 3. `make check` green.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-10T13:42:12+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
