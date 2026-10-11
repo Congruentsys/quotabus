@@ -4,6 +4,16 @@ All notable changes to quotabus are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-10-11
+
+A patch release with one fix to the `quotabus status` table.
+
+### Fixed
+- `quotabus status` counted "(resets in …)" from the row's `checked_at`, so it overstated the time left by the row's
+  age. It now counts from the reader's now (`reset_at − now`, else `reset_in_s − age`) and renders a reset already
+  past as "(reset due)". A window with `reset_at` but no `reset_in_s`, which showed no reset text before, now shows
+  its time left. The stored row, `reset_in_s` and `status --json` are unchanged (#39).
+
 ## [1.0.0] - 2026-10-10
 
 The first release. It meets VOY-001's Definition of Done:
@@ -86,4 +96,5 @@ rc 0, and `select --role review --exclude-family anthropic` returned `deepseek d
 - The crate is not published to crates.io and there are no prebuilt binaries: build from source and install with
   `packaging/install.sh`.
 
+[1.0.1]: https://github.com/Congruentsys/quotabus/releases/tag/v1.0.1
 [1.0.0]: https://github.com/Congruentsys/quotabus/releases/tag/v1.0.0

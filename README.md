@@ -11,7 +11,7 @@ checked and expires on its own, so a reader never mistakes an old "ok" for a cur
 Humans read it with `quotabus status`. Agents read it with `quotabus select --role review --exclude-family anthropic`,
 to pick a healthy model before spending a long prompt on it.
 
-> **Status: v1.0.0** — see [`CHANGELOG.md`](CHANGELOG.md). One Rust binary with four commands:
+> **Status: v1.0.1** — see [`CHANGELOG.md`](CHANGELOG.md). One Rust binary with four commands:
 > - `quotabus probe --config quotabus.toml` runs what is due and writes one row per (service, model) to the NATS KV
 >   bucket of `[bus]` (created with per-key TTL), or to `[file] dir` without one. It covers API keys (with balances
 >   for DeepSeek and Kimi), subscription accounts read centrally (Claude by setup-token, GitHub Copilot; nothing runs
