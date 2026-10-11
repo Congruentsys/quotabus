@@ -2,7 +2,7 @@
 id: CHORE-030
 title: "status: 'resets in' counts from checked_at, not now"
 type: chore
-status: backlog
+status: provisioning
 priority: low
 assignee: null
 created: 2026-10-11
@@ -25,3 +25,14 @@ In `status`'s DETAIL, render "resets in" from `reset_at − now` (the reader's c
 - A row whose `reset_at` is before "now" shows no negative duration.
 - `--json` output and the stored row are byte-for-byte unchanged (test).
 - `make check` green; PR reviewed by a distinct session (pairit code lane).
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-11T15:07:33+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
