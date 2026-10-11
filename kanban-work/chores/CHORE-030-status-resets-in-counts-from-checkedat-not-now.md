@@ -2,9 +2,9 @@
 id: CHORE-030
 title: "status: 'resets in' counts from checked_at, not now"
 type: chore
-status: provisioning
+status: underway
 priority: low
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-11
 depends_on: []
 related: [CHORE-029]
@@ -33,6 +33,11 @@ In `status`'s DETAIL, render "resets in" from `reset_at − now` (the reader's c
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-11T15:07:33+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-11T15:07:44+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
