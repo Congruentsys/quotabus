@@ -2,9 +2,9 @@
 id: CHORE-029
 title: "Redeploy Mini's central probe from the v1.0.0 tag (rows read quotabus@1.0.0)"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-11
 depends_on: []
 related: [CHORE-027]
@@ -43,6 +43,11 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
     kb:status kb:ready ;
     kb:at "2026-10-11T14:45:37+00:00"^^xsd:dateTime ;
     kb:by "M5-MBP-2/s-72a67d16" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-11T14:51:08+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
 
