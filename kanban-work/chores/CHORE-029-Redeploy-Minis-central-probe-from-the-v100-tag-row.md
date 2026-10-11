@@ -2,7 +2,7 @@
 id: CHORE-029
 title: "Redeploy Mini's central probe from the v1.0.0 tag (rows read quotabus@1.0.0)"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-11
@@ -33,3 +33,14 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
   - `quotabus status` with every API, local and subscription row present, and `select --role review --exclude-family anthropic` rc 0 or rc 3 with the reason;
   - the rollback: restore `quotabus.prev-20261011`.
 - No secret appears anywhere. The only bus writes are quotabus's own rows in `ai_status`.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-11T14:45:37+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
