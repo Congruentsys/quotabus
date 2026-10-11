@@ -885,8 +885,18 @@ fn table_out(entries: &[Entry], now: chrono::DateTime<Utc>) -> String {
                 detail.push(' ');
             }
             detail.push_str(&format!("{} {:.0}%", w.window, w.used_pct));
-            if let Some(s) = w.reset_in_s {
-                detail.push_str(&format!(" (resets in {})", human_age(s)));
+            // time left against the reader's NOW (as AGE is), not checked_at (CHORE-030): `reset_at − now` when it
+            // parses, else `reset_in_s − age`; a reset already past is `reset due`, never a negative duration
+            let left = w
+                .reset_at
+                .as_deref()
+                .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+                .map(|r| (r.with_timezone(&Utc) - now).num_seconds())
+                .or_else(|| Some(w.reset_in_s? - age_s(row, now)?));
+            match left {
+                Some(s) if s > 0 => detail.push_str(&format!(" (resets in {})", human_age(s))),
+                Some(_) => detail.push_str(" (reset due)"),
+                None => {}
             }
         }
         lines.push([
