@@ -7,6 +7,7 @@ priority: low
 assignee: null
 created: 2026-10-11
 depends_on: []
+related: [CHORE-029]
 ---
 
 # status: 'resets in' counts from checked_at, not now
