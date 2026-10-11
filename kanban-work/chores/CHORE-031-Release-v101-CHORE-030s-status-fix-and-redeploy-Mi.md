@@ -2,7 +2,7 @@
 id: CHORE-031
 title: "Release v1.0.1 (CHORE-030's status fix) and redeploy Mini from the tag"
 type: chore
-status: backlog
+status: provisioning
 priority: medium
 assignee: null
 created: 2026-10-11
@@ -44,3 +44,14 @@ Mini (user hankh19, gui/501) and its Doppler login (project nusy-product-team, c
   - `select --role review --exclude-family anthropic` rc 0 or rc 3 with the reason;
   - the rollback.
 - No secret appears anywhere. The only bus writes are quotabus's own rows in `ai_status`.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-11T17:39:37+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ] .
+```
