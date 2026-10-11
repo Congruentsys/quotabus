@@ -61,3 +61,10 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
     kb:by "M5-MBP-2/s-72a67d16" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-11 15:00)
+
+measured on Mini 2026-10-11: v1.0.0 (ab14fe1) installed, --version 'quotabus 1.0.0', forced cycle exit 0, regular tick #716 exit 0, rows observed_by Mac-mini/quotabus@1.0.0. Finding in PR #38 (https://github.com/Congruentsys/quotabus/pull/38), under review r1.
