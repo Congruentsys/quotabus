@@ -41,3 +41,10 @@ In `status`'s DETAIL, render "resets in" from `reset_at − now` (the reader's c
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-11 15:10)
+
+tests red at 13d5e2e: tests/chore030_resets_in_now.rs — 5 red by assertion (checked_ten_min_ago_shows_about_fifty_minutes: 'rendered (resets in 60m) = 3600s, want 47–50 min from NOW'; reset_at_is_read_against_now; fallback_without_reset_at_subtracts_age; past_reset_at_shows_no_negative_duration; past_reset_via_fallback_shows_no_negative_duration), 3 green controls (checker_controls, control_checked_now_shows_sixty_minutes — shown able to fail by a human_age(s-120) mutation, json_and_stored_row_unchanged).
