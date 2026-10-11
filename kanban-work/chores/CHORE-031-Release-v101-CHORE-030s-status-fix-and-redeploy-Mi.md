@@ -7,6 +7,7 @@ priority: medium
 assignee: null
 created: 2026-10-11
 depends_on: []
+related: [CHORE-029, CHORE-030]
 ---
 
 # Release v1.0.1 (CHORE-030's status fix) and redeploy Mini from the tag
