@@ -2,7 +2,7 @@
 id: CHORE-031
 title: "Release v1.0.1 (CHORE-030's status fix) and redeploy Mini from the tag"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-11
@@ -58,6 +58,12 @@ Mini (user hankh19, gui/501) and its Doppler login (project nusy-product-team, c
     kb:status kb:in_progress ;
     kb:at "2026-10-11T17:39:39+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-11T18:02:40+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/41> ;
   ] .
 ```
 
