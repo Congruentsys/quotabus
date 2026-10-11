@@ -2,9 +2,9 @@
 id: CHORE-031
 title: "Release v1.0.1 (CHORE-030's status fix) and redeploy Mini from the tag"
 type: chore
-status: provisioning
+status: underway
 priority: medium
-assignee: null
+assignee: Mac-mini/s-e7976c42
 created: 2026-10-11
 depends_on: []
 related: [CHORE-029, CHORE-030]
@@ -52,6 +52,11 @@ Mini (user hankh19, gui/501) and its Doppler login (project nusy-product-team, c
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-11T17:39:37+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:in_progress ;
+    kb:at "2026-10-11T17:39:39+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
