@@ -2,7 +2,7 @@
 id: CHORE-029
 title: "Redeploy Mini's central probe from the v1.0.0 tag (rows read quotabus@1.0.0)"
 type: chore
-status: underway
+status: arrived
 priority: medium
 assignee: Mac-mini/s-e7976c42
 created: 2026-10-11
@@ -48,6 +48,12 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
     kb:status kb:in_progress ;
     kb:at "2026-10-11T14:51:08+00:00"^^xsd:dateTime ;
     kb:by "Mac-mini/s-e7976c42" ;
+  ],
+  [
+    kb:status kb:done ;
+    kb:at "2026-10-11T15:07:03+00:00"^^xsd:dateTime ;
+    kb:by "Mac-mini/s-e7976c42" ;
+    kb:closedBy <https://github.com/Congruentsys/quotabus/pull/38> ;
   ] .
 ```
 
