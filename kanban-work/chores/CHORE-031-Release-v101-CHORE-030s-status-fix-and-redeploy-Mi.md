@@ -60,3 +60,10 @@ Mini (user hankh19, gui/501) and its Doppler login (project nusy-product-team, c
     kb:by "Mac-mini/s-e7976c42" ;
   ] .
 ```
+
+
+## Comments
+
+### Mac-mini/s-e7976c42 (2026-10-11 17:47)
+
+part 1 done: PR #40 merged cdc656f (reviewed-at-sha ad45efb, approve, no findings to fix; CI green). Annotated tag v1.0.1 (object bb9a529) on cdc656f, pushed; GitHub release https://github.com/Congruentsys/quotabus/releases/tag/v1.0.1 from the CHANGELOG section. Part 2 (Mini redeploy) next.
