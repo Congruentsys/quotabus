@@ -26,7 +26,7 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
 4. Run one forced cycle under gui/501 doppler, as in CHORE-027, then wait for the next regular tick.
 
 ## Definition of Done
-- `docs/findings/CHORE-028+1-…`: a findings file `docs/findings/<ID>-mini-v1.0.0.md`, landed by a PR with a distinct reviewer who re-runs the read-only commands. It records:
+- A findings file `docs/findings/CHORE-029-mini-v1.0.0.md`, landed by a PR with a distinct reviewer who re-runs the read-only commands. It records:
   - the commands and their redacted output, the host, the date, and the tag's sha;
   - `quotabus --version` on Mini printing `quotabus 1.0.0`;
   - one regular launchd tick after the install exiting 0, with its alert summary line;
@@ -34,6 +34,17 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
   - `quotabus status` with every API, local and subscription row present, and `select --role review --exclude-family anthropic` rc 0 or rc 3 with the reason;
   - the rollback: restore `quotabus.prev-20261011`.
 - No secret appears anywhere. The only bus writes are quotabus's own rows in `ai_status`.
+
+```yurtle
+@prefix kb: <https://yurtle.dev/kanban/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<> kb:statusChange [
+    kb:status kb:ready ;
+    kb:at "2026-10-11T14:45:37+00:00"^^xsd:dateTime ;
+    kb:by "M5-MBP-2/s-72a67d16" ;
+  ] .
+```
 
 ```yurtle
 @prefix kb: <https://yurtle.dev/kanban/> .
