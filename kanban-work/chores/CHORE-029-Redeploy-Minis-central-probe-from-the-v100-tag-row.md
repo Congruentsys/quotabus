@@ -7,6 +7,7 @@ priority: medium
 assignee: null
 created: 2026-10-11
 depends_on: []
+related: [CHORE-027]
 ---
 
 # Redeploy Mini's central probe from the v1.0.0 tag (rows read quotabus@1.0.0)
