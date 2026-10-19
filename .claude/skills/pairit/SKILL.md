@@ -241,7 +241,7 @@ between repos", quoted in CHORE-017's body).
    the holder"`. `-m` is the commit message, so the citation is the close's record (CHORE-001's close, 5f570b8,
    which had no `--resolution`). **Why `--force`:** 3.4.0's table allows from `stranded` only `provisioning`,
    `underway` and `harbor` (`workflow.py` 64–68, `BLOCKED: [READY, IN_PROGRESS, BACKLOG]`), and the one route to
-   `arrived` runs through `underway`, which CLAUDE.md forbids by hand. Measured 2026-10-09 on <mini> in a throwaway
+   `arrived` runs through `underway`, which CLAUDE.md forbids by hand. Measured 2026-10-09 on `<mini>` in a throwaway
    clone pushing to a throwaway bare origin (quotabus b21fcd8), the item held by the session that parked it and closed
    by another `--agent`: a plain `move <ID> done` → "Illegal move CHORE-019: stranded → arrived. Legal from stranded:
    provisioning, underway, harbor.", rc 1; the forced move above → "…: pushed to origin/main", rc 0, the item

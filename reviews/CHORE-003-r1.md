@@ -65,7 +65,7 @@ INSIDE the main venv. Running the brief's own setup command did exactly that:
 
 ```
 $ ls -la ~/Projects/quotabus/.venv/.venv
-lrwxr-xr-x  1 hankh95  staff  38 Oct  8 17:24 /Users/<user>/Projects/quotabus/.venv/.venv -> /Users/<user>/Projects/quotabus/.venv
+lrwxr-xr-x  1 <user>  staff  38 Oct  8 17:24 /Users/<user>/Projects/quotabus/.venv/.venv -> /Users/<user>/Projects/quotabus/.venv
 ```
 
 That link was created by this review's setup step, and I removed it after the review.

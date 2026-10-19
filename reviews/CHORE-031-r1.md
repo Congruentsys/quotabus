@@ -224,8 +224,8 @@ three is the GitHub noreply commit identity in the brief (`…@users.noreply.git
 email. The account names in the subscription keys and rows are all already published in
 `docs/findings/CHORE-016-mini-deploy.md`:
 ```
-$ for a in <user> <user> <acct-3> hankh95 <acct-4> <acct-5>; do grep -c "subscription.anthropic.$a\|claude-$a\|subscription.github.$a" docs/findings/CHORE-016-mini-deploy.md; done
-<user> 5 | <user> 8 | <acct-3> 4 | hankh95 7 | <acct-4> 4 | <acct-5> 4
+$ for a in <acct-1> <acct-2> <acct-3> hankh95 <acct-4> <acct-5>; do grep -c "subscription.anthropic.$a\|claude-$a\|subscription.github.$a" docs/findings/CHORE-016-mini-deploy.md; done
+<acct-1> 5 | <acct-2> 8 | <acct-3> 4 | hankh95 7 | <acct-4> 4 | <acct-5> 4
 ```
 The DETAIL balances (CNY/USD) are account figures, not credentials, and CHORE-029 published them too.
 

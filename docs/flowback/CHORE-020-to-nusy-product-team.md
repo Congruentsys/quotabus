@@ -93,8 +93,8 @@ on Mini**: a launchd job ticks every 300 s and probes whatever is due. Nothing i
 (Captain 2026-10-09: "Raw nats kv"). Read the bucket with natscli:
 
 ```bash
-nats --server `nats://<bus-host>:4222` kv ls ai_status                 # every key
-nats --server `nats://<bus-host>:4222` kv get ai_status <key> --raw    # one ai-status/1 JSON row
+nats --server nats://<bus-host>:4222 kv ls ai_status                 # every key
+nats --server nats://<bus-host>:4222 kv get ai_status <key> --raw    # one ai-status/1 JSON row
 ```
 
 Keys (slugs, never an email):
