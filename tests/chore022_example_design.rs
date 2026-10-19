@@ -9,8 +9,20 @@ use quotabus::{Config, Kind};
 
 const DGX1: &str = "http://<dgx1>:8000/v1";
 const DGX2: &str = "http://<dgx2>:8000/v1";
-/// What the item says is stale (measured on Mini, 2026-10-09).
+/// What the item says is stale (measured on Mini, 2026-10-09). The old host itself is not committed (a public repo
+/// carries no fleet address): set `QUOTABUS_STALE_QWEN_HOST` to it to guard against its return as well.
 const STALE: [&str; 3] = ["<old-qwen-host>", ":30000", "NUSY_LOCAL_QWEN"];
+
+/// `STALE`, plus the old host from `QUOTABUS_STALE_QWEN_HOST` when it is set.
+fn stale_values() -> Vec<&'static str> {
+    let mut v = STALE.to_vec();
+    if let Ok(host) = std::env::var("QUOTABUS_STALE_QWEN_HOST")
+        && !host.is_empty()
+    {
+        v.push(Box::leak(host.into_boxed_str()));
+    }
+    v
+}
 
 fn read(rel: &str) -> String {
     let p = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
@@ -58,7 +70,10 @@ fn example_problems(cfg: &Config) -> Vec<String> {
 
 /// Every stale value left in `text`.
 fn stale_in(text: &str) -> Vec<&'static str> {
-    STALE.iter().copied().filter(|s| text.contains(s)).collect()
+    stale_values()
+        .into_iter()
+        .filter(|s| text.contains(s))
+        .collect()
 }
 
 /// DESIGN.md §4, from its heading to §5's.
