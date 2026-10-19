@@ -161,8 +161,8 @@ mod url_userinfo_tests {
         assert_eq!(r.redact("nats://127.0.0.1:4222"), "nats://127.0.0.1:4222");
         assert_eq!(r.redact("mail a.b@example.com"), "mail ***");
         assert_eq!(
-            r.redact("nats://qb:pw@mini.lan:4222"),
-            "nats://qb:***@mini.lan:4222"
+            r.redact("nats://qb:pw@bus-host:4222"),
+            "nats://qb:***@bus-host:4222"
         );
     }
 }

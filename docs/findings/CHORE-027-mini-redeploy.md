@@ -8,14 +8,14 @@ under its regular launchd tick and publish CHORE-021, 022 and 024's behaviour?
 serves. DGX2 reads `cannot_assess:timeout`, its real state. Every API and subscription row is present and fresh.
 
 Authorship: the redeploy and this finding were done by an LLM agent session (Claude Opus 5.5),
-M5-MBP-2/s-72a67d16, over ssh from M5 to Mini, with no sub-agent. No human reviewed it. The Captain asked for the
+`<m5>/s-72a67d16`, over ssh from M5 to Mini, with no sub-agent. No human reviewed it. The Captain asked for the
 chore (2026-10-10: "create a chore for mini to redeploy it"), then said "then continue in /quotabus-loop".
 
-- **Host:** Mac-mini (user `hankh19`, launchd domain `gui/501`), arm64.
+- **Host:** `<mini>` (user `<user>`, launchd domain `gui/501`), arm64.
 - **Date:** 2026-10-10.
 - **quotabus:** built from `deeb435fbba833cb09604d3783b9739c4ed680b4` (`origin/main` at build time), version string
   `quotabus 0.1.0`.
-- **Bus:** `nats://192.168.8.110:4222`, bucket `ai_status`. Only this repo's own bucket was written, by the probe
+- **Bus:** `nats://<bus-host>:4222`, bucket `ai_status`. Only this repo's own bucket was written, by the probe
   itself. Nothing was purged or deleted.
 
 ## Commands and output (redacted: no key appears anywhere below)
@@ -35,8 +35,8 @@ quotabus 0.1.0
 - `~/.local/bin/quotabus.prev-20261010`: the 2026-10-09 18:14 binary.
 - `~/.config/quotabus/quotabus.toml.prev-20261010`: the previous config.
 
-**3. Config.** The fixed-`models` `local-qwen` service was replaced by `dgx1-qwen` (`http://192.168.8.120:8000/v1`)
-and `dgx2-qwen` (`http://192.168.8.121:8000/v1`). Both are `kind = "local"`, with no `secret` and no `models`, as in
+**3. Config.** The fixed-`models` `local-qwen` service was replaced by `dgx1-qwen` (`http://<dgx1>:8000/v1`)
+and `dgx2-qwen` (`http://<dgx2>:8000/v1`). Both are `kind = "local"`, with no `secret` and no `models`, as in
 `examples/quotabus.toml`. `diff` showed only the local-service block changed. The new binary ran a read-only
 `quotabus status --config <new>` and got rc 0 before the config was installed.
 
@@ -107,9 +107,9 @@ local.qwen.dgx2.dgx2-qwen                unknown cannot_assess:timeout      2026
 rows, and the new one never touches their entries.
 
 ```
-$ nats --server nats://192.168.8.110:4222 kv get ai_status alert.local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw
+$ nats --server nats://<bus-host>:4222 kv get ai_status alert.local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw
 {"contract":"quotabus-alert/1","key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","at":"2026-10-10T13:26:51.305370Z"}
-$ nats --server nats://192.168.8.110:4222 kv info ai_status | grep -E 'Maximum Age|Limit Marker'
+$ nats --server nats://<bus-host>:4222 kv info ai_status | grep -E 'Maximum Age|Limit Marker'
        Limit Marker TTL: 5m0s
             Maximum Age: unlimited
 ```

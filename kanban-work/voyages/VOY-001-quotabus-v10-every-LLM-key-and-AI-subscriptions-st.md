@@ -30,7 +30,7 @@ The probe runner + KV + CLI (E1), the doc-pointer chore (C1), the measurement ch
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-09 03:26)
+### `<m5>/s-72a67d16` (2026-10-09 03:26)
 
 VOY-001's Definition of Done is measured MET on the live bus (CHORE-016, PR #25, docs/findings/CHORE-016-mini-deploy.md, 2026-10-09). Alerts go to stdout until SIG-010 is ruled and a board sink is chosen. Closing the voyage and a v1.0 release are the Captain's call.
 
@@ -41,7 +41,7 @@ VOY-001's Definition of Done is measured MET on the live bus (CHORE-016, PR #25,
 <> kb:statusChange [
     kb:status kb:done ;
     kb:at "2026-10-10T22:02:18+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:forcedMove "true"^^xsd:boolean ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/releases/tag/v1.0.0> ;
     kb:resolution "completed" ;

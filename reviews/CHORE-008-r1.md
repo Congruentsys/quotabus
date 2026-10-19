@@ -1,14 +1,14 @@
 reviewed-at-sha: 76300e5af9f141e4d4c95fcb7ec1907052656f4e
 verdict: changes
-gate: make check rc=0 at 76300e5af9f141e4d4c95fcb7ec1907052656f4e on Mac-mini
+gate: make check rc=0 at 76300e5af9f141e4d4c95fcb7ec1907052656f4e on `<mini>`
 brief: reviews/CHORE-008-r1.brief.md @ 76300e5af9f141e4d4c95fcb7ec1907052656f4e
 
 Authorship: All of this work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 The tests (8edf666) were written by a fresh Opus sub-agent (the test partner). The code (b820c09) was written by a second
-fresh Opus sub-agent (the implementer). Both were commissioned by the driver session Mac-mini/s-e7976c42, which
+fresh Opus sub-agent (the implementer). Both were commissioned by the driver session `<mini>/s-e7976c42`, which
 checked their work, wrote the brief and gains from `approve`. This review was written by a distinct reviewer: a separate
 `claude -p` process with a fresh context that wrote none of the work. It is the same model family and was briefed by the
-driver with the committed brief `reviews/CHORE-008-r1.brief.md`. The reviewer ran every command below on Mac-mini on
+driver with the committed brief `reviews/CHORE-008-r1.brief.md`. The reviewer ran every command below on `<mini>` on
 2026-10-08, in its own worktree `/tmp/rv-CHORE-008` detached at the reviewed sha.
 
 ## Summary of the checks (all passed unless a finding says otherwise)
@@ -57,7 +57,7 @@ driver with the committed brief `reviews/CHORE-008-r1.brief.md`. The reviewer ra
 7. **DESIGN.md §5.** It is a one-line pointer fix. `packaging/launchd/com.congruentsys.quotabus-probe.plist` becomes
    `packaging/install.sh renders com.congruentsys.quotabus-probe.plist`. The rest of the line is unchanged (§10 Q2,
    "the fleet's is Mini"), so the meaning does not change. See nit F6.
-8. **The gate.** `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-008-target make check` →
+8. **The gate.** `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-008-target make check` →
    `make check rc=0`. It ran `59 passed` (pytest), every `cargo test` group `ok` and `yurtle-kanban validate`.
 
 ## Findings

@@ -1,7 +1,7 @@
 # Review brief — CHORE-007 r1 (quotabus PR #9)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The work was written by two
-sub-agents of the resident session M5-MBP-2/s-72a67d16 (Claude Opus 5.5): a test partner, which wrote the tests at
+sub-agents of the resident session `<m5>/s-72a67d16` (Claude Opus 5.5): a test partner, which wrote the tests at
 `0acfc02`, and an implementer, which wrote the code at `304e545`. That session drove both, filed the item and wants it
 approved.
 
@@ -15,7 +15,7 @@ tests/review_r1.rs.
 
 **Setup:** work ONLY in your own scratch worktree:
 `cd ~/Projects/quotabus && git fetch -q origin && git worktree add -q --detach /tmp/rv-CHORE-007 <SHA> && ln -s ~/Projects/quotabus/.venv /tmp/rv-CHORE-007/.venv`.
-Use `CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-007` (your own) and cargo at `/Users/hankh95/.cargo/bin/cargo` if it is
+Use `CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-007` (your own) and cargo at `/Users/<user>/.cargo/bin/cargo` if it is
 not on PATH. Remove the worktree when done (`git worktree remove --force /tmp/rv-CHORE-007`), after your review file
 is pushed.
 
@@ -57,7 +57,7 @@ brief: reviews/CHORE-007-r1.brief.md @ <SHA>
 Then a paragraph headed `Authorship:`. It says: all the work and this review were done by LLM agent sessions (name the
 model); no human reviewed it; "distinct" means a separate `claude -p` process with a fresh context that wrote none of
 the work, of the same model family, briefed by the author with this committed brief; the commissioning session is
-M5-MBP-2/s-72a67d16, and its stake is that it drove the partner and implementer, filed the item, and gains from
+`<m5>/s-72a67d16`, and its stake is that it drove the partner and implementer, filed the item, and gains from
 `approve`.
 Then numbered findings `F1…`, each with a severity (blocker / should-fix / nit), the command, its output, and the fix
 you propose. `verdict: changes` only for blocker or should-fix findings.

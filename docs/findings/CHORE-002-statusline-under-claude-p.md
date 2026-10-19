@@ -5,12 +5,12 @@ interactive session it is, and its stdin JSON carries `rate_limits.{five_hour,se
 from the first render after an API reply. **But** `claude -p --output-format stream-json` emits a
 `rate_limit_event` carrying the same two windows, so a `-p` session is readable without a statusLine.
 
-- Host: `M5-MBP-2` (MacBook Pro, Apple M5), macOS 27.0, Claude Code `2.1.294`, Claude Max login (OAuth).
+- Host: `<m5>` (MacBook Pro, Apple M5), macOS 27.0, Claude Code `2.1.294`, Claude Max login (OAuth).
 - Date: 2026-10-08, 18:21–18:22 UTC. quotabus sha: `3ca35d1` (origin/main when measured).
 - Item: CHORE-002; design §4 (Claude Max row) and §10 Q9.
 
 Authorship: all of the measurement and this write-up were done by an LLM agent session (Claude Opus 5.5,
-`M5-MBP-2/s-72a67d16`, the commissioning session, which ran every command and wrote this file). No human reviewed
+`<m5>/s-72a67d16`, the commissioning session, which ran every command and wrote this file). No human reviewed
 it. Its review is by a distinct `claude -p` session (a separate process, fresh context, same model family) briefed by
 this session with a committed brief; see `reviews/CHORE-002-r1.md`.
 

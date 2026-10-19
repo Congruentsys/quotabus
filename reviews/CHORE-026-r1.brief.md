@@ -1,7 +1,7 @@
 # Review brief — CHORE-026 r1 (quotabus PR #35)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The commissioning session
-is Mac-mini/s-e7976c42 (Claude Opus 5.5), the driver; it filed the item. A fresh Opus sub-agent (the test partner)
+is `<mini>/s-e7976c42` (Claude Opus 5.5), the driver; it filed the item. A fresh Opus sub-agent (the test partner)
 wrote the tests at 266f9ca; a second fresh Opus sub-agent (the implementer) wrote the fix at 5646fb5. The driver wants
 this approved.
 
@@ -24,7 +24,7 @@ Remove it when done (`git worktree remove --force /tmp/rv-CHORE-026`), after you
    time; restore it after.
 4. The README's sentences around the block are accurate; `tests/test_haz004_mini_paths.py` still holds.
 5. Secrets: nothing in the diff or PR body carries a key, a token or an email.
-6. Run the gate yourself in your worktree: `CARGO=/Users/hankh19/.cargo/bin/cargo
+6. Run the gate yourself in your worktree: `CARGO=/Users/<user>/.cargo/bin/cargo
    CARGO_TARGET_DIR=/tmp/rv-CHORE-026-target make check` (remove that target dir when done). Record its rc.
 
 **Rules for you:** run EVERY command in the FOREGROUND (no `run_in_background`, no `&`, no `nohup`): this session
@@ -40,7 +40,7 @@ brief: reviews/CHORE-026-r1.brief.md @ <SHA>
 ```
 then a paragraph headed `Authorship:` (all work and this review by LLM agent sessions, model named; no human reviewed
 it; "distinct" = a separate `claude -p` process with a fresh context that wrote none of the work, same model family,
-briefed by the driver with this committed brief; commissioning session Mac-mini/s-e7976c42 and its stake: it filed
+briefed by the driver with this committed brief; commissioning session `<mini>/s-e7976c42` and its stake: it filed
 the item, commissioned the tests and the fix, and gains from `approve`). Then numbered findings `F1…` each with
 severity (blocker / should-fix / nit), the command, its output, and the fix you propose. `verdict: changes` only for
 blocker or should-fix findings. Commit it on a branch-tip checkout (`git -C /tmp/rv-CHORE-026 switch -c rv-tmp && git

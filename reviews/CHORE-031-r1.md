@@ -1,14 +1,14 @@
 reviewed-at-sha: e8dc29b0e4916fd928980ae363b4ef91b40bfceb
 verdict: approve
-gate: make check rc=0 at e8dc29b0e4916fd928980ae363b4ef91b40bfceb on Mac-mini
+gate: make check rc=0 at e8dc29b0e4916fd928980ae363b4ef91b40bfceb on `<mini>`
 brief: reviews/CHORE-031-r1.brief.md @ e8dc29b0e4916fd928980ae363b4ef91b40bfceb
 
 Authorship: all the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model
 family, briefed by the driver (the author) with this committed brief. The commissioning session is
-Mac-mini/s-e7976c42. Its stake: it ran the redeploy and wrote the finding.
+`<mini>/s-e7976c42`. Its stake: it ran the redeploy and wrote the finding.
 
-Host: Mac-mini (user hankh19, gui/501), run on Mini itself. Reads taken 2026-10-11T17:56:06Z – 17:58:43Z.
+Host: `<mini>` (user `<user>`, gui/501), run on Mini itself. Reads taken 2026-10-11T17:56:06Z – 17:58:43Z.
 Reviewed: `docs/findings/CHORE-031-mini-v1.0.1.md` against CHORE-031's Definition of Done, in scratch worktree
 `/tmp/rv-CHORE-031` (detached at the SHA above). No probe was run, no launchd job was bootstrapped, no bus key was
 written, doppler was not run, and `forced.err.log` was not read.
@@ -35,15 +35,15 @@ how the record is kept, not about the result.
 | `select --role review --exclude-family anthropic` rc 0 or rc 3 with the reason | rc 0, `deepseek deepseek-v4-flash` (F5) | yes |
 | the rollback | recorded, and checked in F10 | yes |
 | no secret anywhere | F9 | yes |
-| only bus writes are quotabus's own rows | The rows I read carry `observed_by Mac-mini/quotabus@1.0.1`. A reviewer cannot prove an absence of other writes from reads; nothing in the artefacts suggests any other write | yes, as far as reads can show |
+| only bus writes are quotabus's own rows | The rows I read carry `observed_by <mini>/quotabus@1.0.1`. A reviewer cannot prove an absence of other writes from reads; nothing in the artefacts suggests any other write | yes, as far as reads can show |
 
 ### F2. Tag and release reproduce (not blocking)
 
 ```
-$ git -C /Users/hankh19/Projects/quotabus rev-parse v1.0.1 'v1.0.1^{commit}'
+$ git -C /Users/<user>/Projects/quotabus rev-parse v1.0.1 'v1.0.1^{commit}'
 bb9a529771fbab40cd8f8814d17789e861e4fd18
 cdc656f994ae8cdb6985856b792184d0c4c45b74
-$ git -C /Users/hankh19/Projects/quotabus ls-remote origin refs/tags/v1.0.1
+$ git -C /Users/<user>/Projects/quotabus ls-remote origin refs/tags/v1.0.1
 bb9a529771fbab40cd8f8814d17789e861e4fd18	refs/tags/v1.0.1
 $ gh pr view 40 --json mergeCommit
 {"mergeCommit":{"oid":"cdc656f994ae8cdb6985856b792184d0c4c45b74"}}
@@ -70,14 +70,14 @@ $ ~/.local/bin/quotabus --version
 quotabus 1.0.1
 $ ~/.local/bin/quotabus.prev-v1.0.0 --version
 quotabus 1.0.0
-$ git -C /Users/hankh19/Projects/quotabus archive v1.0.1 | tar -x -C /tmp/rv-CHORE-031-build/src
+$ git -C /Users/<user>/Projects/quotabus archive v1.0.1 | tar -x -C /tmp/rv-CHORE-031-build/src
 $ cd /tmp/rv-CHORE-031-build/src && CARGO_TARGET_DIR=/tmp/rv-CHORE-031-build/target ~/.cargo/bin/cargo build --release --locked -q
 build rc=0
 $ /tmp/rv-CHORE-031-build/target/release/quotabus --version
 quotabus 1.0.1
 $ shasum -a 256 /tmp/rv-CHORE-031-build/target/release/quotabus ~/.local/bin/quotabus
 035bb9899f5937d2b5a14c71c4a8505e1fe75bd4d7c9e215ea664663af0b5905  /tmp/rv-CHORE-031-build/target/release/quotabus
-035bb9899f5937d2b5a14c71c4a8505e1fe75bd4d7c9e215ea664663af0b5905  /Users/hankh19/.local/bin/quotabus
+035bb9899f5937d2b5a14c71c4a8505e1fe75bd4d7c9e215ea664663af0b5905  /Users/<user>/.local/bin/quotabus
 ```
 
 The hashes match (12190240 bytes each). A mismatch would have been plausible for a build in a different directory,
@@ -86,13 +86,13 @@ dir was removed afterwards.
 
 ```
 $ ls -la ~/.local/bin/quotabus*
--rwxr-xr-x@ 1 hankh19  staff  12190240 Oct 11 17:48 /Users/hankh19/.local/bin/quotabus
--rwxr-xr-x@ 1 hankh19  staff       816 Oct 10 15:26 /Users/hankh19/.local/bin/quotabus-cycle
--rwxr-xr-x@ 1 hankh19  staff       444 Oct  9 03:12 /Users/hankh19/.local/bin/quotabus-cycle.prev-20261010
--rwxr-xr-x@ 1 hankh19  staff  12184272 Oct  9 03:12 /Users/hankh19/.local/bin/quotabus.prev-20261009
--rwxr-xr-x@ 1 hankh19  staff  12202960 Oct  9 18:14 /Users/hankh19/.local/bin/quotabus.prev-20261010
--rwxr-xr-x@ 1 hankh19  staff  12193104 Oct 10 20:28 /Users/hankh19/.local/bin/quotabus.prev-20261011
--rwxr-xr-x@ 1 hankh19  staff  12193376 Oct 11 14:52 /Users/hankh19/.local/bin/quotabus.prev-v1.0.0
+-rwxr-xr-x@ 1 <user>  staff  12190240 Oct 11 17:48 /Users/<user>/.local/bin/quotabus
+-rwxr-xr-x@ 1 <user>  staff       816 Oct 10 15:26 /Users/<user>/.local/bin/quotabus-cycle
+-rwxr-xr-x@ 1 <user>  staff       444 Oct  9 03:12 /Users/<user>/.local/bin/quotabus-cycle.prev-20261010
+-rwxr-xr-x@ 1 <user>  staff  12184272 Oct  9 03:12 /Users/<user>/.local/bin/quotabus.prev-20261009
+-rwxr-xr-x@ 1 <user>  staff  12202960 Oct  9 18:14 /Users/<user>/.local/bin/quotabus.prev-20261010
+-rwxr-xr-x@ 1 <user>  staff  12193104 Oct 10 20:28 /Users/<user>/.local/bin/quotabus.prev-20261011
+-rwxr-xr-x@ 1 <user>  staff  12193376 Oct 11 14:52 /Users/<user>/.local/bin/quotabus.prev-v1.0.0
 ```
 
 The binary mtime (17:48) matches step 3's install time (17:48:35Z). `prev-v1.0.0` keeps the v1.0.0 mtime because of
@@ -126,10 +126,10 @@ afterwards" holds.
 ### F5. Bus rows, status and select reproduce; no row changed state (not blocking)
 
 ```
-$ nats --server nats://192.168.8.110:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
-{"key":"api.deepseek.nusy-product-team.deepseek-v4-flash","state":"ok","observed_by":"Mac-mini/quotabus@1.0.1","checked_at":"2026-10-11T17:48:36.351136Z","ttl_s":129600}
-$ nats --server nats://192.168.8.110:4222 kv get ai_status local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
-{"key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","observed_by":"Mac-mini/quotabus@1.0.1","checked_at":"2026-10-11T17:48:36.351136Z","ttl_s":129600}
+$ nats --server nats://<bus-host>:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
+{"key":"api.deepseek.nusy-product-team.deepseek-v4-flash","state":"ok","observed_by":"<mini>/quotabus@1.0.1","checked_at":"2026-10-11T17:48:36.351136Z","ttl_s":129600}
+$ nats --server nats://<bus-host>:4222 kv get ai_status local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
+{"key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","observed_by":"<mini>/quotabus@1.0.1","checked_at":"2026-10-11T17:48:36.351136Z","ttl_s":129600}
 ```
 
 Both carry `checked_at` from the forced cycle (17:48:36Z, same as step 5), which is consistent with "nothing due" on
@@ -162,13 +162,13 @@ ai_status` and the alert line, as step 4 quotes.
 
 ```
 now=2026-10-11T17:56:13Z
-$ nats ... kv get ai_status subscription.anthropic.hankh1844.claude-hankh1844 --raw | jq -c --arg now "$NOW" '{checked_at, five_hour: (.headroom.windows[]|select(.window=="five_hour")|{reset_at,reset_in_s, from_now_min: (((.reset_at|fromdateiso8601) - ($now|fromdateiso8601))/60|floor), stored_min: (.reset_in_s/60|floor)})}'
+$ nats ... kv get ai_status subscription.anthropic.<acct-1>.claude-<acct-1> --raw | jq -c --arg now "$NOW" '{checked_at, five_hour: (.headroom.windows[]|select(.window=="five_hour")|{reset_at,reset_in_s, from_now_min: (((.reset_at|fromdateiso8601) - ($now|fromdateiso8601))/60|floor), stored_min: (.reset_in_s/60|floor)})}'
 {"checked_at":"2026-10-11T17:48:36.351136Z","five_hour":{"reset_at":"2026-10-11T19:40:00Z","reset_in_s":6683,"from_now_min":103,"stored_min":111}}
-$ (the same, for subscription.anthropic.hankh1995.claude-hankh1995)
+$ (the same, for subscription.anthropic.<acct-3>.claude-<acct-3>)
 {"checked_at":"2026-10-11T17:48:36.351136Z","five_hour":{"reset_at":"2026-10-11T19:20:00Z","reset_in_s":5483,"from_now_min":83,"stored_min":91}}
-$ ~/.local/bin/quotabus status --config ~/.config/quotabus/quotabus.toml | grep -E "claude-hankh1844|claude-hankh1995"
-claude-hankh1844         claude-hankh1844                         ok               7m   undocumented  five_hour 1% (resets in 103m) seven_day 1% (resets in 5d)
-claude-hankh1995         claude-hankh1995                         ok               7m   undocumented  five_hour 18% (resets in 83m) seven_day 66% (resets in 2d)
+$ ~/.local/bin/quotabus status --config ~/.config/quotabus/quotabus.toml | grep -E "claude-<acct-1>|claude-<acct-3>"
+claude-<acct-1>         claude-<acct-1>                         ok               7m   undocumented  five_hour 1% (resets in 103m) seven_day 1% (resets in 5d)
+claude-<acct-3>         claude-<acct-3>                         ok               7m   undocumented  five_hour 18% (resets in 83m) seven_day 66% (resets in 2d)
 ```
 
 `status` prints 103m and 83m, the from-now values. The stored values stay at 111m and 91m. This is a stronger
@@ -200,7 +200,7 @@ Next time, record the artefact with `tee` from the command that actually ran.
 
 ```
 $ ~/.local/bin/quotabus.prev-v1.0.1 --version
-zsh: no such file or directory: /Users/hankh19/.local/bin/quotabus.prev-v1.0.1
+zsh: no such file or directory: /Users/<user>/.local/bin/quotabus.prev-v1.0.1
 rc=127
 ```
 
@@ -224,8 +224,8 @@ three is the GitHub noreply commit identity in the brief (`…@users.noreply.git
 email. The account names in the subscription keys and rows are all already published in
 `docs/findings/CHORE-016-mini-deploy.md`:
 ```
-$ for a in hankh1844 hankh19 hankh1995 hankh95 hankxu95 hanssantiago1995; do grep -c "subscription.anthropic.$a\|claude-$a\|subscription.github.$a" docs/findings/CHORE-016-mini-deploy.md; done
-hankh1844 5 | hankh19 8 | hankh1995 4 | hankh95 7 | hankxu95 4 | hanssantiago1995 4
+$ for a in <acct-1> <acct-2> <acct-3> hankh95 <acct-4> <acct-5>; do grep -c "subscription.anthropic.$a\|claude-$a\|subscription.github.$a" docs/findings/CHORE-016-mini-deploy.md; done
+<acct-1> 5 | <acct-2> 8 | <acct-3> 4 | hankh95 7 | <acct-4> 4 | <acct-5> 4
 ```
 The DETAIL balances (CNY/USD) are account figures, not credentials, and CHORE-029 published them too.
 
@@ -245,11 +245,11 @@ Since the config is the same, that is the whole of v1.0.0's deployment. One nit:
 ### F11. Gate (not blocking)
 
 ```
-$ cd /tmp/rv-CHORE-031 && CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-031-target make check
+$ cd /tmp/rv-CHORE-031 && CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-031-target make check
 make check rc=0
 ...
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 This covered the script tests, `yurtle-kanban validate`, `cargo clippy --all-targets --locked -- -D warnings` and
-the Rust tests, at e8dc29b on Mac-mini. The target dir was removed afterwards.
+the Rust tests, at e8dc29b on `<mini>`. The target dir was removed afterwards.

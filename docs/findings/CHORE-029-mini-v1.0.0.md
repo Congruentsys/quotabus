@@ -7,22 +7,22 @@ under its regular launchd tick, and do its rows now read `observed_by …/quotab
 - `quotabus --version` on Mini prints `quotabus 1.0.0`.
 - Regular tick #716 (14:56 UTC) exited 0 and printed `alert: 15 keys checked, 2 local skipped, 0 crossings filed,
   0 re-armed`.
-- Fresh rows on the bus carry `"observed_by":"Mac-mini/quotabus@1.0.0"`.
+- Fresh rows on the bus carry `"observed_by":"<mini>/quotabus@1.0.0"`.
 - Every row's state is unchanged from CHORE-027. As the item says, this is a relabel, not a behaviour change.
 
 Authorship: the redeploy and this finding were done by an LLM agent session (Claude Opus 5.5),
-Mac-mini/s-e7976c42, running on Mini itself (no ssh), with no sub-agent. No human reviewed it.
+`<mini>/s-e7976c42`, running on Mini itself (no ssh), with no sub-agent. No human reviewed it.
 - **The request:** the Captain asked for the chore on 2026-10-11 ("yes, file the chore for Mini to redeploy
-  v1.0.0"). Session M5-MBP-2/s-72a67d16 filed it, and this session claimed it.
+  v1.0.0"). Session `<m5>/s-72a67d16` filed it, and this session claimed it.
 - **The review:** "distinct" means a separate `claude -p` process with a fresh context, which did none of this work.
   It is the same model family, briefed by this session with the committed brief.
 
-- **Host:** Mac-mini (user `hankh19`, launchd domain `gui/501`), arm64, macOS 27.0.1 (`sw_vers -productVersion`).
+- **Host:** `<mini>` (user `<user>`, launchd domain `gui/501`), arm64, macOS 27.0.1 (`sw_vers -productVersion`).
 - **Date:** 2026-10-11.
 - **quotabus:** the tag `v1.0.0` is annotated tag object `b1535264e81ec34c685d2075979e1b3185a6f90c`, which points to
   commit `ab14fe17e5cb09be1ee54632f50673aecac43ab5` (PR #37's merge). At the time of writing, this repo's `origin/main`
   was `001747a` (board commits only since the tag).
-- **Bus:** `nats://192.168.8.110:4222`, bucket `ai_status`. The only writes were the probe's own rows. Nothing was
+- **Bus:** `nats://<bus-host>:4222`, bucket `ai_status`. The only writes were the probe's own rows. Nothing was
   purged or deleted.
 - **Raw artefacts:** on Mini, in `~/.local/state/quotabus-work/CHORE-029/` (`01-tag.txt` … `07-status-select.txt`,
   plus the one-shot plist and its logs).
@@ -84,12 +84,12 @@ api.together.nusy-product-team.meta-llama-Llama-3-3-70B-Instruct-Turbo auth_fail
 api.xai.nusy-product-team.grok-4 auth_failed
 local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 ok
 local.qwen.dgx2.dgx2-qwen unknown (cannot_assess:timeout)
-subscription.anthropic.hankh1844.claude-hankh1844 ok
-subscription.anthropic.hankh19.claude-hankh19 ok
-subscription.anthropic.hankh1995.claude-hankh1995 ok
+subscription.anthropic.<acct-1>.claude-<acct-1> ok
+subscription.anthropic.<acct-2>.claude-<acct-2> ok
+subscription.anthropic.<acct-3>.claude-<acct-3> ok
 subscription.anthropic.hankh95.claude-hankh95 ok
-subscription.anthropic.hankxu95.claude-hankxu95 ok
-subscription.anthropic.hanssantiago1995.claude-hanssantiago1995 ok
+subscription.anthropic.<acct-4>.claude-<acct-4> ok
+subscription.anthropic.<acct-5>.claude-<acct-5> ok
 subscription.github.hankh95.copilot ok
 published 19 rows to bucket ai_status
 alert: 15 keys checked, 2 local skipped, 0 crossings filed, 0 re-armed
@@ -101,10 +101,10 @@ binary swap again (HAZ-005 case 2). A grep of both logs for `bearer|sk-|api[_-]?
 **5. `observed_by` on the bus** (natscli, read-only).
 
 ```
-$ nats --server nats://192.168.8.110:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
-{"key":"api.deepseek.nusy-product-team.deepseek-v4-flash","state":"ok","observed_by":"Mac-mini/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
-$ nats --server nats://192.168.8.110:4222 kv get ai_status local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
-{"key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","observed_by":"Mac-mini/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
+$ nats --server nats://<bus-host>:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
+{"key":"api.deepseek.nusy-product-team.deepseek-v4-flash","state":"ok","observed_by":"<mini>/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
+$ nats --server nats://<bus-host>:4222 kv get ai_status local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
+{"key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","observed_by":"<mini>/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
 ```
 
 **6. The next REGULAR tick.** It was waited for by polling `~/Library/Logs/quotabus/probe.out.log` until a new
@@ -127,7 +127,7 @@ binary end to end (probe, then alert) and exited 0.
 **7. Status and select on Mini.**
 
 ```
-$ quotabus status --config /Users/hankh19/.config/quotabus/quotabus.toml
+$ quotabus status --config /Users/<user>/.config/quotabus/quotabus.toml
 SERVICE                  MODEL                                    STATE            AGE  SOURCE        DETAIL
 glm                      glm-5.3                                  ok               4m   official
 glm                      glm-5.2                                  ok               4m   official
@@ -139,15 +139,15 @@ together                 meta-llama/Llama-3.3-70B-Instruct-Turbo  auth_failed   
 xai                      grok-4                                   auth_failed      4m   official
 dgx1-qwen                nvidia/Qwen3-32B-NVFP4                   ok               4m   official
 dgx2-qwen                dgx2-qwen                                CANNOT-ASSESS    4m   official      cannot_assess:timeout
-claude-hankh1844         claude-hankh1844                         ok               4m   undocumented  five_hour 0% (resets in 4h) seven_day 1% (resets in 5d)
-claude-hankh19           claude-hankh19                           ok               4m   undocumented  five_hour 0% (resets in 4h) seven_day 0% (resets in 2d)
-claude-hankh1995         claude-hankh1995                         ok               4m   undocumented  five_hour 2% (resets in 4h) seven_day 63% (resets in 2d)
+claude-<acct-1>         claude-<acct-1>                         ok               4m   undocumented  five_hour 0% (resets in 4h) seven_day 1% (resets in 5d)
+claude-<acct-2>           claude-<acct-2>                           ok               4m   undocumented  five_hour 0% (resets in 4h) seven_day 0% (resets in 2d)
+claude-<acct-3>         claude-<acct-3>                         ok               4m   undocumented  five_hour 2% (resets in 4h) seven_day 63% (resets in 2d)
 claude-hankh95           claude-hankh95                           ok               4m   undocumented  five_hour 2% (resets in 87m) seven_day 37% (resets in 3d)
-claude-hankxu95          claude-hankxu95                          ok               4m   undocumented  five_hour 0% (resets in 4h) seven_day 9% (resets in 4d)
-claude-hanssantiago1995  claude-hanssantiago1995                  ok               4m   undocumented  five_hour 1% (resets in 4h) seven_day 25% (resets in 2d)
+claude-<acct-4>          claude-<acct-4>                          ok               4m   undocumented  five_hour 0% (resets in 4h) seven_day 9% (resets in 4d)
+claude-<acct-5>  claude-<acct-5>                  ok               4m   undocumented  five_hour 1% (resets in 4h) seven_day 25% (resets in 2d)
 copilot                  copilot                                  ok               4m   undocumented  monthly 0% (resets in 20d)
 rc=0
-$ quotabus select --role review --exclude-family anthropic --config /Users/hankh19/.config/quotabus/quotabus.toml
+$ quotabus select --role review --exclude-family anthropic --config /Users/<user>/.config/quotabus/quotabus.toml
 deepseek deepseek-v4-flash
 rc=0
 ```

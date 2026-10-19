@@ -1,15 +1,15 @@
 reviewed-at-sha: 1f740d354f5915ec2c9f15cd716dc7a48da86275
 verdict: changes
-gate: make check rc=0 at 1f740d354f5915ec2c9f15cd716dc7a48da86275 on M5-MBP-2
+gate: make check rc=0 at 1f740d354f5915ec2c9f15cd716dc7a48da86275 on `<m5>`
 brief: reviews/CHORE-007-r1.brief.md @ 1f740d354f5915ec2c9f15cd716dc7a48da86275
 
 **Authorship:** All the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed
 it. "Distinct" means this review ran in a separate `claude -p` process with a fresh context that wrote none of the work.
 It is the same model family as the author, and the author briefed it with the committed brief above. The commissioning
-session is M5-MBP-2/s-72a67d16. Its stake: it drove the test partner and the implementer, filed the item, and gains from
+session is `<m5>/s-72a67d16`. Its stake: it drove the test partner and the implementer, filed the item, and gains from
 `approve`.
 
-Host M5-MBP-2, 2026-10-08. Scratch worktree `/tmp/rv-CHORE-007` at the reviewed sha; `CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-007`.
+Host `<m5>`, 2026-10-08. Scratch worktree `/tmp/rv-CHORE-007` at the reviewed sha; `CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-007`.
 The merge-base with `origin/main` is `aa97f73`. `origin/main` has since gained HAZ-001 (`4b08682`) and CHORE-005 (`07c1fa7`).
 
 ## Checks from the brief

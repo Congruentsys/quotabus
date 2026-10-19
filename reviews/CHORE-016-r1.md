@@ -1,6 +1,6 @@
 reviewed-at-sha: 71e367611e1e96d148e824a9e654527c2579c3cf
 verdict: approve
-gate: make check rc=0 at 71e367611e1e96d148e824a9e654527c2579c3cf on M5-MBP-2
+gate: make check rc=0 at 71e367611e1e96d148e824a9e654527c2579c3cf on `<m5>`
 brief: reviews/CHORE-016-r1.brief.md @ 71e367611e1e96d148e824a9e654527c2579c3cf
 
 Authorship: All of the work under review was done by LLM agent sessions (Claude Opus 5.5): the deployment, the
@@ -8,26 +8,26 @@ measurements and the finding. This review was done by an LLM agent session too, 
 Captain authorised the deployment ("go ahead, ssh from here") and was GUI-logged-in on Mini. This reviewer is
 "distinct" in a narrow sense. It is a separate `claude -p` process with a fresh context, of the SAME model family
 (Claude Opus 5.5), and it wrote none of the work. The driver briefed it with the committed brief
-`reviews/CHORE-016-r1.brief.md`. The commissioning session is `M5-MBP-2/s-72a67d16`: it did the deployment, ran the
+`reviews/CHORE-016-r1.brief.md`. The commissioning session is `<m5>/s-72a67d16`: it did the deployment, ran the
 measurements and wrote the finding. This reviewer ran only read-only commands on Mini, from M5 over `ssh mini`, on
 2026-10-09 between 03:20 and 03:23 UTC. It made no board writes and no GitHub writes.
 
 ## Checks
 
-**Gate.** `PATH=/Users/hankh95/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-016 make check` → rc=0. The
+**Gate.** `PATH=/Users/<user>/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-016 make check` → rc=0. The
 last suite printed `test result: ok. 6 passed; 0 failed`.
 
 **DoD 1–3 (install).** The DoD's paths are `/usr/local/...` and its user is `admin`. The item's 02:59 comment says to
-read them as HAZ-004's corrected paths: `~/.local/bin` and `~/.config/quotabus` under `/Users/hankh19`. The checks
+read them as HAZ-004's corrected paths: `~/.local/bin` and `~/.config/quotabus` under `/Users/<user>`. The checks
 below use those paths.
-- I rendered the README's fleet command locally with `--quotabus /Users/hankh19/.local/bin/quotabus-cycle
+- I rendered the README's fleet command locally with `--quotabus /Users/<user>/.local/bin/quotabus-cycle
   --render-to /tmp/rv016-render`, then compared it with Mini's installed plist:
   `diff <(plutil -convert xml1 -o - /tmp/rv016-render/*.plist) <(plutil -convert xml1 -o - /tmp/rv016-installed.plist)`
   → no difference (`PLIST-SAME-AS-RENDER`).
 - I compared the README's wrapper block with `ssh mini 'cat ~/.local/bin/quotabus-cycle'` → identical
   (`WRAPPER-SAME`).
 - `plutil -extract ProgramArguments json` → `[".../doppler","run","--project","nusy-product-team","--config","dev",
-  "--","/Users/hankh19/.local/bin/quotabus-cycle","probe","--config","/Users/hankh19/.config/quotabus/quotabus.toml"]`.
+  "--","/Users/<user>/.local/bin/quotabus-cycle","probe","--config","/Users/<user>/.config/quotabus/quotabus.toml"]`.
   `StartInterval` → `300`.
 - `grep -c "^\[\[service\]\]" ~/.config/quotabus/quotabus.toml` → `14`, which matches the finding's 14 tables.
   `examples/quotabus.toml` has 7 API/local services (zhipu, deepseek, moonshot, openai, meta, xai, qwen), which

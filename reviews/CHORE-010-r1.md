@@ -1,12 +1,12 @@
 reviewed-at-sha: 0988c88ebe1013d01286862868d78870b761dc31
 verdict: approve
-gate: make check rc=0 at 0988c88ebe1013d01286862868d78870b761dc31 on M5-MBP-2
+gate: make check rc=0 at 0988c88ebe1013d01286862868d78870b761dc31 on `<m5>`
 brief: reviews/CHORE-010-r1.brief.md @ 0988c88ebe1013d01286862868d78870b761dc31
 
 Authorship: all the work and this review were done by LLM agent sessions (Claude Opus 5.5); no human reviewed it.
 "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model
 family, briefed by the driver (the author) with the committed brief above. The commissioning session is
-M5-MBP-2/s-72a67d16, which drove the item, briefed the test partner and the implementer and merged origin/main (it
+`<m5>/s-72a67d16`, which drove the item, briefed the test partner and the implementer and merged origin/main (it
 wrote no tests or code). Reviewed 2026-10-09 in a detached scratch worktree `/tmp/rv-CHORE-010`,
 `CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-010`.
 

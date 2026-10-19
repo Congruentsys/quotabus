@@ -1,15 +1,15 @@
 reviewed-at-sha: 11ca437fbae51709365403011c889556113d91f4
 verdict: changes
-gate: make check rc=0 at 11ca437fbae51709365403011c889556113d91f4 on M5-MBP-2
+gate: make check rc=0 at 11ca437fbae51709365403011c889556113d91f4 on `<m5>`
 brief: reviews/CHORE-002-r1.brief.md @ 11ca437fbae51709365403011c889556113d91f4
 
 Authorship: all of the work under review and this review were done by LLM agent sessions (Claude Opus 5.5). No human
 reviewed either. This reviewer is "distinct" only in this sense: a separate `claude -p` process with a fresh context
 that wrote none of the work. It is the same model family, and the author briefed it with the committed brief
-`reviews/CHORE-002-r1.brief.md`. The commissioning session is `M5-MBP-2/s-72a67d16`. Its stake: it ran every
+`reviews/CHORE-002-r1.brief.md`. The commissioning session is `<m5>/s-72a67d16`. Its stake: it ran every
 measurement, wrote both findings files and gains from `approve`.
 
-## Re-run results (host M5-MBP-2, 2026-10-08, ~18:25–18:27 UTC, Claude Code 2.1.294)
+## Re-run results (host `<m5>`, 2026-10-08, ~18:25–18:27 UTC, Claude Code 2.1.294)
 
 Artefacts: `~/.local/state/quotabus-work/CHORE-002/rv1/`. The copies of `hook.sh`, `settings.json`,
 `interactive.py` and `zai_probe.py` differ from the author's only in the path (`diff` shows one changed line in
@@ -25,7 +25,7 @@ whitespace.
 A rc=0
 B rc=0
 2026-10-08T18:25:48Z
-ls: /Users/hankh95/.local/state/quotabus-work/CHORE-002/rv1/statusline-calls.tsv: No such file or directory
+ls: /Users/<user>/.local/state/quotabus-work/CHORE-002/rv1/statusline-calls.tsv: No such file or directory
 ok
 system init / assistant None / rate_limit_event None / result success
 {"status": "allowed", "resetsAt": 1791495000, "rateLimitType": "five_hour", "overageStatus": "rejected", "overageDisabledReason": "org_level_disabled", "isUsingOverage": false, "unifiedWindows": {"five_hour": {"utilization": 0.19, "resetsAt": 1791495000}, "seven_day": {"utilization": 0.09, "resetsAt": 1792051200}}}
@@ -132,7 +132,7 @@ says "≈ 5 h after the window opened", but nothing measured when the window ope
 - Finding (1) shows the two-line `1 … interactive` block without the command that produced it (it is
   `cut -f1,2 statusline-calls.tsv | uniq -c`). That goes against repo rule 1.
 - It shows `settings.json` with `$HOME/…`, but the artefact holds the absolute path
-  (`/Users/hankh95/.local/…`; the `diff` output above shows it). This is fine as redaction of the username, but
+  (`/Users/<user>/.local/…`; the `diff` output above shows it). This is fine as redaction of the username, but
   say so.
 - "The control would have failed (no file) had `--settings` not installed the hook" is a counterfactual that was
   never run. Either run it or cut it.

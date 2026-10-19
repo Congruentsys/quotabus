@@ -1,7 +1,7 @@
 # Flowback packet: CHORE-001 → nusy-product-team `docs/external-review.md` §1a
 
 **From** quotabus CHORE-001 (VOY-001, DESIGN §9 row C1, `docs/DESIGN.md:431`). **To** nusy-product-team, tracked
-there by nusy-product-team IDEA-13333. **Written** 2026-10-08 by M5-MBP-2/s-72a67d16, in the quotabus repo only.
+there by nusy-product-team IDEA-13333. **Written** 2026-10-08 by `<m5>/s-72a67d16`, in the quotabus repo only.
 No quotabus session edits nusy-product-team: this packet is the whole of the ask, and a session of that repo lands
 it under that repo's own rules (its `CLAUDE.md`, `nk`, its review). DESIGN §9 calls the change "doc-only, straight
 to main" (`docs/DESIGN.md:431`). That is how quotabus describes the change. It does not override nusy-product-team's
@@ -33,7 +33,7 @@ subcommands, their flags and exit codes, as cited below).
 
 The hand-probed table that stood here (M5, 2026-09-24) is retired; it is kept in git at `f03397e352` (lines 35–50).
 Live availability is now published by **quotabus** (https://github.com/Congruentsys/quotabus, tracked by IDEA-13333) to the
-NATS KV bucket **`ai_status` on Mini's bus** (`nats://192.168.8.110:4222`). The bucket holds one row per
+NATS KV bucket **`ai_status` on Mini's bus** (`nats://<bus-host>:4222`). The bucket holds one row per
 (service, model) for API keys and one per subscription account (each Claude account, the Copilot seat). Every row
 carries its age and expires on its own: an absent or expired row reads **UNKNOWN**, and a bus that cannot be read
 reads **CANNOT-ASSESS**. A stale "ok" is never shown as current.
@@ -100,7 +100,7 @@ Every command, flag and exit code above exists on quotabus `8213424`:
   --project nusy-product-team --config dev -- quotabus --config <fleet-subscription.toml> probe --force' gave
   'published 7 rows to bucket ai_status' (Mini). All 7 ok: six subscription.anthropic.* rows and
   subscription.github.hankh95.copilot, observed_by M5."
-- **EXP-003, rc 3 when nothing is healthy.** From `reviews/EXP-003-r1.md:69-94` (C6, M5-MBP-2, 2026-10-08T20:50:25Z,
+- **EXP-003, rc 3 when nothing is healthy.** From `reviews/EXP-003-r1.md:69-94` (C6, `<m5>`, 2026-10-08T20:50:25Z,
   read-only against Mini's `ai_status`):
   ```
   $ quotabus --config /tmp/rv-EXP-003-cfg/quotabus.toml select --role review --exclude-family anthropic --json ; echo rc=$?
@@ -111,9 +111,9 @@ Every command, flag and exit code above exists on quotabus `8213424`:
   Every API model read `UNKNOWN … absent` in `status --kind api` (rc 0, lines 77–87). The review's conclusion
   (lines 92–93): "rc 3 with `[]` on stdout is the honest answer: there was no false pick and no fall-through to a
   hand-picked model."
-- **Re-read for this packet** (M5-MBP-2, 2026-10-08T21:42:17Z, read-only; account labels masked here):
+- **Re-read for this packet** (`<m5>`, 2026-10-08T21:42:17Z, read-only; account labels masked here):
   ```
-  $ nats --timeout 5s --server nats://192.168.8.110:4222 kv ls ai_status
+  $ nats --timeout 5s --server nats://<bus-host>:4222 kv ls ai_status
   subscription.anthropic.<acct>.claude-<acct>      (6 keys)
   subscription.github.hankh95.copilot
   ```

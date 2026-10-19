@@ -27,7 +27,7 @@ The design pulls both ways: §1 treats Copilot as a reviewer source, while §2 g
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 21:57)
+### `<m5>/s-72a67d16` (2026-10-08 21:57)
 
 [steer] bucket-2: option 1. A subscription seat is NEVER a select candidate (what EXP-003 ships, PR #14).
 Basis:
@@ -44,12 +44,12 @@ Closed with move --force, because the board refuses harbor→arrived (see the st
 <> kb:statusChange [
     kb:status kb:done ;
     kb:at "2026-10-08T21:57:57+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:forcedMove "true"^^xsd:boolean ;
     kb:resolution "completed" ;
   ] .
 ```
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 21:58)
+### `<m5>/s-72a67d16` (2026-10-08 21:58)
 
 [steer] reflected: CHORE-012 is filed to change DESIGN §3 and the wiring note from 'interim' to decided.

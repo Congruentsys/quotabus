@@ -21,7 +21,7 @@ A `secret` is the NAME of an environment variable; the value is injected by the 
 
 | @id  | url                       | bucket    |
 |------|---------------------------|-----------|
-| #bus | nats://192.168.8.110:4222 | ai_status |
+| #bus | nats://<bus-host>:4222 | ai_status |
 ```
 
 Each query kind on its own schedule (SIG-004); an empty `ttl` is 3 × that kind's interval.
@@ -62,8 +62,8 @@ subscription sources are off (SIG-003).
 | #openai         | api          | openai    | openai    | nusy-product-team | https://api.openai.com/v1          | openai    | gpt-5.6-sol                             | review       | metered    | OPENAI_API_KEY            |             |                                             |                                |          |       |
 | #together       | api          | together  | meta      | nusy-product-team | https://api.together.xyz/v1        | openai    | meta-llama/Llama-3.3-70B-Instruct-Turbo | review       | metered    | TOGETHER_API_KEY          |             |                                             |                                |          |       |
 | #xai            | api          | xai       | xai       | nusy-product-team | https://api.x.ai/v1                | openai    | grok-4                                  |              | metered    | XAI_API_KEY               |             |                                             |                                |          |       |
-| #dgx1-qwen      | local        | qwen      | qwen      | dgx1              | http://192.168.8.120:8000/v1       | openai    |                                         | work         | local      |                           |             |                                             |                                |          |       |
-| #dgx2-qwen      | local        | qwen      | qwen      | dgx2              | http://192.168.8.121:8000/v1       | openai    |                                         | work         | local      |                           |             |                                             |                                |          |       |
+| #dgx1-qwen      | local        | qwen      | qwen      | dgx1              | http://<dgx1>:8000/v1       | openai    |                                         | work         | local      |                           |             |                                             |                                |          |       |
+| #dgx2-qwen      | local        | qwen      | qwen      | dgx2              | http://<dgx2>:8000/v1       | openai    |                                         | work         | local      |                           |             |                                             |                                |          |       |
 | #claude-hankh95 | subscription | anthropic | anthropic | hankh95           | https://api.anthropic.com          |           | claude-haiku-4-5                        |              |            | NUSY_CLAUDE_TOKEN_HANKH95 | stream_json |                                             |                                |          |       |
 | #copilot        | subscription | github    | openai    | hankh95           | https://api.github.com             |           |                                         |              |            | GITHUB_TOKEN              |             |                                             |                                |          |       |
 ```

@@ -1,7 +1,7 @@
 # Review brief — CHORE-011 r1 (quotabus PR #16)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The commissioning session
-is Mac-mini/s-e7976c42 (Claude Opus 5.5), the driver. A fresh Opus sub-agent (the test partner) wrote the tests at
+is `<mini>/s-e7976c42` (Claude Opus 5.5), the driver. A fresh Opus sub-agent (the test partner) wrote the tests at
 98335d9 and a formatting-only change to them at 27450cd; a second fresh Opus sub-agent (the implementer) wrote the
 code at dd0413a. The driver wants this approved.
 
@@ -26,7 +26,7 @@ Remove it when done (`git worktree remove --force /tmp/rv-CHORE-011`), after you
 5. Is rounding correct for the values a reader compares against thresholds (e.g. a value like 99.995 or a negative /
    >100 utilization)? Is the choice to compute `pace` from the unrounded value sound and stated?
 6. Secrets: nothing in the diff, fixtures or PR body looks like a real key, a token or an email; test tokens are fakes.
-7. Run the gate yourself in your worktree: `CARGO=/Users/hankh19/.cargo/bin/cargo
+7. Run the gate yourself in your worktree: `CARGO=/Users/<user>/.cargo/bin/cargo
    CARGO_TARGET_DIR=/tmp/rv-CHORE-011-target make check` (remove that target dir when done). Record its rc.
 
 **Rules for you:** run EVERY command in the FOREGROUND (no `run_in_background`, no `&`, no `nohup`): this session
@@ -42,7 +42,7 @@ brief: reviews/CHORE-011-r1.brief.md @ <SHA>
 ```
 then a paragraph headed `Authorship:` (all work and this review by LLM agent sessions, model named; no human reviewed
 it; "distinct" = a separate `claude -p` process with a fresh context that wrote none of the work, same model family,
-briefed by the driver with this committed brief; commissioning session Mac-mini/s-e7976c42 and its stake: it
+briefed by the driver with this committed brief; commissioning session `<mini>/s-e7976c42` and its stake: it
 commissioned the tests and code from two sub-agents, checked them, and gains from `approve`). Then numbered findings
 `F1…` each with severity (blocker / should-fix / nit), the command, its output, and the fix you propose. `verdict:
 changes` only for blocker or should-fix findings. Commit it on a branch-tip checkout (`git -C /tmp/rv-CHORE-011

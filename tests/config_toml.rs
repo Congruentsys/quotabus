@@ -8,7 +8,7 @@ use quotabus::{Config, Kind, QueryKind};
 
 pub const DESIGN_S3: &str = r#"
 [bus]
-url     = "nats://192.168.8.110:4222"
+url     = "nats://<bus-host>:4222"
 bucket  = "ai_status"
 
 [intervals]
@@ -81,7 +81,7 @@ url = "https://example.invalid/hook"
 fn the_design_s3_config_loads() {
     let c = Config::from_toml_str(DESIGN_S3).expect("DESIGN §3 config parses");
     let bus = c.bus.as_ref().expect("[bus]");
-    assert_eq!(bus.url, "nats://192.168.8.110:4222");
+    assert_eq!(bus.url, "nats://<bus-host>:4222");
     assert_eq!(bus.bucket, "ai_status");
     assert_eq!(
         c.interval_for(QueryKind::Api),

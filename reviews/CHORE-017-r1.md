@@ -1,13 +1,13 @@
 reviewed-at-sha: d80233a254432f3de9e39f85f07fcb44a182a597
 verdict: approve
-gate: make check rc=0 at d80233a254432f3de9e39f85f07fcb44a182a597 on Mac-mini
+gate: make check rc=0 at d80233a254432f3de9e39f85f07fcb44a182a597 on `<mini>`
 brief: reviews/CHORE-017-r1.brief.md @ d80233a254432f3de9e39f85f07fcb44a182a597
 
 Authorship: LLM agent sessions did all of this work and this review (Claude Opus 5.5, claude-opus-5-5). No human
-reviewed it. The diff (7c31285) was written by a fresh Opus sub-agent. The commissioning session Mac-mini/s-e7976c42
+reviewed it. The diff (7c31285) was written by a fresh Opus sub-agent. The commissioning session `<mini>/s-e7976c42`
 (the driver) commissioned it, checked it, wrote the brief, and gains from `approve`. This reviewer is "distinct" only in
 this sense: it is a separate `claude -p` process with a fresh context that wrote none of the work, from the same model
-family, briefed by the driver through the committed brief above. Reviewed 2026-10-09 on Mac-mini.
+family, briefed by the driver through the committed brief above. Reviewed 2026-10-09 on `<mini>`.
 
 ## Checks (all run at d80233a in /tmp/rv-CHORE-017)
 
@@ -23,7 +23,7 @@ family, briefed by the driver through the committed brief above. Reviewed 2026-1
      is owed. Met.
 2. **Quote and worked example.** `git show origin/main:kanban-work/chores/CHORE-017-*.md` reads: "Can you create a
    chore in nusy-product-team for this - this is how we move work between repos". The diff's text matches it
-   character for character in pairit, CLAUDE.md and the PR body. CHORE-001's comment on origin/main (M5-MBP-2,
+   character for character in pairit, CLAUDE.md and the PR body. CHORE-001's comment on origin/main (`<m5>`,
    2026-10-09 13:37) reads "Filed on nusy-product-team's board as nusy-product-team CH-13371 ... It is related to
    IDEA-13333". The worked example matches it.
 3. **Commands are executable (help only).**
@@ -41,11 +41,11 @@ family, briefed by the driver through the committed brief above. Reviewed 2026-1
    is the only write"). It authorises no other write there.
 6. **Secrets.** `git diff origin/main...HEAD | grep -niE
    'token|secret|@[a-z0-9.-]+\.(com|org)|api[_-]?key|sk-'` matches only the brief's and steer's own wording about
-   secrets. The diff's one host detail is the bus IP in the `--server` default. `git grep -c '192.168.8.110'
+   secrets. The diff's one host detail is the bus IP in the `--server` default. `git grep -c '<bus-host>'
    origin/main` shows the repo already carries it in 10 files (e.g. docs/DESIGN.md and
    docs/flowback/CHORE-001-to-nusy-product-team.md). `gh pr view 26` shows no key, token or email.
-7. **Gate.** `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-017-target make check` → `rc=0`
-   (the tail of its output: `test result: ok. 6 passed; 0 failed`). Host `Mac-mini`.
+7. **Gate.** `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-017-target make check` → `rc=0`
+   (the tail of its output: `test result: ok. 6 passed; 0 failed`). Host `<mini>`.
 
 ## Findings
 

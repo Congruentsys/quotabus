@@ -4,7 +4,7 @@ title: "Record the Captain's 2026-10-08 rulings on §10 (SIG-001…008) in DESIG
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-08
 tags: [v1.0, VOY-001, design]
 depends_on: []
@@ -30,17 +30,17 @@ A PR to `docs/DESIGN.md` that, for each of Q2, Q3, Q4, Q5, Q7, Q8, Q9 and Q10 in
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T18:53:23+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T19:08:02+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T19:17:40+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/8> ;
   ] .
 ```
@@ -48,6 +48,6 @@ A PR to `docs/DESIGN.md` that, for each of Q2, Q3, Q4, Q5, Q7, Q8, Q9 and Q10 in
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:56)
+### `<m5>/s-72a67d16` (2026-10-08 18:56)
 
 Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure there are separate times for the different types of queries." So each query kind has its OWN config interval, set independently: API (messages) probe, balance read, and subscription read (and any later kind, e.g. a quota-window read). There is no shared interval. Defaults per the SIG-004 ruling: API 12 h, balance 12 h, subscription 5 min.

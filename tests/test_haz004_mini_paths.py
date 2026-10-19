@@ -1,15 +1,15 @@
 """HAZ-004: the fleet install command for Mini names the measured user, home and user-owned paths.
 
 From the item (Done when 1-2; decided G3, no sudo, user-owned, reversible):
-  - `packaging/README.md`'s fleet command uses `--user hankh19 --home /Users/hankh19`; the binary goes to
-    `/Users/hankh19/.local/bin/` (quotabus, and the `quotabus-cycle` wrapper), the config to
-    `/Users/hankh19/.config/quotabus/quotabus.toml`.
+  - `packaging/README.md`'s fleet command uses `--user fleetuser --home /Users/fleetuser`; the binary goes to
+    `/Users/fleetuser/.local/bin/` (quotabus, and the `quotabus-cycle` wrapper), the config to
+    `/Users/fleetuser/.config/quotabus/quotabus.toml`.
   - Any other doc that repeats them (packaging/, DESIGN §5, the wiring note) is brought in line: none names the old
     user `admin`, `/Users/admin` or a `/usr/local/{bin,etc}/quotabus` path.
   - `install.sh --render-to <dir>` run with the README's command (extracted from the README, never retyped here)
-    renders a plist whose ProgramArguments and log paths are all under `/Users/hankh19`. The launcher's own argv
+    renders a plist whose ProgramArguments and log paths are all under `/Users/fleetuser`. The launcher's own argv
     (`/opt/homebrew/bin/doppler run … --`, measured present on Mini) is the one part of ProgramArguments that is not:
-    every absolute path AFTER the launcher's `--`, and both log paths, are under `/Users/hankh19/`.
+    every absolute path AFTER the launcher's `--`, and both log paths, are under `/Users/fleetuser/`.
 
 Fakes only: ssh/scp/rsync/launchctl/systemctl/loginctl/sudo on PATH log and fail; nothing connects to Mini.
 Each checker carries a control showing it can fail on the old command.
@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "packaging" / "install.sh"
 README = ROOT / "packaging" / "README.md"
 PLIST_NAME = "com.congruentsys.quotabus-probe.plist"
-HOME = "/Users/hankh19"
+HOME = "/Users/fleetuser"
 BIN_DIR = f"{HOME}/.local/bin/"
 CONFIG = f"{HOME}/.config/quotabus/quotabus.toml"
 FAKE_TOOLS = ("ssh", "scp", "rsync", "launchctl", "systemctl", "loginctl", "sudo")
@@ -62,7 +62,7 @@ def flag(argv, name):
 def check_fleet_argv(argv):
     """The fleet command's target and paths are the decided, user-owned ones."""
     assert argv is not None, "packaging/README.md carries no `install.sh … --host <mini>` line"
-    assert flag(argv, "--user") == "hankh19", argv
+    assert flag(argv, "--user") == "fleetuser", argv
     assert flag(argv, "--home") == HOME, argv
     qb = flag(argv, "--quotabus")
     assert qb is not None and qb.startswith(BIN_DIR) and Path(qb).name in ("quotabus", "quotabus-cycle"), qb
@@ -157,7 +157,7 @@ def test_no_doc_names_admin_or_usr_local_quotabus():
 
 # ---------------------------------------------------------------- Done when 2: the rendered plist
 
-def test_rendering_readme_fleet_command_puts_every_path_under_hankh19(tmp_path):
+def test_rendering_readme_fleet_command_puts_every_path_under_the_user_home(tmp_path):
     argv = fleet_command(README.read_text())
     assert argv is not None, "packaging/README.md carries no `install.sh … --host <mini>` line"
     proc, out, log, home = render(tmp_path, argv)
@@ -177,7 +177,7 @@ def test_control_fleet_argv_checker_rejects_the_old_command():
     with pytest.raises(AssertionError):
         check_fleet_argv(fleet_command(OLD_COMMAND))
     # mutation: right user and home, binary still in /usr/local
-    good = (f"packaging/install.sh --host mini --user hankh19 --home {HOME} --os macos "
+    good = (f"packaging/install.sh --host mini --user fleetuser --home {HOME} --os macos "
             f"--quotabus {BIN_DIR}quotabus-cycle --probe-config {CONFIG} --interval 300")
     check_fleet_argv(fleet_command(good))  # known answer
     with pytest.raises(AssertionError):
@@ -185,7 +185,7 @@ def test_control_fleet_argv_checker_rejects_the_old_command():
     with pytest.raises(AssertionError):
         check_fleet_argv(fleet_command(good.replace(CONFIG, "/usr/local/etc/quotabus/quotabus.toml")))
     with pytest.raises(AssertionError):
-        check_fleet_argv(fleet_command(good.replace("--user hankh19", "--user admin")))
+        check_fleet_argv(fleet_command(good.replace("--user fleetuser", "--user admin")))
     with pytest.raises(AssertionError):
         check_fleet_argv(None)
 
@@ -194,7 +194,7 @@ def test_control_doc_scan_catches_each_old_value():
     for bad in ("--home /Users/admin", "--user admin --home x", "/usr/local/bin/quotabus-cycle",
                 "/usr/local/etc/quotabus/quotabus.toml"):
         assert doc_hits({"d": bad}), bad
-    assert not doc_hits({"d": f"--user hankh19 --home {HOME} {BIN_DIR}quotabus {CONFIG} /usr/local/bin/nats-server"})
+    assert not doc_hits({"d": f"--user fleetuser --home {HOME} {BIN_DIR}quotabus {CONFIG} /usr/local/bin/nats-server"})
 
 
 def test_control_wrapper_paths_finds_old_paths():

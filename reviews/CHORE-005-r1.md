@@ -1,14 +1,14 @@
 reviewed-at-sha: fc2f7064f2f1e90a104743bac62d1d3bb1b23c1e
 verdict: approve
-gate: make check rc=0 at fc2f7064f2f1e90a104743bac62d1d3bb1b23c1e on Mac-mini
+gate: make check rc=0 at fc2f7064f2f1e90a104743bac62d1d3bb1b23c1e on `<mini>`
 brief: reviews/CHORE-005-r1.brief.md @ fc2f7064f2f1e90a104743bac62d1d3bb1b23c1e
 
 Authorship: all of the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed
 it. The diff (commit 3caa9a6) was written by a fresh Opus sub-agent that the commissioning session
-Mac-mini/s-e7976c42 spawned. That session checked the diff, wrote this review's brief, and gains from `approve`.
+`<mini>/s-e7976c42` spawned. That session checked the diff, wrote this review's brief, and gains from `approve`.
 This review comes from a distinct session: a separate `claude -p` process with a fresh context that wrote none of
 the work. It is the same model family, and the driver briefed it with the committed brief named above. It ran on
-Mac-mini on 2026-10-08, in a detached scratch worktree at the sha above.
+`<mini>` on 2026-10-08, in a detached scratch worktree at the sha above.
 
 ## Checks
 
@@ -42,7 +42,7 @@ All three points the item names are amended, and each one cites evidence. The PR
   under `doppler run`: … gpt-5.6-sol ok". This supports the claim.
 - `examples/quotabus.toml`: one key per line. This supports "uses the same layout".
 
-**3. natscli** (this host, Mac-mini): `nats --version` → `0.3.1`. `nats kv put --help` lists no flags except the
+**3. natscli** (this host, `<mini>`): `nats --version` → `0.3.1`. `nats kv put --help` lists no flags except the
 global ones, so it has no `--ttl`. `nats kv create --help` → "Puts a value into a key only if the key is new or it's
 last operation was a delete … `--ttl=DURATION  Sets a TTL for the key`". `nats kv add --help | grep -i ttl` →
 `--ttl=DURATION How long to keep values for` and `--marker-ttl=DURATION Enables Per-Key TTLs and Limit Markers`.

@@ -4,7 +4,7 @@ title: "Direct subscription read gets HTTP 429 without Claude Code's system prom
 type: hazard
 status: arrived
 priority: high
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001]
 depends_on: []
@@ -32,17 +32,17 @@ Found after EXP-002 merged (PR #12), while publishing its rows to Mini's `ai_sta
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T20:22:18+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T20:22:33+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T20:33:40+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/13> ;
   ] .
 ```
@@ -50,6 +50,6 @@ Found after EXP-002 merged (PR #12), while publishing its rows to Mini's `ai_sta
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 20:25)
+### `<m5>/s-72a67d16` (2026-10-08 20:25)
 
 Tests red at 505eef5 (partner): tests/haz003_system_prompt.rs. 5 fail on assertions: no system field in the request body, unknown instead of ok, probe=stream_json reproduces the bug, the reason doesn't name the 429, and DESIGN §4 is missing the requirement. 4 controls pass, each shown able to fail. The stub mimics the measured server (429 without the system prompt, 200 with it).

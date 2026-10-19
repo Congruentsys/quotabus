@@ -1,5 +1,5 @@
-//! CHORE-022 DoD 2: `examples/quotabus.toml` has two local services, DGX1 `http://192.168.8.120:8000/v1` and DGX2
-//! `http://192.168.8.121:8000/v1`, with no `secret` and no `models`; DESIGN.md §4's local row matches, citing the
+//! CHORE-022 DoD 2: `examples/quotabus.toml` has two local services, DGX1 `http://<dgx1>:8000/v1` and DGX2
+//! `http://<dgx2>:8000/v1`, with no `secret` and no `models`; DESIGN.md §4's local row matches, citing the
 //! spark-model skill and this item. Each check is a function run on the real file AND, as its control, on the stale
 //! text the item replaces (which it must reject).
 
@@ -7,10 +7,22 @@ use std::path::Path;
 
 use quotabus::{Config, Kind};
 
-const DGX1: &str = "http://192.168.8.120:8000/v1";
-const DGX2: &str = "http://192.168.8.121:8000/v1";
-/// What the item says is stale (measured on Mini, 2026-10-09).
-const STALE: [&str; 3] = ["192.168.8.180", ":30000", "NUSY_LOCAL_QWEN"];
+const DGX1: &str = "http://<dgx1>:8000/v1";
+const DGX2: &str = "http://<dgx2>:8000/v1";
+/// What the item says is stale (measured on Mini, 2026-10-09). The old host itself is not committed (a public repo
+/// carries no fleet address): set `QUOTABUS_STALE_QWEN_HOST` to it to guard against its return as well.
+const STALE: [&str; 3] = ["<old-qwen-host>", ":30000", "NUSY_LOCAL_QWEN"];
+
+/// `STALE`, plus the old host from `QUOTABUS_STALE_QWEN_HOST` when it is set.
+fn stale_values() -> Vec<&'static str> {
+    let mut v = STALE.to_vec();
+    if let Ok(host) = std::env::var("QUOTABUS_STALE_QWEN_HOST")
+        && !host.is_empty()
+    {
+        v.push(Box::leak(host.into_boxed_str()));
+    }
+    v
+}
 
 fn read(rel: &str) -> String {
     let p = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
@@ -58,7 +70,10 @@ fn example_problems(cfg: &Config) -> Vec<String> {
 
 /// Every stale value left in `text`.
 fn stale_in(text: &str) -> Vec<&'static str> {
-    STALE.iter().copied().filter(|s| text.contains(s)).collect()
+    stale_values()
+        .into_iter()
+        .filter(|s| text.contains(s))
+        .collect()
 }
 
 /// DESIGN.md §4, from its heading to §5's.
@@ -86,12 +101,7 @@ fn local_rows(sec: &str) -> Vec<&str> {
 /// Every way a §4 local row misses DoD 2.
 fn row_problems(row: &str) -> Vec<String> {
     let mut out = Vec::new();
-    for need in [
-        "192.168.8.120:8000",
-        "192.168.8.121:8000",
-        "spark-model",
-        "CHORE-022",
-    ] {
+    for need in ["<dgx1>:8000", "<dgx2>:8000", "spark-model", "CHORE-022"] {
         if !row.contains(need) {
             out.push(format!("lacks {need:?}"));
         }
@@ -125,7 +135,7 @@ fn the_example_keeps_no_stale_local_value() {
 fn control_the_stale_local_service_fails_the_example_check() {
     // the block the item replaces: one local service at :30000 with a secret and a fixed model
     let stale = "[[service]]\nid = \"local-qwen\"\nkind = \"local\"\nprovider = \"qwen\"\nfamily = \"qwen\"\n\
-                 account = \"dgx1\"\nbase_url = \"http://192.168.8.180:30000/v1\"\nprotocol = \"openai\"\n\
+                 account = \"dgx1\"\nbase_url = \"http://<old-qwen-host>:30000/v1\"\nprotocol = \"openai\"\n\
                  models = [\"qwen3\"]\nroles = [\"work\"]\ncost_class = \"local\"\nsecret = \"NUSY_LOCAL_QWEN\"\n";
     let cfg = Config::from_toml_str(stale).expect("the stale block parses");
     let p = example_problems(&cfg);
@@ -160,7 +170,7 @@ fn design_section_4_local_row_matches_the_example_and_cites_its_sources() {
 
 #[test]
 fn control_the_stale_design_row_fails_the_row_check() {
-    let stale = "| local Qwen, DGX1 `192.168.8.180:30000` (`NUSY_LOCAL_QWEN`) | `GET /v1/models`, then a 20-token \
+    let stale = "| local Qwen, DGX1 `<old-qwen-host>:30000` (`NUSY_LOCAL_QWEN`) | `GET /v1/models`, then a 20-token \
                  completion | reachability, model list, latency | balance (self-hosted) |";
     assert_eq!(
         local_rows(stale),

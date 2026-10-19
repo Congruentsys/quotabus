@@ -1,6 +1,6 @@
 You are an INDEPENDENT code reviewer for quotabus PR #32 (https://github.com/Congruentsys/quotabus/pull/32), branch `chore/CHORE-024-alert-coverage`. You wrote none of this work. Review the tip of that branch: the commit that adds this brief file. Call it <SHA>; get it with `git rev-parse origin/chore/CHORE-024-alert-coverage` after a fetch.
 
-Work in your OWN scratch worktree: `git -C /Users/hankh95/Projects/quotabus fetch -q origin && git -C /Users/hankh95/Projects/quotabus worktree add -q --detach /tmp/rv-CHORE-024 origin/chore/CHORE-024-alert-coverage && ln -s /Users/hankh95/Projects/quotabus/.venv /tmp/rv-CHORE-024/.venv`. Remove it when you are done: `git -C /Users/hankh95/Projects/quotabus worktree remove --force /tmp/rv-CHORE-024`. Use CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-024 and add /Users/hankh95/.cargo/bin to PATH.
+Work in your OWN scratch worktree: `git -C /Users/<user>/Projects/quotabus fetch -q origin && git -C /Users/<user>/Projects/quotabus worktree add -q --detach /tmp/rv-CHORE-024 origin/chore/CHORE-024-alert-coverage && ln -s /Users/<user>/Projects/quotabus/.venv /tmp/rv-CHORE-024/.venv`. Remove it when you are done: `git -C /Users/<user>/Projects/quotabus worktree remove --force /tmp/rv-CHORE-024`. Use CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-024 and add `/Users/<user>/.cargo/bin` to PATH.
 
 Item: kanban-work/chores/CHORE-024-*.md. The tests commit is T = 607f280 (tests/chore024_subscription_alert_summary.rs). The code commit is 797526f.
 
@@ -22,7 +22,7 @@ verdict: approve|changes
 gate: make check rc=<N> at <SHA> on <host>
 brief: reviews/CHORE-024-r1.brief.md @ <SHA>
 
-Then add an `Authorship:` paragraph. Say that all the work and this review were done by LLM agent sessions (Claude Opus 5.5) and that no human reviewed it. Say that "distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model family, briefed by the driver (the author) with this committed brief. Name the commissioning session, M5-MBP-2/s-72a67d16, and its stake: it drove the work and wrote no tests or code; the tests and the code were written by sub-agents.
+Then add an `Authorship:` paragraph. Say that all the work and this review were done by LLM agent sessions (Claude Opus 5.5) and that no human reviewed it. Say that "distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model family, briefed by the driver (the author) with this committed brief. Name the commissioning session, `<m5>/s-72a67d16`, and its stake: it drove the work and wrote no tests or code; the tests and the code were written by sub-agents.
 
 Then list the findings, numbered F1, F2, and so on. For each one, quote the command you ran and its output; a finding you did not run is not a finding. Say for each whether it blocks.
 

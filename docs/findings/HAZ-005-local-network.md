@@ -19,24 +19,24 @@ what does the grant attach to, and does replacing the quotabus binary (a redeplo
   `UserName` set is blocked like a user LaunchAgent. The root daemon works but is not the fleet's unit: the Captain
   chose one unit, the LaunchAgent under doppler (see "Which unit", below).
 
-- **Host:** Mini (`Mac-mini.lan`, macOS 27.0.1, arm64), user `hankh19`, GUI domain `gui/501`.
+- **Host:** Mini (`<mini>`, macOS 27.0.1, arm64), user `<user>`, GUI domain `gui/501`.
 - **Date:** 2026-10-10.
 - **quotabus:** the deployed binary `~/.local/bin/quotabus`, ad-hoc signed (`codesign -dv`: `Signature=adhoc`, a
   hash-derived identifier).
 - **Peer:** DGX1's local endpoint, row `local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4`.
 - **Raw artefacts:** Mini `~/.local/state/quotabus-work/HAZ-005/`.
 
-**Authorship.** All of this work was done by LLM agent sessions, Claude Opus 5.5. The driver `M5-MBP-2/s-72a67d16`
+**Authorship.** All of this work was done by LLM agent sessions, Claude Opus 5.5. The driver `<m5>/s-72a67d16`
 ran the measurement; the Captain granted the permission in System Settings (the GUI step no session can do). This
 file was written by an implementer sub-agent of that driver from the driver's record on HAZ-005. Cases 6-9 and "Which
-unit" were added by a docs sub-agent of `Mac-mini/s-e7976c42`, from that session's comments and raw logs; that session
+unit" were added by a docs sub-agent of `<mini>/s-e7976c42`, from that session's comments and raw logs; that session
 ran those measurements, and the Captain ran the `sudo` steps. No human reviewed it.
 
 ## Method
 
 Each case is a one-shot launchd plist bootstrapped into `gui/501` on Mini (the same domain as the installed unit),
 run once, then booted out. Cases 1-4 run `probe --force` over a local-only config (`<local-only>` =
-`/Users/hankh19/.local/state/quotabus-work/HAZ-005/local-only.toml`: the DGX1 row only, publishing to the bus
+`/Users/<user>/.local/state/quotabus-work/HAZ-005/local-only.toml`: the DGX1 row only, publishing to the bus
 bucket `ai_status`); case 5 runs `/usr/bin/curl` instead, with no quotabus:
 
 ```sh
@@ -50,11 +50,11 @@ logs (`*.out.log`, `*.err.log`) there.
 
 | case | plist | ProgramArguments |
 |---|---|---|
-| 1 | `probe-once.plist` | `/opt/homebrew/bin/doppler run --project nusy-product-team --config dev -- /Users/hankh19/.local/bin/quotabus-cycle probe --force --config $W/local-only.toml` |
+| 1 | `probe-once.plist` | `/opt/homebrew/bin/doppler run --project nusy-product-team --config dev -- /Users/<user>/.local/bin/quotabus-cycle probe --force --config $W/local-only.toml` |
 | 2 | `probe-copy.plist` | `/opt/homebrew/bin/doppler run --project nusy-product-team --config dev -- $W/quotabus-copy probe --force --config $W/local-only.toml` |
-| 3 | `direct-quotabus.plist` | `/Users/hankh19/.local/bin/quotabus probe --force --config $W/local-only.toml` |
+| 3 | `direct-quotabus.plist` | `/Users/<user>/.local/bin/quotabus probe --force --config $W/local-only.toml` |
 | 4 | `direct-quotabus-copy.plist` | `$W/quotabus-copy probe --force --config $W/local-only.toml` |
-| 5 | `curl-ctl.plist` | `/usr/bin/curl -sS -o /dev/null -w http_code=%{http_code}\n --max-time 5 http://192.168.8.120:8000/v1/models` |
+| 5 | `curl-ctl.plist` | `/usr/bin/curl -sS -o /dev/null -w http_code=%{http_code}\n --max-time 5 http://<dgx1>:8000/v1/models` |
 
 Case 1 ran the production wrapper `quotabus-cycle` (probe, then alert). Its probe step is the result below; its alert
 step exited with "error: unexpected argument '--force' found" (`once.err.log`), because the wrapper passes the probe's
@@ -76,7 +76,7 @@ Case 4 left an unreachable row on the bus; a granted re-run of case 1 restored i
 
 ### Cases measured by the Mini session
 
-Measured by `Mac-mini/s-e7976c42` on Mini (macOS 27.0.1), 2026-10-10, each with a local-only config (the DGX1 row
+Measured by `<mini>/s-e7976c42` on Mini (macOS 27.0.1), 2026-10-10, each with a local-only config (the DGX1 row
 only, a `[file]` backend in that session's scratchpad, no secret). Sources: the session's comments on HAZ-005
 (`kanban-work/hazards/HAZ-005-macOS-Local-Network-privacy-blocks-the-launchd-pro.md`, lines 80, 88, 112), the
 CHORE-023 closing commit `ad48dd1`, and, where they were kept, the raw logs in the session scratchpad on Mini
@@ -84,8 +84,8 @@ CHORE-023 closing commit `ad48dd1`, and, where they were kept, the raw logs in t
 
 | case | launchd job and command shape | DGX1 result |
 |---|---|---|
-| 6. user LaunchAgent, quotabus as the program (04:04 UTC) | one-shot plist in `gui/<uid>` (the unit's domain); `ProgramArguments`: `/Users/hankh19/.local/bin/quotabus probe --force --config <local-only>`; booted out and deleted after. The Captain's earlier 'done' was the Login Items toggle, not a Local Network grant (line 84) | `cannot_assess:unreachable`, "tcp connect error: No route to host (os error 65)" (comment, line 80; no raw log kept) |
-| 7. LaunchDaemon with `UserName=hankh19` (13:20 UTC) | `/Library/LaunchDaemons/com.congruentsys.quotabus-daemon-test.plist`, system domain, `UserName` hankh19, `HOME` set, Captain-run with sudo, removed after; `ProgramArguments`: `/bin/sh daemon-test.sh`, which runs `quotabus probe --force --config <local-only>` and then `/opt/homebrew/bin/doppler run --project nusy-product-team --config dev -- /bin/sh -c '<print whether a key name is set>'` | probe: `state="unknown"`, `cannot_assess:unreachable` (raw `daemon.err.log`, 13:20:56Z; the comment, line 88, gives the error "No route to host (os error 65)"). doppler: `doppler rc=1`; the raw `daemon.err.log` has both lines, "Token not found in system keyring" and "Doppler Error: secret not found in keyring" |
+| 6. user LaunchAgent, quotabus as the program (04:04 UTC) | one-shot plist in `gui/<uid>` (the unit's domain); `ProgramArguments`: `/Users/<user>/.local/bin/quotabus probe --force --config <local-only>`; booted out and deleted after. The Captain's earlier 'done' was the Login Items toggle, not a Local Network grant (line 84) | `cannot_assess:unreachable`, "tcp connect error: No route to host (os error 65)" (comment, line 80; no raw log kept) |
+| 7. LaunchDaemon with `UserName=<user>` (13:20 UTC) | `/Library/LaunchDaemons/com.congruentsys.quotabus-daemon-test.plist`, system domain, `UserName` `<user>`, `HOME` set, Captain-run with sudo, removed after; `ProgramArguments`: `/bin/sh daemon-test.sh`, which runs `quotabus probe --force --config <local-only>` and then `/opt/homebrew/bin/doppler run --project nusy-product-team --config dev -- /bin/sh -c '<print whether a key name is set>'` | probe: `state="unknown"`, `cannot_assess:unreachable` (raw `daemon.err.log`, 13:20:56Z; the comment, line 88, gives the error "No route to host (os error 65)"). doppler: `doppler rc=1`; the raw `daemon.err.log` has both lines, "Token not found in system keyring" and "Doppler Error: secret not found in keyring" |
 | 8. ROOT LaunchDaemon, no `UserName` (13:27 UTC) | `/Library/LaunchDaemons/com.congruentsys.quotabus-root-test.plist`, system domain, Captain-run with sudo, removed after; `ProgramArguments`: a root-owned copy `/usr/local/libexec/quotabus-root-test probe --force --config <local-only>` | `state="ok"`, `latency_ms=Some(2679)` (raw `root.err.log`, 13:27:00Z; the comment, line 112, says "ok") |
 | 9. the confirmation: user LaunchAgent, production chain (14:57 UTC) | one-shot user LaunchAgent; `ProgramArguments[0]` `/opt/homebrew/bin/doppler`: `doppler run --project nusy-product-team --config dev -- quotabus probe --force --config <local-only>` | `state="ok"`, `latency_ms=Some(2750)` (raw `chain.err.log`, 14:57:10Z; commit `ad48dd1`; item body lines 28-29) |
 

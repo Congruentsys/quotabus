@@ -1,7 +1,7 @@
 # Review brief — CHORE-004 r1 (quotabus PR #4)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The work was written by a
-docs-author sub-agent of the resident session M5-MBP-2/s-72a67d16 (Claude Opus 5.5), which commissioned it, checked
+docs-author sub-agent of the resident session `<m5>/s-72a67d16` (Claude Opus 5.5), which commissioned it, checked
 it, also ran the CHORE-002 measurements it cites, and wants it approved.
 
 **What to review:** PR #4 of https://github.com/Congruentsys/quotabus, branch `docs/CHORE-004-design-s4-measured`,
@@ -42,7 +42,7 @@ brief: reviews/CHORE-004-r1.brief.md @ <SHA>
 ```
 then a paragraph headed `Authorship:` (all work and this review by LLM agent sessions, model named; no human reviewed
 it; "distinct" = a separate `claude -p` process with a fresh context that wrote none of the work, same model family,
-briefed by the author with this committed brief; commissioning session M5-MBP-2/s-72a67d16 and its stake: it
+briefed by the author with this committed brief; commissioning session `<m5>/s-72a67d16` and its stake: it
 commissioned and checked the diff, ran the measurements it cites, and gains from `approve`). Then numbered findings
 `F1…` each with severity (blocker / should-fix / nit), the command, its output, and the fix you propose.
 `verdict: changes` only for blocker or should-fix findings.

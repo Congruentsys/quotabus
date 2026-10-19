@@ -1,6 +1,6 @@
 reviewed-at-sha: ad45efb71e8770afcd5a8a33e58c4a1a30cbf870
 verdict: approve
-gate: make check rc=0 at ad45efb71e8770afcd5a8a33e58c4a1a30cbf870 on Mac-mini
+gate: make check rc=0 at ad45efb71e8770afcd5a8a33e58c4a1a30cbf870 on `<mini>`
 brief: reviews/release-v1.0.1-r1.brief.md @ ad45efb71e8770afcd5a8a33e58c4a1a30cbf870
 
 # Review r1: PR #40, release v1.0.1 (CHORE-031)
@@ -8,10 +8,10 @@ brief: reviews/release-v1.0.1-r1.brief.md @ ad45efb71e8770afcd5a8a33e58c4a1a30cb
 **Authorship:** LLM agent sessions (Claude Opus 5.5) did all the work and this review. No human reviewed it. "Distinct"
 means a separate `claude -p` process from the same model family, with a fresh context that wrote none of the work. The
 driver (the author) briefed it with the committed brief named on line 4. The commissioning session is
-Mac-mini/s-e7976c42, which drives the release. A sub-agent wrote the version bump, the CHANGELOG section and the README
+`<mini>/s-e7976c42`, which drives the release. A sub-agent wrote the version bump, the CHANGELOG section and the README
 line.
 
-Host Mac-mini, 2026-10-11, reviewed in a detached worktree at the SHA on line 1.
+Host `<mini>`, 2026-10-11, reviewed in a detached worktree at the SHA on line 1.
 
 ## Findings
 
@@ -76,7 +76,7 @@ line of the brief. The diff has no key, no email address and no new account iden
 
 **F5 (no defect). Gate.**
 ```
-$ CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-031-target make check   # rc=0
+$ CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-031-target make check   # rc=0
   (runs .venv/bin/yurtle-kanban validate, the script tests and cargo test; summing the "test result" lines:
    passed=430 failed=0)
 $ /tmp/rv-CHORE-031-target/debug/quotabus --version

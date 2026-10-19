@@ -1,6 +1,6 @@
 reviewed-at-sha: 5347f9e078ff7014a677360a4025ff86c881dacb
 verdict: changes
-gate: make check rc=0 at 5347f9e078ff7014a677360a4025ff86c881dacb on M5-MBP-2.lan
+gate: make check rc=0 at 5347f9e078ff7014a677360a4025ff86c881dacb on `<m5>`
 brief: reviews/CHORE-003-r1.brief.md @ 5347f9e078ff7014a677360a4025ff86c881dacb
 
 Authorship: LLM agent sessions did all of the work under review and this review. The model is Claude Opus 5.5
@@ -25,7 +25,7 @@ deletes a checkout's real `.venv`.
 
 ## Findings
 
-### F1 — blocker: `.venv` is committed as a symlink to `/Users/hankh95/Projects/quotabus/.venv`; merging it deletes the main checkout's virtualenv
+### F1 — blocker: `.venv` is committed as a symlink to `/Users/<user>/Projects/quotabus/.venv`; merging it deletes the main checkout's virtualenv
 
 The branch adds `.venv` as a tracked symlink in commit `8d626cb`. `.gitignore` has `.venv/`, and that pattern matches
 only directories, so the symlink got committed.
@@ -33,7 +33,7 @@ only directories, so the symlink got committed.
 ```
 $ git ls-tree HEAD .venv; git show HEAD:.venv
 120000 blob d416cba8997f8e865f9635c47a286d24b9443dc3	.venv
-/Users/hankh95/Projects/quotabus/.venv
+/Users/<user>/Projects/quotabus/.venv
 $ git log --format='%h %s' --diff-filter=A -- .venv
 8d626cb CHORE-003: tests (red) — clean step ported to quotabus paths, port guard; yk_push.sh retired ...
 ```
@@ -48,7 +48,7 @@ $ git merge --no-edit pr | tail -4; echo rc=$?
  create mode 100644 tests/test_skills_port.py
 rc=0
 $ ls -la .venv
-lrwxr-xr-x ... .venv -> /Users/hankh95/Projects/quotabus/.venv
+lrwxr-xr-x ... .venv -> /Users/<user>/Projects/quotabus/.venv
 $ find . -path ./.git -prune -o -name yurtle-kanban -print
 (nothing — the venv is gone)
 ```
@@ -65,7 +65,7 @@ INSIDE the main venv. Running the brief's own setup command did exactly that:
 
 ```
 $ ls -la ~/Projects/quotabus/.venv/.venv
-lrwxr-xr-x  1 hankh95  staff  38 Oct  8 17:24 /Users/hankh95/Projects/quotabus/.venv/.venv -> /Users/hankh95/Projects/quotabus/.venv
+lrwxr-xr-x  1 <user>  staff  38 Oct  8 17:24 /Users/<user>/Projects/quotabus/.venv/.venv -> /Users/<user>/Projects/quotabus/.venv
 ```
 
 That link was created by this review's setup step, and I removed it after the review.
@@ -172,7 +172,7 @@ can misread rc 7 as an error. The source skill named rc 7 as "nothing pickable".
    `/Users/`, `sk-`, `ghp_`, `api_key` and `nats://` found:
    - no key or token (only `sk-test-not-a-key` as a documented fake);
    - one email, which is the commit noreply address in the brief;
-   - the `/Users/hankh95/…` path in the `.venv` symlink (F1);
+   - the `/Users/<user>/…` path in the `.venv` symlink (F1);
    - the private repo name (F2).
 8. **Gate.** `make check` in `/tmp/rv-CHORE-003` at the reviewed sha: `32 passed`, `All work items valid. Checked 18
    items`, rc 0.

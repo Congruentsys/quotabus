@@ -17,17 +17,17 @@ meet VOY-001's Definition of Done?
 
 The run also found three bad keys and one low balance. They are listed under § What it changes.
 
-- **Host:** Mini (`Mac-mini.lan`, macOS 27.0.1, arm64), user `hankh19`. Driven from M5 (`M5-MBP-2`) over `ssh mini`.
+- **Host:** Mini (`<mini>`, macOS 27.0.1, arm64), user `<user>`. Driven from M5 (`<m5>`) over `ssh mini`.
 - **Date:** 2026-10-09, ticks at 03:12 and 03:17 UTC.
 - **quotabus:** built on Mini at `a4cf26e` (origin/main) in a throwaway worktree `/tmp/qb-deploy` of Mini's
   checkout, `cargo build --release`. It reports `quotabus 0.1.0`.
-- **Tools:** nats-server on Mini (bus `nats://192.168.8.110:4222`, read as `127.0.0.1:4222` on Mini), natscli
+- **Tools:** nats-server on Mini (bus `nats://<bus-host>:4222`, read as `127.0.0.1:4222` on Mini), natscli
   `/opt/homebrew/bin/nats`, Doppler 3.75.2.
 - **Raw artefacts:** `~/.local/state/quotabus-work/CHORE-016/` on M5: `probe.out.log`, `probe.err.log`,
   `status-after-tick2.txt`, `quotabus.toml`, `quotabus-cycle`.
 
 **Authorship.** All of this work was done by an LLM agent session, Claude Opus 5.5: the deployment, the
-measurements and this finding. The session is `M5-MBP-2/s-72a67d16`, and it wrote this file. No human reviewed it.
+measurements and this finding. The session is `<m5>/s-72a67d16`, and it wrote this file. No human reviewed it.
 The Captain was GUI-logged-in on Mini, which the unit needs, and said "go ahead, ssh from here" (2026-10-09). The
 review of this finding is by a distinct `claude -p` session (`reviews/CHORE-016-r1.md`).
 
@@ -43,10 +43,10 @@ ssh mini 'cd ~/Projects/quotabus; git fetch -q origin; git worktree add -q --det
 ssh mini 'mkdir -p ~/.local/bin ~/.config/quotabus && cp /tmp/qb-target-deploy/release/quotabus ~/.local/bin/quotabus'
 scp quotabus-cycle mini:.local/bin/quotabus-cycle; scp quotabus.toml mini:.config/quotabus/quotabus.toml
 # the unit: the README's fleet command, with --quotabus pointed at the wrapper as § Alerts says
-packaging/install.sh --host mini --user hankh19 --home /Users/hankh19 --os macos \
+packaging/install.sh --host mini --user <user> --home /Users/<user> --os macos \
   --launcher "/opt/homebrew/bin/doppler run --project nusy-product-team --config dev --" \
-  --quotabus /Users/hankh19/.local/bin/quotabus-cycle \
-  --probe-config /Users/hankh19/.config/quotabus/quotabus.toml --interval 300
+  --quotabus /Users/<user>/.local/bin/quotabus-cycle \
+  --probe-config /Users/<user>/.config/quotabus/quotabus.toml --interval 300
 # → installed: com.congruentsys.quotabus-probe.plist on mini   (rc 0)
 ```
 
@@ -55,8 +55,8 @@ own file. It was assembled from two sources:
 - From `examples/quotabus.toml` at `a4cf26e`: the `[bus]`, `[intervals]` (api 12h, balance 12h, subscription 1h) and
   `[probe]` (`warn_pct = 90`) tables, and the seven API/local services: glm, deepseek, kimi, openai, together, xai
   and local-qwen.
-- From EXP-002's fleet subscription config: six Claude accounts (`claude-hankh1844`, `-hankh19`, `-hankh1995`,
-  `-hankh95`, `-hankxu95`, `-hanssantiago1995`; sources `unified_headers` then `stream_json`) and `copilot`
+- From EXP-002's fleet subscription config: six Claude accounts (`claude-<acct-1>`, `-<acct-2>`, `-<acct-3>`,
+  `-hankh95`, `-<acct-4>`, `-<acct-5>`; sources `unified_headers` then `stream_json`) and `copilot`
   (`copilot_internal`). Undocumented sources are on, for the fleet only (SIG-003).
 
 That makes 14 `[[service]]` tables and 16 (service, model) rows. There is **no `[alert.*]` sink**, so alerts go to
@@ -100,12 +100,12 @@ api.openai.nusy-product-team.gpt-5-6-sol auth_failed
 api.together.nusy-product-team.meta-llama-Llama-3-3-70B-Instruct-Turbo auth_failed
 api.xai.nusy-product-team.grok-4 auth_failed
 local.qwen.dgx1.qwen3 unknown (cannot_assess:secret_unset)
-subscription.anthropic.hankh1844.claude-hankh1844 ok
-subscription.anthropic.hankh19.claude-hankh19 ok
-subscription.anthropic.hankh1995.claude-hankh1995 ok
+subscription.anthropic.<acct-1>.claude-<acct-1> ok
+subscription.anthropic.<acct-2>.claude-<acct-2> ok
+subscription.anthropic.<acct-3>.claude-<acct-3> ok
 subscription.anthropic.hankh95.claude-hankh95 ok
-subscription.anthropic.hankxu95.claude-hankxu95 ok
-subscription.anthropic.hanssantiago1995.claude-hanssantiago1995 ok
+subscription.anthropic.<acct-4>.claude-<acct-4> ok
+subscription.anthropic.<acct-5>.claude-<acct-5> ok
 subscription.github.hankh95.copilot ok
 published 18 rows to bucket ai_status
 ALERT api.moonshot.nusy-product-team.kimi-k3 quota_exhausted (kimi kimi-k3): provider-status: kimi kimi-k3 is quota_exhausted
@@ -121,12 +121,12 @@ used its first source, so the stream-json fallback was not exercised on this run
 ```
 $ grep -E "probe=(unified_headers|stream_json|copilot_internal)" probe.err.log | sed -E 's/^[^ ]+ +INFO //'
 quotabus::subscription: subscription read key=subscription.anthropic.hankh95.claude-hankh95 state="ok" probe=unified_headers
-quotabus::subscription: subscription read key=subscription.anthropic.hankh1995.claude-hankh1995 state="ok" probe=unified_headers
-quotabus::subscription: subscription read key=subscription.anthropic.hankxu95.claude-hankxu95 state="ok" probe=unified_headers
-quotabus::subscription: subscription read key=subscription.anthropic.hankh1844.claude-hankh1844 state="ok" probe=unified_headers
-quotabus::subscription: subscription read key=subscription.anthropic.hanssantiago1995.claude-hanssantiago1995 state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.<acct-3>.claude-<acct-3> state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.<acct-4>.claude-<acct-4> state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.<acct-1>.claude-<acct-1> state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.<acct-5>.claude-<acct-5> state="ok" probe=unified_headers
 quotabus::subscription: subscription read key=subscription.github.hankh95.copilot state="ok" probe=copilot_internal
-quotabus::subscription: subscription read key=subscription.anthropic.hankh19.claude-hankh19 state="ok" probe=unified_headers
+quotabus::subscription: subscription read key=subscription.anthropic.<acct-2>.claude-<acct-2> state="ok" probe=unified_headers
 ```
 
 ## 3. `quotabus status` on the hub (03:12:24 UTC, 12 s after tick 1)
@@ -143,12 +143,12 @@ openai                   gpt-5.6-sol                              auth_failed   
 together                 meta-llama/Llama-3.3-70B-Instruct-Turbo  auth_failed      12s  official
 xai                      grok-4                                   auth_failed      12s  official
 local-qwen               qwen3                                    CANNOT-ASSESS    12s  official      cannot_assess:secret_unset
-claude-hankh1844         claude-hankh1844                         ok               12s  undocumented  five_hour 0% (resets in 4h) seven_day 6% (resets in 22h)
-claude-hankh19           claude-hankh19                           ok               12s  undocumented  five_hour 0% (resets in 4h) seven_day 0% (resets in 4d)
-claude-hankh1995         claude-hankh1995                         ok               12s  undocumented  five_hour 1% (resets in 4h) seven_day 22% (resets in 4d)
+claude-<acct-1>         claude-<acct-1>                         ok               12s  undocumented  five_hour 0% (resets in 4h) seven_day 6% (resets in 22h)
+claude-<acct-2>           claude-<acct-2>                           ok               12s  undocumented  five_hour 0% (resets in 4h) seven_day 0% (resets in 4d)
+claude-<acct-3>         claude-<acct-3>                         ok               12s  undocumented  five_hour 1% (resets in 4h) seven_day 22% (resets in 4d)
 claude-hankh95           claude-hankh95                           ok               12s  undocumented  five_hour 4% (resets in 4h) seven_day 20% (resets in 6d)
-claude-hankxu95          claude-hankxu95                          ok               12s  undocumented  five_hour 1% (resets in 4h) seven_day 49% (resets in 5h)
-claude-hanssantiago1995  claude-hanssantiago1995                  ok               12s  undocumented  five_hour 5% (resets in 2h) seven_day 20% (resets in 4d)
+claude-<acct-4>          claude-<acct-4>                          ok               12s  undocumented  five_hour 1% (resets in 4h) seven_day 49% (resets in 5h)
+claude-<acct-5>  claude-<acct-5>                  ok               12s  undocumented  five_hour 5% (resets in 2h) seven_day 20% (resets in 4d)
 copilot                  copilot                                  ok               12s  undocumented  monthly 0% (resets in 22d)
 rc=0
 ```
@@ -188,12 +188,12 @@ api.xai.nusy-product-team.grok-4
 api.zhipu.nusy-product-team.glm-5-2
 api.zhipu.nusy-product-team.glm-5-3
 local.qwen.dgx1.qwen3
-subscription.anthropic.hankh1844.claude-hankh1844
-subscription.anthropic.hankh19.claude-hankh19
-subscription.anthropic.hankh1995.claude-hankh1995
+subscription.anthropic.<acct-1>.claude-<acct-1>
+subscription.anthropic.<acct-2>.claude-<acct-2>
+subscription.anthropic.<acct-3>.claude-<acct-3>
 subscription.anthropic.hankh95.claude-hankh95
-subscription.anthropic.hankxu95.claude-hankxu95
-subscription.anthropic.hanssantiago1995.claude-hanssantiago1995
+subscription.anthropic.<acct-4>.claude-<acct-4>
+subscription.anthropic.<acct-5>.claude-<acct-5>
 subscription.github.hankh95.copilot
 ```
 
@@ -225,15 +225,15 @@ $ ssh mini 'cd ~/Library; grep -cE "sk-[A-Za-z0-9]{8}|sk-ant-|Bearer |ghp_|gho_|
 Logs/quotabus/probe.out.log:0
 Logs/quotabus/probe.err.log:0
 LaunchAgents/com.congruentsys.quotabus-probe.plist:0
-/Users/hankh19/.config/quotabus/quotabus.toml:0
-/Users/hankh19/.local/bin/quotabus-cycle:0
+/Users/<user>/.config/quotabus/quotabus.toml:0
+/Users/<user>/.local/bin/quotabus-cycle:0
 $ ssh mini '/usr/bin/plutil -extract ProgramArguments json -o - ~/Library/LaunchAgents/com.congruentsys.quotabus-probe.plist'
-["\/opt\/homebrew\/bin\/doppler","run","--project","nusy-product-team","--config","dev","--","\/Users\/hankh19\/.local\/bin\/quotabus-cycle","probe","--config","\/Users\/hankh19\/.config\/quotabus\/quotabus.toml"]
+["\/opt\/homebrew\/bin\/doppler","run","--project","nusy-product-team","--config","dev","--","\/Users\/<user>\/.local\/bin\/quotabus-cycle","probe","--config","\/Users\/<user>\/.config\/quotabus\/quotabus.toml"]
 ```
 
 No key appears on argv, because ProgramArguments carries none and keys reach the binary only through Doppler's
 environment. None appears in the unit, the logs or the config either. A grep of one subscription row for
-`sk-ant-|Bearer|@` matched only the writer field `"Mac-mini/quotabus@0.1.0"`.
+`sk-ant-|Bearer|@` matched only the writer field `"<mini>/quotabus@0.1.0"`.
 
 ## What it changes
 

@@ -1,10 +1,10 @@
 reviewed-at-sha: 4eb7021ba6f8bfb1d20f7f2a5c960a3d633663c6
 verdict: changes
-gate: make check rc=0 at 4eb7021ba6f8bfb1d20f7f2a5c960a3d633663c6 on Mac-mini
+gate: make check rc=0 at 4eb7021ba6f8bfb1d20f7f2a5c960a3d633663c6 on `<mini>`
 brief: reviews/CHORE-018-r1.brief.md @ 4eb7021ba6f8bfb1d20f7f2a5c960a3d633663c6
 
 Authorship: LLM agent sessions did all of this work and wrote this review. Every session ran Claude Opus 5.5
-(claude-opus-5-5). No human reviewed it. The commissioning session, Mac-mini/s-e7976c42, filed CHORE-018. It
+(claude-opus-5-5). No human reviewed it. The commissioning session, `<mini>/s-e7976c42`, filed CHORE-018. It
 commissioned the tests (2694eff) from one fresh Opus sub-agent and the code and docs (579c059) from a second, checked
 both, and gains if this review approves. This review was written by a distinct reviewer: a separate `claude -p`
 process with a fresh context that wrote none of the work. It is the same model family, and the driver briefed it with
@@ -55,7 +55,7 @@ the committed brief named above. It made no board or GitHub writes. Its only com
   (`sk-…`, `ghp_`, `xox[bp]-`, `@host.tld`, bearer, `api_key="…"`): rc=1. The same grep over the PR body
   (`gh pr view 27 --json body`): rc=1.
 - **Brief point 8, the gate.**
-  `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-018-target make check` gave rc=0, with
+  `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-018-target make check` gave rc=0, with
   354 tests passed and 0 failed across all `test result` lines.
 
 ## Findings

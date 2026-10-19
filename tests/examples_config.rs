@@ -84,8 +84,8 @@ fn example_lists_the_six_key_bearing_services_and_the_xai_control() {
     }
     // CHORE-022 DoD 2: the two Sparks, keyless, with the served model discovered (no `models`)
     for (id, url) in [
-        ("dgx1-qwen", "http://192.168.8.120:8000/v1"),
-        ("dgx2-qwen", "http://192.168.8.121:8000/v1"),
+        ("dgx1-qwen", "http://<dgx1>:8000/v1"),
+        ("dgx2-qwen", "http://<dgx2>:8000/v1"),
     ] {
         let s = c.services.iter().find(|s| s.id == id).unwrap();
         assert_eq!(s.kind, Kind::Local, "{id}");

@@ -1,15 +1,15 @@
 reviewed-at-sha: 48f74c53799ff763354c6f00d6d9e43757db849d
 verdict: changes
-gate: make check rc=0 at 48f74c53799ff763354c6f00d6d9e43757db849d on M5-MBP-2
+gate: make check rc=0 at 48f74c53799ff763354c6f00d6d9e43757db849d on `<m5>`
 brief: reviews/CHORE-022-r1.brief.md @ 48f74c53799ff763354c6f00d6d9e43757db849d
 
 Authorship: LLM agent sessions (Claude Opus 5.5) did all of the work and this review. No human reviewed it.
 "Distinct" means this review ran in a separate `claude -p` process with a fresh context that wrote none of the
 work. It is the SAME model family as the author. The driver (the author) briefed it with the committed brief named
-above. The commissioning session is M5-MBP-2/s-72a67d16. Its stake: it drove the work and wrote no tests or code.
+above. The commissioning session is `<m5>/s-72a67d16`. Its stake: it drove the work and wrote no tests or code.
 Sub-agents wrote the tests and the code.
 
-Host M5-MBP-2, 2026-10-10 (UTC), scratch worktree `/tmp/rv-CHORE-022` detached at the sha above,
+Host `<m5>`, 2026-10-10 (UTC), scratch worktree `/tmp/rv-CHORE-022` detached at the sha above,
 `CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-022`. Scratch files (a throwaway test file and a `[file]`-backend config)
 were deleted before this commit. No bus was touched. No board or GitHub writes were made.
 
@@ -175,9 +175,9 @@ unreachable box writes one row and invents no model row. The false `ok` arises o
 ### F7 — does not block. The real DGX1 is discovered and probed. A down DGX2 can read `timeout` rather than `unreachable`
 
 ```
-$ curl -s --max-time 5 http://192.168.8.120:8000/v1/models
+$ curl -s --max-time 5 http://<dgx1>:8000/v1/models
 {"object":"list","data":[{"id":"nvidia/Qwen3-32B-NVFP4","object":"model",...,"owned_by":"vllm",...}]} curl rc=0
-$ curl -s --max-time 5 http://192.168.8.121:8000/v1/models
+$ curl -s --max-time 5 http://<dgx2>:8000/v1/models
  curl rc=28
 ```
 

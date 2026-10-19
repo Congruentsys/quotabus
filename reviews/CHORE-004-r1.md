@@ -1,15 +1,15 @@
 reviewed-at-sha: e641c2131b0e7bae53ab0f3c7bfcef486625d87a
 verdict: approve
-gate: make check rc=0 at e641c2131b0e7bae53ab0f3c7bfcef486625d87a on M5-MBP-2
+gate: make check rc=0 at e641c2131b0e7bae53ab0f3c7bfcef486625d87a on `<m5>`
 brief: reviews/CHORE-004-r1.brief.md @ e641c2131b0e7bae53ab0f3c7bfcef486625d87a
 
 Authorship: all of the work under review and this review were done by LLM agent sessions (Claude Opus 5.5). No human
-reviewed it. The diff was written by a docs-author sub-agent of the resident session M5-MBP-2/s-72a67d16, which
+reviewed it. The diff was written by a docs-author sub-agent of the resident session `<m5>/s-72a67d16`, which
 commissioned it, checked it, ran the CHORE-002 measurements it cites, and gains from `approve`. This reviewer is
 "distinct" only in the sense that it is a separate `claude -p` process with a fresh context that wrote none of the
 work; it is the same model family, and it was briefed by the author with the committed brief named above.
 
-## What was checked (host M5-MBP-2, 2026-10-08, PR #4 at the sha above)
+## What was checked (host `<m5>`, 2026-10-08, PR #4 at the sha above)
 
 `git ls-remote origin docs/CHORE-004-design-s4-measured` → `e641c2131b0e7bae53ab0f3c7bfcef486625d87a`.
 `git diff --stat origin/main...HEAD` → `docs/DESIGN.md | 11 ++++-----`, `reviews/CHORE-004-r1.brief.md | 52 +++`.

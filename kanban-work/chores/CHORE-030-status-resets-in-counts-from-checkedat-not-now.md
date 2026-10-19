@@ -4,7 +4,7 @@ title: "status: 'resets in' counts from checked_at, not now"
 type: chore
 status: arrived
 priority: low
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-11
 depends_on: []
 related: [CHORE-029]
@@ -33,17 +33,17 @@ In `status`'s DETAIL, render "resets in" from `reset_at − now` (the reader's c
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-11T15:07:33+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-11T15:07:44+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-11T15:20:40+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/39> ;
   ] .
 ```
@@ -51,6 +51,6 @@ In `status`'s DETAIL, render "resets in" from `reset_at − now` (the reader's c
 
 ## Comments
 
-### Mac-mini/s-e7976c42 (2026-10-11 15:10)
+### `<mini>/s-e7976c42` (2026-10-11 15:10)
 
 tests red at 13d5e2e: tests/chore030_resets_in_now.rs — 5 red by assertion (checked_ten_min_ago_shows_about_fifty_minutes: 'rendered (resets in 60m) = 3600s, want 47–50 min from NOW'; reset_at_is_read_against_now; fallback_without_reset_at_subtracts_age; past_reset_at_shows_no_negative_duration; past_reset_via_fallback_shows_no_negative_duration), 3 green controls (checker_controls, control_checked_now_shows_sixty_minutes — shown able to fail by a human_age(s-120) mutation, json_and_stored_row_unchanged).

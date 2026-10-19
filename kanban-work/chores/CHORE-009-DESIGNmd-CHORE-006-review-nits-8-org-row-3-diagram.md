@@ -4,7 +4,7 @@ title: "DESIGN.md: CHORE-006 review nits — §8 org row, §3 diagram local kind
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-08
 depends_on: [CHORE-007]
 bounce_sha: "5a1cbaad6b4c836010d50a64b4fd3e97455aceabb8de3c36ea141a6bf5dfaac8"
@@ -38,7 +38,7 @@ distinct session (a DESIGN.md change) and merged.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T19:17:48+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:in_progress ;
@@ -59,12 +59,12 @@ distinct session (a DESIGN.md change) and merged.
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T19:42:00+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T19:51:24+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/11> ;
   ] .
 ```
@@ -74,4 +74,4 @@ distinct session (a DESIGN.md change) and merged.
 
 ### M5/s-b1fd4c67 (2026-10-08 19:21)
 
-[bounce by M5/s-b1fd4c67, body-sha:5a1cbaad6b4c] Edits DESIGN.md §3/§4 text that CHORE-007 (underway, M5-MBP-2 session) is rewriting; the item says to edit on top of CHORE-007, so it now depends_on CHORE-007 and goes back unclaimed.
+[bounce by M5/s-b1fd4c67, body-sha:5a1cbaad6b4c] Edits DESIGN.md §3/§4 text that CHORE-007 (underway, `<m5>` session) is rewriting; the item says to edit on top of CHORE-007, so it now depends_on CHORE-007 and goes back unclaimed.

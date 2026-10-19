@@ -4,7 +4,7 @@ title: "Round subscription windows' used_pct (0.14 × 100 is stored as 14.000000
 type: chore
 status: arrived
 priority: low
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-08
 tags: [v1.0, VOY-001]
 depends_on: []
@@ -24,17 +24,17 @@ Seen in HAZ-003's real path (PR #13): `subscription.anthropic.hankh95.claude-han
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T20:33:56+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T21:36:14+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T21:48:24+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/16> ;
   ] .
 ```
@@ -42,6 +42,6 @@ Seen in HAZ-003's real path (PR #13): `subscription.anthropic.hankh95.claude-han
 
 ## Comments
 
-### Mac-mini/s-e7976c42 (2026-10-08 21:38)
+### `<mini>/s-e7976c42` (2026-10-08 21:38)
 
 tests red at 98335d9 (branch chore/CHORE-011-round-used-pct): tests/chore011_round_used_pct.rs via Runner::run_due — 6 red on assertions (unified 0.14 → 14.000000000000002, 0.123456 → 12.3456; stream-json same; Copilot 100−33.333 → 66.667; entitlement fallback 66.666…), 2 controls show the == and 2-dp checks can fail; window_pct also checked.

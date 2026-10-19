@@ -1,7 +1,7 @@
 # Review brief — CHORE-030 r1 (quotabus PR #39)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The commissioning session
-is Mac-mini/s-e7976c42 (Claude Opus 5.5), the driver. It filed the item from the CHORE-029 r1 reviewer's side note.
+is `<mini>/s-e7976c42` (Claude Opus 5.5), the driver. It filed the item from the CHORE-029 r1 reviewer's side note.
 A fresh Opus sub-agent (the test partner) wrote the tests at 13d5e2e. A second fresh Opus sub-agent (the implementer)
 wrote the fix at 228240b. The driver wants this approved.
 
@@ -19,7 +19,7 @@ Remove it when you are done (`git worktree remove --force /tmp/rv-CHORE-030`), a
    empty.
 2. The tests use real clock time with tolerance windows. Judge whether they can flake, e.g. on a slow CI runner or
    across a minute boundary. Run the test file at least 3 times: `CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target
-   /Users/hankh19/.cargo/bin/cargo test --test chore030_resets_in_now`.
+   /Users/<user>/.cargo/bin/cargo test --test chore030_resets_in_now`.
 3. The code does not special-case the tests. Check that AGE and "resets in" use the same `now`. Check that
    `status --json`, the stored row and the meaning of `reset_in_s` are unchanged. Check that `select` and `alert` are
    untouched. Check the edge cases: an unparseable `reset_at`, a row with neither field, a row with `reset_in_s` but
@@ -29,7 +29,7 @@ Remove it when you are done (`git worktree remove --force /tmp/rv-CHORE-030`), a
 5. Check the behaviour note in the PR body: a window with `reset_at` but no `reset_in_s` now shows reset text. Say
    whether that is right under DESIGN §2 and G1 ("never a false ok"; it is display only).
 6. Secrets: nothing in the diff or the PR body carries a key, a token or an email.
-7. Run the gate yourself in your worktree: `CARGO=/Users/hankh19/.cargo/bin/cargo
+7. Run the gate yourself in your worktree: `CARGO=/Users/<user>/.cargo/bin/cargo
    CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target make check`. Record its rc, then remove that target dir.
 
 **Rules for you:**
@@ -51,7 +51,7 @@ Next, a paragraph headed `Authorship:`. It says:
 - All the work and this review were done by LLM agent sessions (name the model). No human reviewed it.
 - "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the same model
   family, briefed by the driver with this committed brief.
-- The commissioning session is Mac-mini/s-e7976c42. Its stake: it filed the item, commissioned the tests and the fix,
+- The commissioning session is `<mini>/s-e7976c42`. Its stake: it filed the item, commissioned the tests and the fix,
   and gains from `approve`.
 
 Then numbered findings `F1…`. Each gives its severity (blocker / should-fix / nit), the command, its output and the

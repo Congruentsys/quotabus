@@ -6,7 +6,7 @@ nusy-product-team. This packet is the whole of the ask. A session of that repo l
 (its `CLAUDE.md`, `nk`, its review). Each machine then re-syncs its `~/.claude/CLAUDE.md` with that repo's own *Re-sync
 recipe* (`docs/AGENT-MACHINE-CANON.md:72-235` at the base below). A quotabus session never does that re-sync.
 
-**Authorship:** an LLM agent sub-agent (Claude Opus 5.5) wrote this packet for the driver session M5-MBP-2/s-72a67d16.
+**Authorship:** an LLM agent sub-agent (Claude Opus 5.5) wrote this packet for the driver session `<m5>/s-72a67d16`.
 No human has reviewed it.
 
 **Base:** nusy-product-team `origin/main` at `aa270c1612470f5e5e9e57dc63e3806a54541dd9`, read on 2026-10-09 with
@@ -76,7 +76,7 @@ pointer to match.
 
 - **Where:** a new `##` section after **`## One session per machine`** (`d1b7c97029:CLAUDE.md:503-526`) and before
   **`## Merge subject and the transport`** (`:528`). That section introduces Mini as "the bus host: NATS
-  `192.168.8.110:4222`" (`:505-506`), and this section is about one more thing on that bus. None of the 14 existing
+  `<bus-host>:4222`" (`:505-506`), and this section is about one more thing on that bus. None of the 14 existing
   `##` headings (`git show origin/main:CLAUDE.md | grep -n '^## '`) covers provider status. The nearest is the
   FOSS-repo line in **Still true** (`:679`), but it is about how FOSS repos land code, not about reading them.
 - **Leave the rest alone.**
@@ -93,8 +93,8 @@ on Mini**: a launchd job ticks every 300 s and probes whatever is due. Nothing i
 (Captain 2026-10-09: "Raw nats kv"). Read the bucket with natscli:
 
 ```bash
-nats --server nats://192.168.8.110:4222 kv ls ai_status                 # every key
-nats --server nats://192.168.8.110:4222 kv get ai_status <key> --raw    # one ai-status/1 JSON row
+nats --server nats://<bus-host>:4222 kv ls ai_status                 # every key
+nats --server nats://<bus-host>:4222 kv get ai_status <key> --raw    # one ai-status/1 JSON row
 ```
 
 Keys (slugs, never an email):
@@ -121,7 +121,7 @@ Every claim in that text, against its source:
 |---|---|
 | repo URL | `git -C <quotabus checkout> remote get-url origin` → `https://github.com/Congruentsys/quotabus.git` (2026-10-09) |
 | tracked by IDEA-13333 | quotabus `CLAUDE.md:13`; nusy-product-team `aa270c1:docs/external-review.md:38` |
-| bucket `ai_status` on Mini's bus, `nats://192.168.8.110:4222` | §3 `kv info` (below); `d1b7c97029:CLAUDE.md:505-506` |
+| bucket `ai_status` on Mini's bus, `nats://<bus-host>:4222` | §3 `kv info` (below); `d1b7c97029:CLAUDE.md:505-506` |
 | probing only on Mini, launchd, 300 s tick, "probes whatever is due" | `packaging/README.md:4-7` (the tick; each run "makes only" the due calls), `:38` (the Mini install line, `--interval 300`); `packaging/install.sh:19-20`; `docs/findings/CHORE-016-mini-deploy.md:11` (Mini's launchd unit published 18 rows) |
 | nothing installed elsewhere, "Raw nats kv" | Captain 2026-10-09, `kanban-work/chores/CHORE-020-*.md:22-24` |
 | key scheme (`api`, `subscription`, `local`; the slugs; no email) | `docs/DESIGN.md:31`, `:40-41`, `:47-48`; §3 `kv ls` |
@@ -138,11 +138,11 @@ DESIGN maps a written `unknown` to CANNOT-ASSESS (`docs/DESIGN.md:67`), not to U
 
 ## 3. Measurements (read-only)
 
-Host M5 (`hostname -s` → `M5-MBP-2`). Date 2026-10-09, first command at 2026-10-09T18:15:11Z. quotabus `origin/main`
+Host M5 (`hostname -s` → `<m5>`). Date 2026-10-09, first command at 2026-10-09T18:15:11Z. quotabus `origin/main`
 `a640fcc9290275eadc4595ebea78b836af154be4`. natscli against Mini's bus, read verbs only: no put, del, purge or create.
 
 ```
-$ nats --timeout 5s --server nats://192.168.8.110:4222 kv ls ai_status        # rc=0, 22 keys; grouped, accounts masked:
+$ nats --timeout 5s --server nats://<bus-host>:4222 kv ls ai_status        # rc=0, 22 keys; grouped, accounts masked:
    4 alert.api.<provider>.nusy-product-team.<model>
   10 api.<provider>.nusy-product-team.<model|balance>     (deepseek ×3 incl. balance, moonshot ×2 incl. balance,
                                                           openai, together, xai, zhipu ×2)
@@ -154,25 +154,25 @@ $ nats --timeout 5s --server nats://192.168.8.110:4222 kv ls ai_status        # 
 That is 18 status keys plus 4 `alert.*` keys. It matches the count the item recorded (`kanban-work/chores/CHORE-020-*.md:47`).
 
 ```
-$ nats --timeout 5s --server nats://192.168.8.110:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw   # rc=0
+$ nats --timeout 5s --server nats://<bus-host>:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw   # rc=0
 {"contract":"ai-status/1","key":"api.deepseek.nusy-product-team.deepseek-v4-flash","kind":"api","provider":"deepseek",
  "account":"nusy-product-team","model":"deepseek-v4-flash","family":"deepseek","state":"ok","reason":null,
  "balance":{"amount":<masked>,"currency":"CNY","source":"https://api.deepseek.com/user/balance"},"headroom":null,
  "latency_ms":776,"probe":{"name":"messages","source":"official"},"error":null,
- "checked_at":"2026-10-09T15:13:50.575143Z","ttl_s":129600,"observed_by":"Mac-mini/quotabus@0.1.0"}
+ "checked_at":"2026-10-09T15:13:50.575143Z","ttl_s":129600,"observed_by":"<mini>/quotabus@0.1.0"}
 ```
 
 The row is wrapped here for width, and the balance amount is masked. `checked_at` + 129600 s (36 h) is after the read
 time, so the row is fresh and its `ok` is usable.
 
 ```
-$ nats --timeout 5s --server nats://192.168.8.110:4222 kv get ai_status api.nope.x.y --raw; echo rc=$?
+$ nats --timeout 5s --server nats://<bus-host>:4222 kv get ai_status api.nope.x.y --raw; echo rc=$?
 nats: error: nats: key not found
 rc=1
 ```
 
 ```
-$ nats --timeout 5s --server nats://192.168.8.110:4222 kv info ai_status      # rc=0; excerpt
+$ nats --timeout 5s --server nats://<bus-host>:4222 kv info ai_status      # rc=0; excerpt
 Information for Key-Value Store Bucket ai_status created 2026-10-08 18:08:54
             History Kept: 1
            Values Stored: 22

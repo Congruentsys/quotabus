@@ -10,7 +10,7 @@ reviewed it. It is reviewed with EXP-001's PR by a distinct `claude -p` session 
 
 ## How it was measured
 - **When / where:** 2026-10-08T17:31:52Z–17:32:04Z, from M5 (macOS, natscli **0.3.1**) against
-  `nats://192.168.8.110:4222` (Mini), **nats-server 2.12.4** (read from the server's INFO line, and `nats account info`
+  `nats://<bus-host>:4222` (Mini), **nats-server 2.12.4** (read from the server's INFO line, and `nats account info`
   "Connected Server Version: 2.12.4"). quotabus repo at `origin/main` `dd12fbf`.
 - **Shared-bus rule:** the script touched ONLY a bucket it created, `qb_measure_exp001`, and deleted it at the end
   (`nats kv ls --names | grep -c '^qb_measure_exp001$'` → `0`). No other bucket or stream was read for writing.
@@ -18,7 +18,7 @@ reviewed it. It is reviewed with EXP-001's PR by a distinct `claude -p` session 
   `4b80f0000f25fd7e`); the script beside it, `ttl-measure.sh`. The commands, in order:
 
 ```bash
-export NATS_URL=nats://192.168.8.110:4222; B=qb_measure_exp001
+export NATS_URL=nats://<bus-host>:4222; B=qb_measure_exp001
 nats kv add $B --history=1 --marker-ttl=2s --description "quotabus EXP-001 per-key TTL measurement (temporary)"
 nats kv info $B                                      # Per-Key TTL Supported: true; Limit Marker TTL: 2.00s
 nats kv create $B ttl.probe '{"v":"expires in 5s"}' --ttl=5s

@@ -1,14 +1,14 @@
 reviewed-at-sha: b3a8ff1966d939d89867f1b696507fcf4ab66ec3
 verdict: approve
-gate: make check rc=0 at b3a8ff1966d939d89867f1b696507fcf4ab66ec3 on Mac-mini
+gate: make check rc=0 at b3a8ff1966d939d89867f1b696507fcf4ab66ec3 on `<mini>`
 brief: reviews/CHORE-006-r1.brief.md @ b3a8ff1966d939d89867f1b696507fcf4ab66ec3
 
 Authorship: LLM agent sessions did all of this work and this review. The model was Claude Opus 5.5 (claude-opus-5-5). No
 human reviewed it. A fresh Opus sub-agent wrote the diff (commit e99b027). The commissioning session (the driver) is
-Mac-mini/s-e7976c42. It commissioned the diff from that sub-agent, checked it, wrote the brief, and gains from
+`<mini>/s-e7976c42`. It commissioned the diff from that sub-agent, checked it, wrote the brief, and gains from
 `approve`. This reviewer is "distinct" in this sense: it is a separate `claude -p` process with a fresh context that
 wrote none of the work. It is the same model family, and the driver briefed it with the committed brief named above.
-The review was run on Mac-mini on 2026-10-08, in a detached worktree /tmp/rv-CHORE-006 at the SHA above.
+The review was run on `<mini>` on 2026-10-08, in a detached worktree /tmp/rv-CHORE-006 at the SHA above.
 `git ls-remote origin docs/CHORE-006-record-s10-rulings` printed `b3a8ff1966d939d89867f1b696507fcf4ab66ec3`.
 The rulings were read on `origin/main` = `854eaf7`.
 
@@ -86,7 +86,7 @@ It found nothing (rc=1). The only host detail is the bus IP, and it was already 
 **7. Gate.** I ran `PATH="$HOME/.cargo/bin:$PATH" CARGO_TARGET_DIR=/tmp/rv-CHORE-006-target make check` in the
 worktree, and it returned rc=0. Its output included `35 passed in 6.24s` (pytest), `All work items valid.` (yurtle-kanban
 validate), and every `cargo test` suite `ok`, the last being `15 passed; 0 failed`. `command -v cargo` resolved to
-`/Users/hankh19/.nusy/gate-root/scripts/fleet/cargo-shim/cargo`.
+`/Users/<user>/.nusy/gate-root/scripts/fleet/cargo-shim/cargo`.
 
 ## Findings
 

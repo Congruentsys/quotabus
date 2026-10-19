@@ -4,7 +4,7 @@ title: "Choose where the central probe runs at install time: locally or on a nam
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-08
 tags: [v1.0, VOY-001, packaging]
 depends_on: []
@@ -27,17 +27,17 @@ Part of VOY-001. The Captain's ruling on 2026-10-08, verbatim on SIG-001: "If th
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T18:58:28+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T19:17:53+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T19:41:23+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/10> ;
   ] .
 ```
@@ -45,6 +45,6 @@ Part of VOY-001. The Captain's ruling on 2026-10-08, verbatim on SIG-001: "If th
 
 ## Comments
 
-### Mac-mini/s-e7976c42 (2026-10-08 19:21)
+### `<mini>/s-e7976c42` (2026-10-08 19:21)
 
 tests red at 8edf666 (branch chore/CHORE-008-install-target): tests/test_install_target.py — 18 fail on the packaging/install.sh stub or an assertion (local macos/linux render, named host without connecting, stdin prompt, bad-flag errors, README records Mini, Mini render == EXP-001 plist fixture, no secret in units/argv, no /Users/admin outside README); 6 controls pass, each shown able to fail. Interface: packaging/install.sh (--where local | --host <h>) [--user] [--home] [--os macos|linux] [--render-to <dir>].

@@ -1,14 +1,14 @@
 reviewed-at-sha: 29f9bf0140d5def353868d2507e86b47266ee694
 verdict: approve
-gate: make check rc=0 at 29f9bf0140d5def353868d2507e86b47266ee694 on M5-MBP-2
+gate: make check rc=0 at 29f9bf0140d5def353868d2507e86b47266ee694 on `<m5>`
 brief: reviews/CHORE-025-r1.brief.md @ 29f9bf0140d5def353868d2507e86b47266ee694
 
 Authorship: All the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model
 family, briefed by the driver (the author) with this committed brief. The commissioning session is
-M5-MBP-2/s-72a67d16. Its stake: it drove the work and wrote no tests or code. The tests were written by a sub-agent.
+`<m5>/s-72a67d16`. Its stake: it drove the work and wrote no tests or code. The tests were written by a sub-agent.
 
-Review date 2026-10-10, host M5-MBP-2, worktree `/tmp/rv-CHORE-025` (detached at the SHA above),
+Review date 2026-10-10, host `<m5>`, worktree `/tmp/rv-CHORE-025` (detached at the SHA above),
 `CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-025`. Every mutation was reverted with `git checkout -- src/<file>`, and
 `git status --short` printed nothing after each one.
 
@@ -142,7 +142,7 @@ $ grep -nE "http|nats|KEY|key|bus|doppler|secret" tests/chore025_alert_local_ski
 ## F8: the gate (non-blocking, no defect)
 
 ```
-$ PATH=/Users/hankh95/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-025 make check > /tmp/rv-CHORE-025-make.log 2>&1; echo "make check rc=$?"
+$ PATH=/Users/<user>/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-025 make check > /tmp/rv-CHORE-025-make.log 2>&1; echo "make check rc=$?"
 make check rc=0
 $ grep -E "test result:" /tmp/rv-CHORE-025-make.log | awk '{p+=$4; f+=$6} END {print "cargo: " NR " binaries, " p " passed, " f " failed"}'
 cargo: 51 binaries, 422 passed, 0 failed

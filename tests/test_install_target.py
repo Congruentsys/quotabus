@@ -27,9 +27,9 @@ Interface fixed by these tests (the implementer meets it; `packaging/install.sh`
     command, a line containing `install.sh` and `--host <…mini…>`. That command, rendered, yields a unit equivalent to
     today's plist (tests/fixtures/chore008_mini_probe.plist, a verbatim copy of the EXP-001 plist as
     CHORE-007 changed it at 71bebe7: StartInterval is the 300 s tick), field by field.
-  - HAZ-004 (ruled test edit): Mini's measured user is hankh19 and /usr/local/{bin,etc} do not exist there, so the
-    fleet values are `--user hankh19 --home /Users/hankh19`, the binary under /Users/hankh19/.local/bin/ and the config
-    at /Users/hankh19/.config/quotabus/quotabus.toml; the fixture carries them. `/Users/admin` is now absent from
+  - HAZ-004 (ruled test edit): Mini's measured user is fleetuser and /usr/local/{bin,etc} do not exist there, so the
+    fleet values are `--user fleetuser --home /Users/fleetuser`, the binary under /Users/fleetuser/.local/bin/ and the config
+    at /Users/fleetuser/.config/quotabus/quotabus.toml; the fixture carries them. `/Users/admin` is now absent from
     packaging/ entirely (README included: tests/test_haz004_mini_paths.py).
 
 Fakes only: the environment carries a fake key (`sk-test-not-a-key`) and PATH starts with a directory of fake
@@ -257,8 +257,8 @@ def test_no_target_and_no_answer_exits_nonzero_with_message(tmp_path):
     [
         (["--where", "elsewhere", "--os", "macos"], "elsewhere"),
         (["--where", "local", "--os", "windows"], "windows"),
-        (["--host", "mini", "--home", "/Users/hankh19", "--os", "macos"], "--user"),
-        (["--host", "mini", "--user", "hankh19", "--os", "macos"], "--home"),
+        (["--host", "mini", "--home", "/Users/fleetuser", "--os", "macos"], "--user"),
+        (["--host", "mini", "--user", "fleetuser", "--os", "macos"], "--home"),
     ],
     ids=["unknown-where", "unknown-os", "host-missing-user", "host-missing-home"],
 )
@@ -293,7 +293,7 @@ def test_installing_for_mini_yields_todays_plist(tmp_path):
     got = plistlib.loads((out / PLIST_NAME).read_bytes())
     want = plistlib.loads(MINI_FIXTURE.read_bytes())
     assert plist_diff(got, want) == [], {f: (got.get(f), want.get(f)) for f in plist_diff(got, want)}
-    assert f"/Users/hankh19/Library/LaunchAgents/{PLIST_NAME}" in proc.stdout, proc.stdout
+    assert f"/Users/fleetuser/Library/LaunchAgents/{PLIST_NAME}" in proc.stdout, proc.stdout
     assert not log.exists(), "rendering for Mini connected to it"
 
 
@@ -355,7 +355,7 @@ def test_control_secret_checker_catches_a_leak():
 
 
 def test_control_hard_wired_checker_catches_todays_plist():
-    # the known positive: the EXP-001 plist's log path (HAZ-004 moved the fixture to /Users/hankh19, so it is inline)
+    # the known positive: the EXP-001 plist's log path (HAZ-004 moved the fixture to /Users/fleetuser, so it is inline)
     with pytest.raises(AssertionError):
         assert_no_hard_wired({"exp001": "<string>/Users/admin/Library/Logs/quotabus/probe.out.log</string>"})
     assert_no_hard_wired({"alice": "/home/alice/.config/systemd/user/quotabus-probe.service"})
@@ -385,9 +385,9 @@ def test_control_fixture_is_the_exp001_mini_plist():
     assert want["Label"] == "com.congruentsys.quotabus-probe" and want["RunAtLoad"] is True
     assert want["ProgramArguments"][:7] == ["/opt/homebrew/bin/doppler", "run", "--project", "nusy-product-team",
                                             "--config", "dev", "--"]
-    assert want["StandardOutPath"] == "/Users/hankh19/Library/Logs/quotabus/probe.out.log"
-    assert want["ProgramArguments"][-4:] == ["/Users/hankh19/.local/bin/quotabus", "probe", "--config",
-                                             "/Users/hankh19/.config/quotabus/quotabus.toml"]
+    assert want["StandardOutPath"] == "/Users/fleetuser/Library/Logs/quotabus/probe.out.log"
+    assert want["ProgramArguments"][-4:] == ["/Users/fleetuser/.local/bin/quotabus", "probe", "--config",
+                                             "/Users/fleetuser/.config/quotabus/quotabus.toml"]
     assert FAKE_KEY not in MINI_FIXTURE.read_text()
 
 
@@ -396,8 +396,8 @@ def test_control_readme_command_finder_needs_a_mini_host_line(tmp_path, monkeypa
     fake.write_text("Run `packaging/install.sh --where local`.\n")
     monkeypatch.setattr(sys.modules[__name__], "README", fake)
     assert readme_mini_command() is None
-    fake.write_text("```\npackaging/install.sh --host mini --user hankh19 --home /Users/hankh19 --os macos\n```\n")
-    assert readme_mini_command() == ["--host", "mini", "--user", "hankh19", "--home", "/Users/hankh19", "--os", "macos"]
+    fake.write_text("```\npackaging/install.sh --host mini --user fleetuser --home /Users/fleetuser --os macos\n```\n")
+    assert readme_mini_command() == ["--host", "mini", "--user", "fleetuser", "--home", "/Users/fleetuser", "--os", "macos"]
 
 
 def test_control_fake_installer_tools_are_detected(tmp_path):
