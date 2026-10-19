@@ -1,13 +1,13 @@
 reviewed-at-sha: befedc0793324fcebeb43dead514ece2031890a0
 verdict: approve
-gate: make check rc=0 at befedc0793324fcebeb43dead514ece2031890a0 on Mac-mini
+gate: make check rc=0 at befedc0793324fcebeb43dead514ece2031890a0 on `<mini>`
 brief: reviews/CHORE-029-r1.brief.md @ befedc0793324fcebeb43dead514ece2031890a0
 
 Authorship: all the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model
 family as the author, briefed by the driver (the author) with the committed brief named above. The commissioning
-session is Mac-mini/s-e7976c42. Its stake: it ran the redeploy and wrote the finding. This review ran on Mini
-(Mac-mini, macOS 27.0.1) on 2026-10-11, 15:00–15:04 UTC, in a detached scratch worktree at the SHA above.
+session is `<mini>/s-e7976c42`. Its stake: it ran the redeploy and wrote the finding. This review ran on Mini
+(`<mini>`, macOS 27.0.1) on 2026-10-11, 15:00–15:04 UTC, in a detached scratch worktree at the SHA above.
 
 ## Definition of Done, line by line
 
@@ -26,10 +26,10 @@ session is Mac-mini/s-e7976c42. Its stake: it ran the redeploy and wrote the fin
 
 **F1 — tag sha matches origin. Does not block.**
 ```
-$ git -C /Users/hankh19/Projects/quotabus rev-parse v1.0.0 'v1.0.0^{commit}'
+$ git -C /Users/<user>/Projects/quotabus rev-parse v1.0.0 'v1.0.0^{commit}'
 b1535264e81ec34c685d2075979e1b3185a6f90c
 ab14fe17e5cb09be1ee54632f50673aecac43ab5
-$ git -C /Users/hankh19/Projects/quotabus ls-remote origin refs/tags/v1.0.0
+$ git -C /Users/<user>/Projects/quotabus ls-remote origin refs/tags/v1.0.0
 b1535264e81ec34c685d2075979e1b3185a6f90c	refs/tags/v1.0.0
 ```
 Identical to the finding's step 1 and to `01-tag.txt` / `01b-tag-origin.txt`.
@@ -41,26 +41,26 @@ quotabus 1.0.0
 $ ~/.local/bin/quotabus.prev-20261011 --version
 quotabus 0.1.0
 $ ls -la ~/.local/bin/quotabus*
--rwxr-xr-x@ 1 hankh19  staff  12193376 Oct 11 14:52 /Users/hankh19/.local/bin/quotabus
--rwxr-xr-x@ 1 hankh19  staff       816 Oct 10 15:26 /Users/hankh19/.local/bin/quotabus-cycle
--rwxr-xr-x@ 1 hankh19  staff       444 Oct  9 03:12 /Users/hankh19/.local/bin/quotabus-cycle.prev-20261010
--rwxr-xr-x@ 1 hankh19  staff  12184272 Oct  9 03:12 /Users/hankh19/.local/bin/quotabus.prev-20261009
--rwxr-xr-x@ 1 hankh19  staff  12202960 Oct  9 18:14 /Users/hankh19/.local/bin/quotabus.prev-20261010
--rwxr-xr-x@ 1 hankh19  staff  12193104 Oct 10 20:28 /Users/hankh19/.local/bin/quotabus.prev-20261011
+-rwxr-xr-x@ 1 <user>  staff  12193376 Oct 11 14:52 /Users/<user>/.local/bin/quotabus
+-rwxr-xr-x@ 1 <user>  staff       816 Oct 10 15:26 /Users/<user>/.local/bin/quotabus-cycle
+-rwxr-xr-x@ 1 <user>  staff       444 Oct  9 03:12 /Users/<user>/.local/bin/quotabus-cycle.prev-20261010
+-rwxr-xr-x@ 1 <user>  staff  12184272 Oct  9 03:12 /Users/<user>/.local/bin/quotabus.prev-20261009
+-rwxr-xr-x@ 1 <user>  staff  12202960 Oct  9 18:14 /Users/<user>/.local/bin/quotabus.prev-20261010
+-rwxr-xr-x@ 1 <user>  staff  12193104 Oct 10 20:28 /Users/<user>/.local/bin/quotabus.prev-20261011
 ```
 The installed mtime (14:52) matches the install time in step 3. The backup's mtime is 2026-10-10 20:28, which is
 CHORE-027's install time, as `cp -p` preserves it. So the backup is CHORE-027's deeb435 build.
 
 **F3 — the installed binary IS the tag's build, byte for byte. Does not block.**
 ```
-$ git -C /Users/hankh19/Projects/quotabus archive v1.0.0 | tar -x -C /tmp/rv-CHORE-029-build/src
+$ git -C /Users/<user>/Projects/quotabus archive v1.0.0 | tar -x -C /tmp/rv-CHORE-029-build/src
 $ cd /tmp/rv-CHORE-029-build/src && CARGO_TARGET_DIR=/tmp/rv-CHORE-029-build/target ~/.cargo/bin/cargo build --release --locked -q
 build rc=0
 $ /tmp/rv-CHORE-029-build/target/release/quotabus --version
 quotabus 1.0.0
 $ shasum -a 256 /tmp/rv-CHORE-029-build/target/release/quotabus ~/.local/bin/quotabus
 2a051d6a83456088b0eadd148bcffdd42c5f9077632b719915280a5123d96877  /tmp/rv-CHORE-029-build/target/release/quotabus
-2a051d6a83456088b0eadd148bcffdd42c5f9077632b719915280a5123d96877  /Users/hankh19/.local/bin/quotabus
+2a051d6a83456088b0eadd148bcffdd42c5f9077632b719915280a5123d96877  /Users/<user>/.local/bin/quotabus
 ```
 A match was not guaranteed: the target dir path differed (`/tmp/rv-CHORE-029-build` vs `/tmp/qb-build-CHORE-029`),
 and that can change a binary. It matched anyway, on the same host and toolchain, so this is stronger than a
@@ -88,10 +88,10 @@ alert: 15 keys checked, 2 local skipped, 0 crossings filed, 0 re-armed
 
 **F5 — `observed_by` on the bus. Does not block.**
 ```
-$ nats --server nats://192.168.8.110:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
-{"key":"api.deepseek.nusy-product-team.deepseek-v4-flash","state":"ok","observed_by":"Mac-mini/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
-$ nats --server nats://192.168.8.110:4222 kv get ai_status local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
-{"key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","observed_by":"Mac-mini/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
+$ nats --server nats://<bus-host>:4222 kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
+{"key":"api.deepseek.nusy-product-team.deepseek-v4-flash","state":"ok","observed_by":"<mini>/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
+$ nats --server nats://<bus-host>:4222 kv get ai_status local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4 --raw | jq -c '{key,state,observed_by,checked_at,ttl_s}'
+{"key":"local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4","state":"ok","observed_by":"<mini>/quotabus@1.0.0","checked_at":"2026-10-11T14:52:08.609242Z","ttl_s":129600}
 ```
 Byte-identical to step 5 and `05-observed-by.txt`. The `checked_at` is still the forced cycle's: ticks #716 and #717
 had nothing due.
@@ -133,15 +133,15 @@ PR body:0  finding:1  brief:1
 ```
 The finding's one hit is line 99, the text of the grep pattern itself, not a key. The brief's one hit is the GitHub
 noreply commit identity, not a personal email. No key, auth header or email appears in the finding, the brief or the
-PR body. The subscription account names (claude-hankh1844, -hankh19, -hankh1995, -hankh95, -hankxu95,
--hanssantiago1995, and `subscription.github.hankh95.copilot`) all already appear in
+PR body. The subscription account names (`claude-<acct-1>`, `-<acct-2>`, `-<acct-3>`, -hankh95, `-<acct-4>`,
+`-<acct-5>`, and `subscription.github.hankh95.copilot`) all already appear in
 `docs/findings/CHORE-016-mini-deploy.md`, with counts 5/8/4/4/4/4 and 3. So the "operator's config labels, already
 published" claim holds. The balances (245.17 CNY, 17.41737 USD) are not secrets, and CHORE-027 published the same
 fields. `forced.err.log` was not read.
 
 **F9 — gate. Does not block.**
 ```
-$ CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-029-target make check
+$ CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-029-target make check
 make check rc=0   (107 script tests passed; yurtle-kanban validate: All work items valid; all cargo test suites ok)
 ```
 `/tmp/rv-CHORE-029-target` was removed afterwards.

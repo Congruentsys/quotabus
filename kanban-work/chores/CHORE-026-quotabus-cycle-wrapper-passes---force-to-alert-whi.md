@@ -4,7 +4,7 @@ title: "quotabus-cycle wrapper passes --force to alert, which refuses it (found 
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-10
 depends_on: []
 ---
@@ -31,17 +31,17 @@ match (recorded on this item). `make check` green.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T15:12:17+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-10T15:12:24+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-10T15:27:20+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/35> ;
   ] .
 ```
@@ -49,6 +49,6 @@ match (recorded on this item). `make check` green.
 
 ## Comments
 
-### Mac-mini/s-e7976c42 (2026-10-10 15:13)
+### `<mini>/s-e7976c42` (2026-10-10 15:13)
 
 tests red at 266f9ca (branch chore/CHORE-026-cycle-force): tests/test_chore026_cycle_wrapper.py runs the README's wrapper under /bin/sh against a clap-like stub quotabus — 2 red (probe --force --config X, in either order: alert gets '--force', stub exits 2 'unexpected argument'), 8 green (scheduled argv; failure still reported; stub and checker controls incl. mutants that skip alert or drop --force from probe).

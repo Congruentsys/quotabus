@@ -4,7 +4,7 @@ title: "alert summary: pin 'local skipped' for a discovering local service (CHOR
 type: chore
 status: arrived
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-10
 depends_on: []
 ---
@@ -24,17 +24,17 @@ From the CHORE-024 r1 review (reviews/CHORE-024-r1.md, PR #32), F6, non-blocking
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T14:16:06+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-10T14:16:21+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-10T14:27:01+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/33> ;
   ] .
 ```
@@ -42,6 +42,6 @@ From the CHORE-024 r1 review (reviews/CHORE-024-r1.md, PR #32), F6, non-blocking
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-10 14:19)
+### `<m5>/s-72a67d16` (2026-10-10 14:19)
 
 tests at 5123e5f: tests/chore025_alert_local_skipped_discovering.rs, 4 tests, all green on today's code. This item is test-only: it pins behaviour that already exists. Red proven by mutation instead, with each change reverted. (1) alert_with counting with svc.slots(): 3 of 4 red (M read 0, expected 1/3/2). (2) slots_in without its newest-cycle filter: the older-cycle control is red (M=5, expected 2).

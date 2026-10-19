@@ -4,7 +4,7 @@ title: "Separate probe interval per query kind (API 12 h, balance 12 h), each wi
 type: chore
 status: arrived
 priority: high
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001, config]
 depends_on: []
@@ -32,17 +32,17 @@ This chore blocks EXP-002, which adds a third kind (subscription reads, 5 min) i
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T18:58:26+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:58:34+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T19:27:54+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/9> ;
   ] .
 ```
@@ -50,6 +50,6 @@ This chore blocks EXP-002, which adds a third kind (subscription reads, 5 min) i
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 19:04)
+### `<m5>/s-72a67d16` (2026-10-08 19:04)
 
 tests red at 0acfc02 (partner sub-agent): new tests/per_kind_config.rs, per_kind_schedule.rs, cli_probe_due.rs and tick_and_docs.rs. Every failure is a todo!() stub (interval_for, ttl_for, Runner::run_due) or an assertion (old [probe] interval/ttl keys accepted, ttl_s 2700 not 120, second probe still calls, plist 900 not 300, docs). None is a compile error. Controls: the reference-schedule known answer and the plist-parser known answer pass. Pre-existing tests edited to match the DoD: config_toml, probe_runner, cli_probe, real_run_defects, review_r1.

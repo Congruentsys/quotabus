@@ -4,7 +4,7 @@ title: "Amend DESIGN.md §4 with CHORE-002's measured facts (statusLine under cl
 type: chore
 status: arrived
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001, design]
 depends_on: [CHORE-002]
@@ -27,17 +27,17 @@ A PR to `docs/DESIGN.md` §4 (and the §10 Q9 line) that:
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T18:28:58+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:30:27+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T18:35:14+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/4> ;
   ] .
 ```

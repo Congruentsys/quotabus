@@ -4,7 +4,7 @@ title: "E3: the selector — 'a healthy model for this role, excluding this fami
 type: expedition
 status: arrived
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001]
 depends_on: [EXP-002]
@@ -32,12 +32,12 @@ The selector refuses a family the author uses; rc 3 when every candidate is `unk
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T20:34:03+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T21:03:42+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/14> ;
   ] .
 ```
@@ -49,6 +49,6 @@ The selector refuses a family the author uses; rc 3 when every candidate is `unk
 
 Released with depends_on EXP-002 (design §9: the selector is only as honest as the subscription rows it refuses on). No open signal blocks it.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 20:41)
+### `<m5>/s-72a67d16` (2026-10-08 20:41)
 
 Tests red at 0bc5620 (partner): tests/exp003_select.rs (19, pure function, no bus), exp003_cli_select.rs (12), exp003_change_subject.rs (1, throwaway nats-server) and exp003_docs.rs (1). 33 of 36 are red, each on a todo!() stub or an assertion; the 3 green are controls or a parser. Calls made where the design is silent: degraded is never chosen; cheapest puts local before metered; it is left open whether a healthy subscription seat can be a review candidate.

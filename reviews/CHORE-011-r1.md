@@ -1,16 +1,16 @@
 reviewed-at-sha: 2933bfcc4289a2999535bd7e4ad6c3f8ec677077
 verdict: approve
-gate: make check rc=0 at 2933bfcc4289a2999535bd7e4ad6c3f8ec677077 on Mac-mini
+gate: make check rc=0 at 2933bfcc4289a2999535bd7e4ad6c3f8ec677077 on `<mini>`
 brief: reviews/CHORE-011-r1.brief.md @ 2933bfcc4289a2999535bd7e4ad6c3f8ec677077
 
 Authorship: All the work under review and this review were done by LLM agent sessions (Claude Opus 5.5). No human
 reviewed any of it. The tests (98335d9, plus the formatting-only 27450cd) were written by a fresh Opus sub-agent (the
 test partner), and the code (dd0413a) by a second fresh Opus sub-agent (the implementer). Both were commissioned by the
-driver session Mac-mini/s-e7976c42. The driver commissioned the tests and the code, checked them, wrote the committed
+driver session `<mini>/s-e7976c42`. The driver commissioned the tests and the code, checked them, wrote the committed
 brief for this review, and gains from `approve`. This reviewer is "distinct" in this sense: a separate `claude -p`
 process with a fresh context that wrote none of the work. It is the same model family, and the driver briefed it with
 the committed brief `reviews/CHORE-011-r1.brief.md`. The reviewer ran in its own worktree `/tmp/rv-CHORE-011` at the
-sha above, on host Mac-mini, on 2026-10-08.
+sha above, on host `<mini>`, on 2026-10-08.
 
 ## Checks run (brief items 1–7)
 
@@ -56,7 +56,7 @@ sha above, on host Mac-mini, on 2026-10-08.
    and uses the existing `tests/exp002` fakes (`FAKE_GH = "fakeQBghTOKEN9c1d2e3fNOTREAL"`, env var NAMES only) and
    the login `qb-fake-user`. The same grep over `gh pr view 16 --json body` matched nothing. No email address
    appears.
-7. **Gate:** `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-011-target make check` returned
+7. **Gate:** `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-011-target make check` returned
    `rc=0`. Every `test result:` line reads `ok … 0 failed`, including `ok. 9 passed` for the new test file.
 
 ## Findings

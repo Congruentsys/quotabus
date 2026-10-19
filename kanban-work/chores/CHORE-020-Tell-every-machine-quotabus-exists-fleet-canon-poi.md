@@ -4,7 +4,7 @@ title: "Tell every machine quotabus exists: fleet canon pointer + nusy-product-t
 type: chore
 status: arrived
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-09
 depends_on: []
 resolution: completed
@@ -45,7 +45,7 @@ A raw natscli read skips the binary's freshness rule, so the text the packet ask
 - The key scheme is `api.<provider>.<account>.<model>` and `subscription.<provider>.<account>.<service>`.
   `alert.*` keys are the alerter's dedup state, not status.
 
-Measured from M5 on 2026-10-09 (natscli, `--server nats://192.168.8.110:4222`): `kv ls ai_status` lists the 18
+Measured from M5 on 2026-10-09 (natscli, `--server nats://<bus-host>:4222`): `kv ls ai_status` lists the 18
 status keys plus 4 `alert.*` keys. `kv get ai_status api.deepseek.nusy-product-team.deepseek-v4-flash --raw` returns
 one ai-status/1 JSON row with `state`, `checked_at` and `ttl_s`. An absent key returns "key not found", rc 1. `quotabus`
 is not installed on M5.
@@ -70,22 +70,22 @@ is not installed on M5.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-09T18:13:50+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-09T18:13:52+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:blocked ;
     kb:at "2026-10-09T18:21:21+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-11T15:40:41+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:forcedMove "true"^^xsd:boolean ;
     kb:resolution "completed" ;
   ] .

@@ -1,16 +1,16 @@
 reviewed-at-sha: d84a8fc62e6dbbd6890db83155df30ff34baf49b
 verdict: changes
-gate: make check rc=0 at d84a8fc62e6dbbd6890db83155df30ff34baf49b on Mac-mini
+gate: make check rc=0 at d84a8fc62e6dbbd6890db83155df30ff34baf49b on `<mini>`
 brief: reviews/CHORE-026-r1.brief.md @ d84a8fc62e6dbbd6890db83155df30ff34baf49b
 
 Authorship: LLM agent sessions did all the work and this review; no human reviewed it. The model is Claude Opus 5.5
 (claude-opus-5-5) throughout. The test partner (tests at 266f9ca) and the implementer (fix at 5646fb5) were fresh Opus
-sub-agents commissioned by the driver, Mac-mini/s-e7976c42. This reviewer is "distinct": a separate `claude -p` process
+sub-agents commissioned by the driver, `<mini>/s-e7976c42`. This reviewer is "distinct": a separate `claude -p` process
 with a fresh context that wrote none of the work. It is the same model family, and the driver briefed it with the
 committed brief named above. The commissioning session has a stake: it filed the item, commissioned the tests and the
 fix, and gains from `approve`.
 
-Host Mac-mini, 2026-10-10. Scratch worktree /tmp/rv-CHORE-026 (detached at d84a8fc), scratch stubs in /tmp/rv26s.
+Host `<mini>`, 2026-10-10. Scratch worktree /tmp/rv-CHORE-026 (detached at d84a8fc), scratch stubs in /tmp/rv26s.
 
 ## Checks that passed (no finding)
 
@@ -65,7 +65,7 @@ if either failed" is kept (see the mutation above).
 218 and 272 (`+@pytest.mark.parametrize(...)`), which are false positives of the email pattern. The PR body had no
 match (rc=1). There is no key, token or email.
 
-**6. The gate passed.** `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-026-target make check` →
+**6. The gate passed.** `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-026-target make check` →
 `make check rc=0`. Every `test result: ok`.
 
 ## Findings
@@ -88,7 +88,7 @@ rc=2
 **Fix:** pass `--config` only when one was found. This stays POSIX:
 ```sh
 set --; [ -n "$cfg" ] && set -- --config "$cfg"
-/Users/hankh19/.local/bin/quotabus alert "$@" || rc=$?
+/Users/<user>/.local/bin/quotabus alert "$@" || rc=$?
 ```
 (the `set` goes after the probe line). I checked this under `/bin/sh` and `/bin/dash` with the same `drive.sh`:
 `probe` and `probe --force` give a bare `alert`, every other row of the table above is unchanged, and the spaces path is

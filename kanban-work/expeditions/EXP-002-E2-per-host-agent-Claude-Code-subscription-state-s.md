@@ -4,7 +4,7 @@ title: "E2: central subscription reads — every Claude account (Doppler setup-t
 type: expedition
 status: arrived
 priority: high
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001]
 depends_on: [EXP-001, CHORE-002, CHORE-007]
@@ -50,22 +50,22 @@ Six `subscription.anthropic.*` rows and one `subscription.github.*` (Copilot) ro
   [
     kb:status kb:backlog ;
     kb:at "2026-10-08T18:29:05+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:ready ;
     kb:at "2026-10-08T18:53:15+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-08T18:57:09+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-08T20:20:17+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/12> ;
   ] .
 ```
@@ -77,35 +77,35 @@ Six `subscription.anthropic.*` rows and one `subscription.github.*` (Copilot) ro
 
 Released with depends_on EXP-001, CHORE-002 (statusLine install waits on CHORE-002's measurement, Captain Q9). SIG-003 is built to the recommendation (undocumented sources off by default in the FOSS config, on in the fleet config, every row labelled source=undocumented); SIG-004's 5-min subscription cadence is config.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:29)
+### `<m5>/s-72a67d16` (2026-10-08 18:29)
 
 CHORE-002 (PR #3): the statusLine hook does NOT fire under claude -p. Step 2's precondition ('only after CHORE-002 shows it fires under claude -p') is therefore false, and the Captain's conditional Q9 yes goes back as SIG-008 (open). That signal also names a measured alternative: stream-json rate_limit_event. Back to harbor until SIG-008 is answered; the Copilot and ~/.claude.json fallback steps do not depend on it.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:53)
+### `<m5>/s-72a67d16` (2026-10-08 18:53)
 
 SIG-008 ruled (Captain 2026-10-08, 'Both + fallback'). Step 2 becomes: install the statusLine for interactive hosts, ALSO tee the stream-json rate_limit_event from claude -p runs into the same cache, and keep the ~/.claude.json fallback. A missing rate_limits reads as unknown, never 0 % (docs/findings/CHORE-002-statusline-under-claude-p.md). SIG-004/Q5: subscription reads stay at 5 min. SIG-003/Q4: Copilot copilot_internal is on in the fleet, off in FOSS, labelled. Released again to provisioning.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:56)
+### `<m5>/s-72a67d16` (2026-10-08 18:56)
 
 Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure there are separate times for the different types of queries." So each query kind has its OWN config interval, set independently: API (messages) probe, balance read, and subscription read (and any later kind, e.g. a quota-window read). There is no shared interval. Defaults per the SIG-004 ruling: API 12 h, balance 12 h, subscription 5 min.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:58)
+### `<m5>/s-72a67d16` (2026-10-08 18:58)
 
 Now depends on CHORE-007 (per-kind intervals, Captain Q5): it lands first, and this item then adds its subscription interval (5 min) as a third key of the same [intervals] table. The claim is kept.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 19:40)
+### `<m5>/s-72a67d16` (2026-10-08 19:40)
 
 tests red at bf1c9d6 (partner sub-agent): 75 new tests in tests/exp002_*.rs (subscription config, statusline capture and tee and install-statusline, agent for claude and copilot, schedule, units). 67 fail, every one on a todo!() stub or an assertion, none on a compile error. 8 controls pass, each shown able to fail.
 Measured 2026-10-08, key names and value shapes only: ~/.claude.json cachedUsageUtilization has {fetchedAtMs, accountUuid, utilization.{five_hour,seven_day}.{utilization %, resets_at ISO}}, which matches the test fixture. It is present on Mini (fetched ~2026-09-23, stale) and the Spark (~2026-10-06), and ABSENT on M5 and Air (Claude Code 2.1.294). So the fallback alone often reads unknown, which is why the statusLine plus stream-json sources matter (SIG-008).
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 19:50)
+### `<m5>/s-72a67d16` (2026-10-08 19:50)
 
 Rescoped by the Captain 2026-10-08. The new body quotes the ruling and records the measurements: the setup-token read works centrally for all six accounts, oauth/usage is 403, and Copilot works with GITHUB_TOKEN. The red tests at bf1c9d6 targeted the per-host agent; most are obsolete and get rewritten on the same branch. Partial implementer work was stopped before any commit.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 19:56)
+### `<m5>/s-72a67d16` (2026-10-08 19:56)
 
 Tests red at 556da87 (partner sub-agent, rescoped). There are 49 new tests across exp002_subscription_interval, claude_direct, claude_fallback, copilot, subscription_schedule, no_leak and docs; the obsolete per-host tests and stubs are deleted. 47 fail on a todo!() stub or an assertion, none on a compile error. Both controls pass (the reference known answer and the leak-scan control).
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 20:22)
+### `<m5>/s-72a67d16` (2026-10-08 20:22)
 
 DoD met on the bus: 2026-10-08T20:21Z, from M5, 'doppler run --project nusy-product-team --config dev -- quotabus --config <fleet-subscription.toml> probe --force' gave 'published 7 rows to bucket ai_status' (Mini). All 7 ok: six subscription.anthropic.* rows and subscription.github.hankh95.copilot, observed_by M5. Every Claude row came via the stream-json FALLBACK: the direct read gets HTTP 429 without Claude Code's system prompt. Filed as HAZ-003 (high, provisioning).

@@ -7,7 +7,7 @@ lists answer too. **None** returns a wallet balance or any rate-limit header. Wa
 endpoints (five of the seven probes) **a bad key gets HTTP 200** with `{"code": 401, …}` in the body, so a reader that checks only the HTTP status
 reads a dead key as `ok`.
 
-- Host: `M5-MBP-2`, macOS 27.0, Python 3.14.2 (`urllib`), doppler v3.76.0. Base: `https://api.z.ai`.
+- Host: `<m5>`, macOS 27.0, Python 3.14.2 (`urllib`), doppler v3.76.0. Base: `https://api.z.ai`.
 - Date: 2026-10-08, ~18:23 UTC. quotabus sha: `3ca35d1`.
 - Key: `NUSY_GLM` from Doppler project `nusy-product-team`, config `dev` (the only GLM key name in the Doppler
   projects this host can read; `santiago` and `fishnet-automation` hold none). Read from the environment only; never
@@ -15,7 +15,7 @@ reads a dead key as `ok`.
 - Item: CHORE-002; design §4 (GLM / z.ai row) and PRIOR-ART §2 (usagebar's z.ai endpoints).
 
 Authorship: all of the measurement and this write-up were done by an LLM agent session (Claude Opus 5.5,
-`M5-MBP-2/s-72a67d16`, the commissioning session, which ran every command and wrote this file). No human reviewed
+`<m5>/s-72a67d16`, the commissioning session, which ran every command and wrote this file). No human reviewed
 it. Its review is by a distinct `claude -p` session (a separate process, fresh context, same model family) briefed by
 this session with a committed brief; see `reviews/CHORE-002-r1.md`.
 

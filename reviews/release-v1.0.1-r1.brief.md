@@ -1,7 +1,7 @@
 You are an independent reviewer of quotabus PR #40, "chore: release v1.0.1 (CHORE-031)", on branch `chore/release-v1.0.1`. You wrote none of it. The tip you review is the commit that adds THIS brief. Get it with `git ls-remote origin chore/release-v1.0.1`; call it <SHA>.
 
 Work in your OWN scratch worktree:
-`cd /Users/hankh19/Projects/quotabus && git fetch -q origin --tags && git worktree add -q --detach /tmp/rv-CHORE-031 <SHA> && ln -s /Users/hankh19/Projects/quotabus/.venv /tmp/rv-CHORE-031/.venv`.
+`cd /Users/<user>/Projects/quotabus && git fetch -q origin --tags && git worktree add -q --detach /tmp/rv-CHORE-031 <SHA> && ln -s /Users/<user>/Projects/quotabus/.venv /tmp/rv-CHORE-031/.venv`.
 Remove it when you are done, after your review file is pushed.
 
 Rules for you:
@@ -19,7 +19,7 @@ Review:
    - that the format is still Keep a Changelog.
 3. **README.** The changed line is true.
 4. **Secrets.** Nothing in the diff or the PR body carries a key, an email address or a new account identifier.
-5. **The gate.** Run `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-031-target make check` in your worktree and record its rc. Run `/tmp/rv-CHORE-031-target/debug/quotabus --version` (it must print `quotabus 1.0.1`), then remove that target dir.
+5. **The gate.** Run `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-031-target make check` in your worktree and record its rc. Run `/tmp/rv-CHORE-031-target/debug/quotabus --version` (it must print `quotabus 1.0.1`), then remove that target dir.
 
 Write your review to `reviews/release-v1.0.1-r1.md` in your worktree. Its first four lines are:
 - line 1: `reviewed-at-sha: <SHA>`
@@ -30,7 +30,7 @@ Write your review to `reviews/release-v1.0.1-r1.md` in your worktree. Its first 
 Then an `Authorship:` paragraph. It says:
 - All the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 - "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the same model family, briefed by the driver (the author) with this committed brief.
-- The commissioning session is Mac-mini/s-e7976c42, which drives the release. A sub-agent wrote the bump, the CHANGELOG and the README.
+- The commissioning session is `<mini>/s-e7976c42`, which drives the release. A sub-agent wrote the bump, the CHANGELOG and the README.
 
 Then numbered findings F1…. Each gives the command you ran and its output; a finding you did not run is not a finding. Mark each finding blocking or nit.
 

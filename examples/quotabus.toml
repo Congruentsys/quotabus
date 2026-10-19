@@ -6,7 +6,7 @@
 # Model ids marked [unverified] were not confirmed against the provider when this file was written.
 
 [bus]                                   # omit the whole table to use the file backend (§8)
-url    = "nats://192.168.8.110:4222"    # Mini
+url    = "nats://<bus-host>:4222"    # Mini
 bucket = "ai_status"
 
 [intervals]                             # each query kind on its own schedule (DESIGN §3, SIG-004)
@@ -130,7 +130,7 @@ kind       = "local"
 provider   = "qwen"
 family     = "qwen"
 account    = "dgx1"
-base_url   = "http://192.168.8.120:8000/v1"
+base_url   = "http://<dgx1>:8000/v1"
 protocol   = "openai"
 roles      = ["work"]
 cost_class = "local"
@@ -141,7 +141,7 @@ kind       = "local"
 provider   = "qwen"
 family     = "qwen"
 account    = "dgx2"
-base_url   = "http://192.168.8.121:8000/v1"
+base_url   = "http://<dgx2>:8000/v1"
 protocol   = "openai"
 roles      = ["work"]
 cost_class = "local"

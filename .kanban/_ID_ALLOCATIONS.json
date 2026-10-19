@@ -186,7 +186,7 @@
     "prefix": "CHORE",
     "number": 9,
     "allocated_at": "2026-10-08T19:17:42.124333",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-010",
@@ -277,14 +277,14 @@
     "prefix": "CHORE",
     "number": 18,
     "allocated_at": "2026-10-09T13:38:30.665612",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-019",
     "prefix": "CHORE",
     "number": 19,
     "allocated_at": "2026-10-09T16:37:23.150867",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-020",
@@ -298,28 +298,28 @@
     "prefix": "CHORE",
     "number": 21,
     "allocated_at": "2026-10-09T22:31:20.141502",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-022",
     "prefix": "CHORE",
     "number": 22,
     "allocated_at": "2026-10-09T22:31:39.247715",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "HAZ-005",
     "prefix": "HAZ",
     "number": 5,
     "allocated_at": "2026-10-09T22:31:41.088170",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-023",
     "prefix": "CHORE",
     "number": 23,
     "allocated_at": "2026-10-10T13:34:01.560762",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-024",
@@ -340,7 +340,7 @@
     "prefix": "CHORE",
     "number": 26,
     "allocated_at": "2026-10-10T15:12:11.418598",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-027",
@@ -368,13 +368,13 @@
     "prefix": "CHORE",
     "number": 30,
     "allocated_at": "2026-10-11T15:07:26.545120",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   },
   {
     "id": "CHORE-031",
     "prefix": "CHORE",
     "number": 31,
     "allocated_at": "2026-10-11T17:39:27.295662",
-    "allocated_by": "hankh1844"
+    "allocated_by": "<user>"
   }
 ]

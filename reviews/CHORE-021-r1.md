@@ -1,16 +1,16 @@
 reviewed-at-sha: 6687e99285435414f4cd76256064c39200ca6f4e
 verdict: approve
-gate: make check rc=0 at 6687e99285435414f4cd76256064c39200ca6f4e on M5-MBP-2
+gate: make check rc=0 at 6687e99285435414f4cd76256064c39200ca6f4e on `<m5>`
 brief: reviews/CHORE-021-r1.brief.md @ 6687e99285435414f4cd76256064c39200ca6f4e
 
 Authorship: LLM agent sessions (Claude Opus 5.5) did all of this work and this review. No human reviewed it.
 "Distinct" here means a separate `claude -p` process with a fresh context that wrote none of the work. It is of the
 SAME model family, and the driver (the author) briefed it with the committed brief named above. The commissioning
-session is M5-MBP-2/s-72a67d16. Its stake: it drove the work and wrote no tests or code. Sub-agents wrote the tests
+session is `<m5>/s-72a67d16`. Its stake: it drove the work and wrote no tests or code. Sub-agents wrote the tests
 (5637ecc) and the code (b9d9073).
 
 Worktree: `/tmp/rv-CHORE-021`, detached at the SHA above. CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-021. Date
-2026-10-10, host M5-MBP-2.
+2026-10-10, host `<m5>`.
 
 ## Findings
 
@@ -98,7 +98,7 @@ are still published … API and subscription alerts keep your SIG-010 default."`
 
 **F8 — gate (check 8). Does not block.**
 ```
-$ cd /tmp/rv-CHORE-021 && PATH=/Users/hankh95/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-021 make check > /tmp/rv-CHORE-021-make.log 2>&1; echo "make check rc=$?"
+$ cd /tmp/rv-CHORE-021 && PATH=/Users/<user>/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-021 make check > /tmp/rv-CHORE-021-make.log 2>&1; echo "make check rc=$?"
 make check rc=0
 ```
 chore021 suite: `test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s`.

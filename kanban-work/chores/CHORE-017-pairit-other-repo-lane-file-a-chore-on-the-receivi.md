@@ -4,7 +4,7 @@ title: "pairit other-repo lane: file a chore on the receiving repo's board (the 
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-09
 depends_on: []
 ---
@@ -31,17 +31,17 @@ pairit's other-repo lane (`.claude/skills/pairit/SKILL.md` § The other-repo lan
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-09T13:37:40+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-09T13:38:47+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-09T13:49:48+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/26> ;
   ] .
 ```

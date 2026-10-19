@@ -1,16 +1,16 @@
 reviewed-at-sha: d179e967ec0c396707b1dd3d4a1953c574f9b918
 verdict: approve
-gate: make check rc=0 at d179e967ec0c396707b1dd3d4a1953c574f9b918 on Mac-mini
+gate: make check rc=0 at d179e967ec0c396707b1dd3d4a1953c574f9b918 on `<mini>`
 brief: reviews/CHORE-009-r1.brief.md @ d179e967ec0c396707b1dd3d4a1953c574f9b918
 
 Authorship: all of this work and this review were done by LLM agent sessions (Claude Opus 5.5); no human reviewed it.
-The diff (1666b4b) was written by a fresh Opus sub-agent spawned by the commissioning session Mac-mini/s-e7976c42,
+The diff (1666b4b) was written by a fresh Opus sub-agent spawned by the commissioning session `<mini>/s-e7976c42`,
 which filed CHORE-009 from the CHORE-006 review it commissioned, commissioned the diff, checked it, wrote the brief, and
 gains from `approve`. This review is "distinct" only in that it ran as a separate `claude -p` process with a fresh
 context that wrote none of the work; it is the same model family, and it was briefed by the driver with the committed
 brief above.
 
-## Checks run (host Mac-mini, 2026-10-08)
+## Checks run (host `<mini>`, 2026-10-08)
 
 1. **Done when.** `git diff origin/main...d179e967ec0c396707b1dd3d4a1953c574f9b918 -- docs/DESIGN.md`: 7 lines changed. F1 (§8 org row) cites
    `reviews/CHORE-006-r1.md:93-99`; F2 (§3 prose beside the diagram) cites `:101-107`; F3 (§3 scheduling and §4 cost
@@ -32,9 +32,9 @@ brief above.
 4. **Nothing else changed meaning.** Every changed line is one of the three amendments. The `toml` block parses:
    `python -I` with `tomllib.loads` over every `\`\`\`toml` block in DESIGN.md → `toml ok 2432`.
 5. **Secrets / public repo.** `git diff origin/main...HEAD | grep -nEi "sk-|ghp_|token=|@[a-z]+\.(com|net)|password|api_key *="`
-   and the same over `gh pr view 11`'s body → no match (rc=1). The brief's `/Users/hankh19` paths follow the existing
+   and the same over `gh pr view 11`'s body → no match (rc=1). The brief's `/Users/<user>` paths follow the existing
    pattern of `reviews/CHORE-008-r1.brief.md`; no key, token or email.
-6. **Gate.** `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-009-target make check` → `rc=0`
+6. **Gate.** `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-009-target make check` → `rc=0`
    (`78 passed` pytest; every cargo `test result: ok`).
 
 ## Findings

@@ -1,7 +1,7 @@
 # Review brief — CHORE-008 r1 (quotabus PR #10)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The commissioning session
-is Mac-mini/s-e7976c42 (Claude Opus 5.5), the driver. A fresh Opus sub-agent (the test partner) wrote the tests at
+is `<mini>/s-e7976c42` (Claude Opus 5.5), the driver. A fresh Opus sub-agent (the test partner) wrote the tests at
 8edf666; a second fresh Opus sub-agent (the implementer) wrote the code at b820c09. The driver wants this approved.
 
 **What to review:** PR #10 of https://github.com/Congruentsys/quotabus, branch `chore/CHORE-008-install-target`, at
@@ -30,7 +30,7 @@ Remove it when done (`git worktree remove --force /tmp/rv-CHORE-008`), after you
 6. Secrets: no key on argv, in a unit, a log or the plan; the `--launcher` string carries no secret; nothing in the
    diff or PR body looks like a real key, a token or an email.
 7. The one-line DESIGN.md §5 change riding this branch: is it a pointer fix only (no change of meaning)?
-8. Run the gate yourself in your worktree: `CARGO=/Users/hankh19/.cargo/bin/cargo
+8. Run the gate yourself in your worktree: `CARGO=/Users/<user>/.cargo/bin/cargo
    CARGO_TARGET_DIR=/tmp/rv-CHORE-008-target make check` (remove that target dir when done). Record its rc.
 
 **Rules for you:** run EVERY command in the FOREGROUND (no `run_in_background`, no `&`, no `nohup`): this session
@@ -47,7 +47,7 @@ brief: reviews/CHORE-008-r1.brief.md @ <SHA>
 ```
 then a paragraph headed `Authorship:` (all work and this review by LLM agent sessions, model named; no human reviewed
 it; "distinct" = a separate `claude -p` process with a fresh context that wrote none of the work, same model family,
-briefed by the driver with this committed brief; commissioning session Mac-mini/s-e7976c42 and its stake: it
+briefed by the driver with this committed brief; commissioning session `<mini>/s-e7976c42` and its stake: it
 commissioned the tests and code from two sub-agents, checked them, and gains from `approve`). Then numbered findings
 `F1…` each with severity (blocker / should-fix / nit), the command, its output, and the fix you propose. `verdict:
 changes` only for blocker or should-fix findings. Commit it on a branch-tip checkout (`git -C /tmp/rv-CHORE-008

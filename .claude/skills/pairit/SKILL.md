@@ -225,7 +225,7 @@ between repos", quoted in CHORE-017's body).
    the landing sha back (a comment on the quotabus item, or a reply on their chore). Write the body to a file in your
    scratchpad first; it names no key, email or private detail (both boards are read by others).
    - **nusy-product-team** (nusy-kanban; `--relate` takes a typed edge `predicate:TARGET-ID`, repeatable):
-     `nusy-kanban --server "${NUSY_FLEET_KANBAN_SERVER:-nats://192.168.8.110:4222}" create chore "<title>"
+     `nusy-kanban --server "${NUSY_FLEET_KANBAN_SERVER:-nats://<bus-host>:4222}" create chore "<title>"
      --body-file <file> --relate related:<their tracking item>` (quotabus's is nusy-product-team IDEA-13333).
    - **a yurtle-kanban repo:** in THAT repo's own checkout, `.venv/bin/yurtle-kanban create chore "<title>"
      --body-file <file> --push` (its own `.venv`, its own id allocation; never a file edited by hand there).
@@ -241,7 +241,7 @@ between repos", quoted in CHORE-017's body).
    the holder"`. `-m` is the commit message, so the citation is the close's record (CHORE-001's close, 5f570b8,
    which had no `--resolution`). **Why `--force`:** 3.4.0's table allows from `stranded` only `provisioning`,
    `underway` and `harbor` (`workflow.py` 64–68, `BLOCKED: [READY, IN_PROGRESS, BACKLOG]`), and the one route to
-   `arrived` runs through `underway`, which CLAUDE.md forbids by hand. Measured 2026-10-09 on Mac-mini in a throwaway
+   `arrived` runs through `underway`, which CLAUDE.md forbids by hand. Measured 2026-10-09 on <mini> in a throwaway
    clone pushing to a throwaway bare origin (quotabus b21fcd8), the item held by the session that parked it and closed
    by another `--agent`: a plain `move <ID> done` → "Illegal move CHORE-019: stranded → arrived. Legal from stranded:
    provisioning, underway, harbor.", rc 1; the forced move above → "…: pushed to origin/main", rc 0, the item

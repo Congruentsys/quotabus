@@ -26,11 +26,11 @@ REAL_QB = re.compile(r"/\S*?/quotabus(?=[\s;|&]|$)")  # an absolute path to the 
 # The wrapper as the README carried it before CHORE-026 (the known-bad input for the controls).
 PRE_FIX_WRAPPER = (
     "#!/bin/sh\n"
-    "# /Users/hankh19/.local/bin/quotabus-cycle — one probe cycle, then the alert over its rows\n"
+    "# /Users/fleetuser/.local/bin/quotabus-cycle — one probe cycle, then the alert over its rows\n"
     "shift\n"
     "export QUOTABUS_CLAUDE_BIN=/opt/homebrew/bin/claude\n"
-    '/Users/hankh19/.local/bin/quotabus probe "$@"; rc=$?\n'
-    '/Users/hankh19/.local/bin/quotabus alert "$@" || rc=$?\n'
+    '/Users/fleetuser/.local/bin/quotabus probe "$@"; rc=$?\n'
+    '/Users/fleetuser/.local/bin/quotabus alert "$@" || rc=$?\n'
     "exit $rc\n"
 )
 

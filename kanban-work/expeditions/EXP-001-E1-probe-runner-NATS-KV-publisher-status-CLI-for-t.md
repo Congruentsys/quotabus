@@ -64,13 +64,13 @@ Measure-first step done: a per-key TTL put EXPIRES on Mini's nats-server 2.12.4 
 
 tests red at ade2ebd (partner sub-agent): 80 Rust tests, 73 failing on todo!() stubs or exit-code asserts, none on a compile error; fmt/clippy/build green; the 35 script tests still pass. Controls shown able to fail (leak checker mutant; plain bucket vs limit_markers).
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:53)
+### `<m5>/s-72a67d16` (2026-10-08 18:53)
 
 The Captain ruled all §10 signals on 2026-10-08 (verbatim on each SIG). Two rulings differ from the recommendation this item was built to:
 (1) SIG-001/Q2: 'If this is FOSS, the config will have to ask to run locally or on another host. In this case, run on mini'. Where the central probe runs is a CONFIG choice (local, or a named host); the fleet config sets Mini (prebuilt binary, launchd).
 (2) SIG-004/Q5: 'Slower - twice a day, but make it a config setting' (scope: API + balance only). Default API probe and balance intervals are 12 h, subscription reads stay at 5 min, and every interval is config.
 Q3, Q4, Q7, Q8 and Q10 follow the recommendations as built.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:56)
+### `<m5>/s-72a67d16` (2026-10-08 18:56)
 
 Captain 2026-10-08, adding to the Q5 ruling: "for how often to query, make sure there are separate times for the different types of queries." So each query kind has its OWN config interval, set independently: API (messages) probe, balance read, and subscription read (and any later kind, e.g. a quota-window read). There is no shared interval. Defaults per the SIG-004 ruling: API 12 h, balance 12 h, subscription 5 min.

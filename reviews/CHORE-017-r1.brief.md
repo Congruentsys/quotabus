@@ -1,7 +1,7 @@
 # Review brief — CHORE-017 r1 (quotabus PR #26)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The commissioning session
-is Mac-mini/s-e7976c42 (Claude Opus 5.5), the driver; a fresh Opus sub-agent it spawned wrote the whole diff
+is `<mini>/s-e7976c42` (Claude Opus 5.5), the driver; a fresh Opus sub-agent it spawned wrote the whole diff
 (commit 7c31285). The driver wants this approved.
 
 **What to review:** PR #26 of https://github.com/Congruentsys/quotabus, branch `docs/CHORE-017-cross-repo-chore`, at
@@ -28,7 +28,7 @@ Remove it when done (`git worktree remove --force /tmp/rv-CHORE-017`), after you
 5. Nothing widens beyond the Captain's direction: the write is ONE chore per packet, no other write there.
 6. Secrets / public repo: nothing in the diff or the PR body carries a key, a token, an email or a private detail
    beyond what the repo already carries.
-7. Run the gate yourself in your worktree: `CARGO=/Users/hankh19/.cargo/bin/cargo
+7. Run the gate yourself in your worktree: `CARGO=/Users/<user>/.cargo/bin/cargo
    CARGO_TARGET_DIR=/tmp/rv-CHORE-017-target make check` (remove that target dir when done). Record its rc.
 
 **Rules for you:** run EVERY command in the FOREGROUND (no `run_in_background`, no `&`, no `nohup`): this session
@@ -45,7 +45,7 @@ brief: reviews/CHORE-017-r1.brief.md @ <SHA>
 ```
 then a paragraph headed `Authorship:` (all work and this review by LLM agent sessions, model named; no human reviewed
 it; "distinct" = a separate `claude -p` process with a fresh context that wrote none of the work, same model family,
-briefed by the driver with this committed brief; commissioning session Mac-mini/s-e7976c42 and its stake: it
+briefed by the driver with this committed brief; commissioning session `<mini>/s-e7976c42` and its stake: it
 commissioned the diff from a sub-agent, checked it, and gains from `approve`). Then numbered findings `F1…` each with
 severity (blocker / should-fix / nit), the command, its output, and the fix you propose. `verdict: changes` only for
 blocker or should-fix findings. Commit it on a branch-tip checkout (`git -C /tmp/rv-CHORE-017 switch -c rv-tmp && git

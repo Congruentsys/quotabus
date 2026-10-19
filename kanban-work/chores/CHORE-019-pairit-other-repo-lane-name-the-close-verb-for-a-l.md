@@ -4,7 +4,7 @@ title: "pairit other-repo lane: name the close verb for a landed stranded item (
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-09
 depends_on: []
 ---
@@ -32,17 +32,17 @@ why `--force` is needed there; the stranded-close rule in CLAUDE.md, steer and q
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-09T16:37:27+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-09T17:16:10+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-09T17:31:22+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/28> ;
   ] .
 ```

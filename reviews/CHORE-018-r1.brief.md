@@ -1,7 +1,7 @@
 # Review brief — CHORE-018 r1 (quotabus PR #27)
 
 You are an independent reviewer: a fresh `claude -p` session that wrote none of this work. The commissioning session
-is Mac-mini/s-e7976c42 (Claude Opus 5.5), the driver. It recorded the Captain's ruling on SIG-010 and filed this item.
+is `<mini>/s-e7976c42` (Claude Opus 5.5), the driver. It recorded the Captain's ruling on SIG-010 and filed this item.
 A fresh Opus sub-agent (the test partner) wrote the tests at 2694eff, including ruled edits to existing tests; a second
 fresh Opus sub-agent (the implementer) wrote the code and docs at 579c059. The driver wants this approved.
 
@@ -30,7 +30,7 @@ Remove it when done (`git worktree remove --force /tmp/rv-CHORE-018`), after you
 6. DESIGN.md §2/§3/§10 and `examples/quotabus.toml`: the ruling is verbatim with its SIG cite; nothing else changed
    meaning; the example still loads.
 7. Secrets: nothing in the diff, fixtures or PR body looks like a real key, a token or an email.
-8. Run the gate yourself in your worktree: `CARGO=/Users/hankh19/.cargo/bin/cargo
+8. Run the gate yourself in your worktree: `CARGO=/Users/<user>/.cargo/bin/cargo
    CARGO_TARGET_DIR=/tmp/rv-CHORE-018-target make check` (remove that target dir when done). Record its rc.
 
 **Rules for you:** run EVERY command in the FOREGROUND (no `run_in_background`, no `&`, no `nohup`): this session
@@ -46,7 +46,7 @@ brief: reviews/CHORE-018-r1.brief.md @ <SHA>
 ```
 then a paragraph headed `Authorship:` (all work and this review by LLM agent sessions, model named; no human reviewed
 it; "distinct" = a separate `claude -p` process with a fresh context that wrote none of the work, same model family,
-briefed by the driver with this committed brief; commissioning session Mac-mini/s-e7976c42 and its stake: it filed
+briefed by the driver with this committed brief; commissioning session `<mini>/s-e7976c42` and its stake: it filed
 the item, commissioned the tests and code from two sub-agents, checked them, and gains from `approve`). Then numbered
 findings `F1…` each with severity (blocker / should-fix / nit), the command, its output, and the fix you propose.
 `verdict: changes` only for blocker or should-fix findings. Commit it on a branch-tip checkout (`git -C

@@ -27,9 +27,9 @@ Yes to 1 and 2, with the fallback kept: the statusLine covers interactive hosts,
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
+### `<m5>/s-72a67d16` (2026-10-08 18:52)
 
-Captain 2026-10-08 (asked by M5-MBP-2/s-72a67d16): "Both + fallback". This is the recommended default. E2 installs the statusLine for interactive hosts, ALSO captures the stream-json rate_limit_event from `claude -p` runs into the same cache, and keeps the ~/.claude.json cachedUsageUtilization fallback.
+Captain 2026-10-08 (asked by `<m5>/s-72a67d16`): "Both + fallback". This is the recommended default. E2 installs the statusLine for interactive hosts, ALSO captures the stream-json rate_limit_event from `claude -p` runs into the same cache, and keeps the ~/.claude.json cachedUsageUtilization fallback.
 
 ```yurtle
 @prefix kb: <https://yurtle.dev/kanban/> .
@@ -38,12 +38,12 @@ Captain 2026-10-08 (asked by M5-MBP-2/s-72a67d16): "Both + fallback". This is th
 <> kb:statusChange [
     kb:status kb:done ;
     kb:at "2026-10-08T18:52:54+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:forcedMove "true"^^xsd:boolean ;
     kb:resolution "completed" ;
   ] .
 ```
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 19:50)
+### `<m5>/s-72a67d16` (2026-10-08 19:50)
 
 Amended by the Captain 2026-10-08 (verbatim on EXP-002): 'We should not need to run anything else on the other machines (just Mini or M5 depending on where we host this)'. Claude usage is read centrally with each account's Doppler setup-token: 'Direct, stream-json fallback'. No statusLine install. Subscription cadence: 'Hourly' (1 h default, its own key).

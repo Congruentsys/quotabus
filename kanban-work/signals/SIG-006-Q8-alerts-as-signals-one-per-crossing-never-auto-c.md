@@ -21,7 +21,7 @@ Design §10 Q8. Alert item type. **Recommendation:** a `signal` tagged `provider
 
 Still open — not decided by any session. It blocks nothing in v1.0, so the work is built to docs/DESIGN.md §10's recommendation in EXP-004 (signal, one per crossing, never auto-closed; item type is sink config); a different ruling is a config change or a later PR.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
+### `<m5>/s-72a67d16` (2026-10-08 18:52)
 
 Captain 2026-10-08: "Signal per crossing". This is the recommended default: a signal tagged provider-status, one per crossing, never auto-closed; a hazard only when a crossing should block work.
 
@@ -32,7 +32,7 @@ Captain 2026-10-08: "Signal per crossing". This is the recommended default: a si
 <> kb:statusChange [
     kb:status kb:done ;
     kb:at "2026-10-08T18:52:50+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:forcedMove "true"^^xsd:boolean ;
     kb:resolution "completed" ;
   ] .

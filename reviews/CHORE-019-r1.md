@@ -1,16 +1,16 @@
 reviewed-at-sha: 50d1f820b8ca4a0614730aedfa8c2b4cce3f71d2
 verdict: approve
-gate: make check rc=0 at 50d1f820b8ca4a0614730aedfa8c2b4cce3f71d2 on Mac-mini (m4-mini.local)
+gate: make check rc=0 at 50d1f820b8ca4a0614730aedfa8c2b4cce3f71d2 on `<mini>` (`m4-<mini>`)
 brief: reviews/CHORE-019-r1.brief.md @ 50d1f820b8ca4a0614730aedfa8c2b4cce3f71d2
 
 Authorship: all of this work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 "Distinct" means this review is a separate `claude -p` process with a fresh context that wrote none of the work. It
 is the same model family as the author, and the driver briefed it with the committed brief above. The commissioning
-session, Mac-mini/s-e7976c42, has a stake in the outcome: it filed CHORE-019 after its own forced close of CHORE-001
+session, `<mini>/s-e7976c42`, has a stake in the outcome: it filed CHORE-019 after its own forced close of CHORE-001
 (5f570b8), it commissioned the diff (ee8bccc, written by a fresh Opus sub-agent), and it gains from `approve`, since
 the change documents its earlier `--force` close as the sanctioned route.
 
-## What was checked (host Mac-mini, 2026-10-09, quotabus 50d1f82)
+## What was checked (host `<mini>`, 2026-10-09, quotabus 50d1f82)
 
 **1. Done when.** `git diff origin/main...HEAD -- CLAUDE.md .claude/`:
 - pairit step 4 now names the close command: `.venv/bin/yurtle-kanban move <ID> done --force --resolution completed
@@ -25,14 +25,14 @@ the change documents its earlier `--force` close as the sanctioned route.
 **2. The measured claims, re-run.** I cloned a bare repo from the reviewed tip to `/tmp/rv-CHORE-019-sbx-origin.git`
 and made a clone of it. `git remote -v` → `origin /tmp/rv-CHORE-019-sbx-origin.git`. Since the clone came from a
 detached tip, the sandbox's default branch was the PR branch, which does not affect the result. The parking session
-was A=Mac-mini/s-e7976c42 and the closing session was B=rv/s-reviewer1:
+was `A=<mini>/s-e7976c42` and the closing session was B=rv/s-reviewer1:
 ```
 $YK move CHORE-019 blocked --agent "$A" -m "park"            → park: pushed to origin/docs/CHORE-019-stranded-close  rc=0
-  status: stranded / assignee: Mac-mini/s-e7976c42
+  status: stranded / assignee: <mini>/s-e7976c42
 $YK move CHORE-019 done --agent "$B" -m "plain"              → Error: Illegal move CHORE-019: stranded → arrived. Legal from stranded: provisioning, underway, harbor.  rc=1
 $YK move CHORE-019 done --force --resolution completed --agent "$B" -m "forced close"
                                                              → forced close: pushed to origin/docs/CHORE-019-stranded-close  rc=0
-  status: arrived / assignee: Mac-mini/s-e7976c42 / resolution: completed / line 52: kb:forcedMove "true"^^xsd:boolean ;
+  status: arrived / assignee: <mini>/s-e7976c42 / resolution: completed / line 52: kb:forcedMove "true"^^xsd:boolean ;
 ```
 This reproduces every quoted claim. The real origin was untouched: `git ls-remote origin main` →
 `b21fcd84… refs/heads/main`. The sandbox has been deleted.
@@ -74,7 +74,7 @@ matches only lines 118 and 125, which are the brief's own words ("a key, a token
 secret"). `gh pr view 28 --json body -q .body | grep -niE …` → no match, rc=1. The diff and the PR body contain no
 key, token, email or private detail.
 
-**6. Gate.** `CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-019-target make check` → rc=0.
+**6. Gate.** `CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-019-target make check` → rc=0.
 The log shows `86 passed in 16.37s` (pytest), `All work items valid.`, and every cargo `test result: ok.` with 0
 failed. The target dir has been removed.
 

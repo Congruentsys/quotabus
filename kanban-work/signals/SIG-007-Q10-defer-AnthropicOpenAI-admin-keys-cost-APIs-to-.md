@@ -21,7 +21,7 @@ Design §10 Q10. Admin keys: Anthropic's Admin API needs an organisation; OpenAI
 
 Still open — not decided by any session. It blocks nothing in v1.0, so the work is built to docs/DESIGN.md §10's recommendation in EXP-001 (no admin keys; the probe is the status); a different ruling is a config change or a later PR.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 18:52)
+### `<m5>/s-72a67d16` (2026-10-08 18:52)
 
 Captain 2026-10-08: "Defer to E5". This is the recommended default: no admin keys in v1.0, the probe result is the status for these two providers, and this is revisited with E5.
 
@@ -32,7 +32,7 @@ Captain 2026-10-08: "Defer to E5". This is the recommended default: no admin key
 <> kb:statusChange [
     kb:status kb:done ;
     kb:at "2026-10-08T18:52:52+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:forcedMove "true"^^xsd:boolean ;
     kb:resolution "completed" ;
   ] .

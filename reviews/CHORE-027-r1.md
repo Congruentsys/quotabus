@@ -1,16 +1,16 @@
 reviewed-at-sha: bde447adcdea3edd3a8d150b38a04826e4772a3d
 verdict: approve
-gate: make check rc=0 at bde447adcdea3edd3a8d150b38a04826e4772a3d on M5-MBP-2
+gate: make check rc=0 at bde447adcdea3edd3a8d150b38a04826e4772a3d on `<m5>`
 brief: reviews/CHORE-027-r1.brief.md @ bde447adcdea3edd3a8d150b38a04826e4772a3d
 
 Authorship: All the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model
 family, briefed by the driver (the author) with this committed brief. The commissioning session is
-M5-MBP-2/s-72a67d16. Its stake: it ran the redeploy and wrote the finding.
+`<m5>/s-72a67d16`. Its stake: it ran the redeploy and wrote the finding.
 
 Scope: PR #36 (`measure/CHORE-027-mini-redeploy`), `docs/findings/CHORE-027-mini-redeploy.md` against CHORE-027's
 Definition of Done. Every command below was re-run read-only, in the foreground, on 2026-10-10 between 20:37:39Z and
-20:38Z, from M5-MBP-2 (bus reads) and over `ssh hankh19@192.168.8.110` (Mini). Nothing was probed, bootstrapped,
+20:38Z, from `<m5>` (bus reads) and over `ssh <user>@<mini>` (Mini). Nothing was probed, bootstrapped,
 written or deleted. No board or GitHub write was made.
 
 ## Gate
@@ -27,10 +27,10 @@ rc=0
 $ ~/.local/bin/quotabus --version
 quotabus 0.1.0
 $ ls -la ~/.local/bin/quotabus* ~/.config/quotabus/
--rwxr-xr-x@ 1 hankh19 staff 12193104 Oct 10 20:28 /Users/hankh19/.local/bin/quotabus
--rwxr-xr-x@ 1 hankh19 staff 12202960 Oct  9 18:14 /Users/hankh19/.local/bin/quotabus.prev-20261010
--rw-r--r--  1 hankh19 staff 6973 Oct 10 20:28 quotabus.toml
--rw-r--r--@ 1 hankh19 staff 6861 Oct  9 18:23 quotabus.toml.prev-20261010
+-rwxr-xr-x@ 1 <user> staff 12193104 Oct 10 20:28 /Users/<user>/.local/bin/quotabus
+-rwxr-xr-x@ 1 <user> staff 12202960 Oct  9 18:14 /Users/<user>/.local/bin/quotabus.prev-20261010
+-rw-r--r--  1 <user> staff 6973 Oct 10 20:28 quotabus.toml
+-rw-r--r--@ 1 <user> staff 6861 Oct  9 18:23 quotabus.toml.prev-20261010
 (plus older quotabus.prev-20261009, quotabus-cycle(.prev-20261010), quotabus.toml.bak-20261009)
 $ git -C ~/Projects/quotabus rev-parse origin/main
 deeb435fbba833cb09604d3783b9739c4ed680b4
@@ -52,7 +52,7 @@ $ diff ~/.config/quotabus/quotabus.toml.prev-20261010 ~/.config/quotabus/quotabu
 < # no secret: kind = "local" is probed without a key (src/probe.rs Auth::None)
 132a131,141
 > [[service]]  id = "dgx2-qwen", kind = "local", provider = "qwen", account = "dgx2",
->              base_url = "http://192.168.8.121:8000/v1", protocol = "openai", roles = ["work"], cost_class = "local"
+>              base_url = "http://<dgx2>:8000/v1", protocol = "openai", roles = ["work"], cost_class = "local"
 ```
 (abridged to one line per field.) Only the local-service block changed, as claimed. Neither service has `secret` or
 `models`.
@@ -103,7 +103,7 @@ rows. One clause saying so would make 8 + 7 + 2 = 17 vs 19 add up for a reader.
 ## F4 — DoD 4 (old local rows age out by TTL; hours remaining), including the correction. Holds; the correction is right. Does not block.
 
 ```
-$ nats --server nats://192.168.8.110:4222 kv get ai_status <key> --raw | (python: state, reason, checked_at, ttl_s, checked_at+ttl_s)
+$ nats --server nats://<bus-host>:4222 kv get ai_status <key> --raw | (python: state, reason, checked_at, ttl_s, checked_at+ttl_s)
 local.qwen.dgx1.qwen3                   unknown cannot_assess:secret_unset 2026-10-09T18:19:29Z 129600 expires 2026-10-11T06:19:29Z left_h=9.7
 local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4  ok      -                         2026-10-10T20:28:50Z 129600 expires 2026-10-12T08:28:50Z left_h=35.9
 local.qwen.dgx2.dgx2-qwen               unknown cannot_assess:timeout      2026-10-10T20:28:50Z 129600 expires 2026-10-12T08:28:50Z left_h=35.9
@@ -117,7 +117,7 @@ stale local row. It had 9.7 h left at 20:37Z (the finding said 9.8 h a few minut
 ## F5 — an un-mentioned leftover alert-state row for a local key. Does not block.
 
 ```
-$ nats --server nats://192.168.8.110:4222 kv ls ai_status | sort      (local-related lines)
+$ nats --server nats://<bus-host>:4222 kv ls ai_status | sort      (local-related lines)
 alert.local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4
 local.qwen.dgx1.nvidia-Qwen3-32B-NVFP4
 local.qwen.dgx1.qwen3

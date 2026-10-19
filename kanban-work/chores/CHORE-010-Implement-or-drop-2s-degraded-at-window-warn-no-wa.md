@@ -4,7 +4,7 @@ title: "Implement §2's 'degraded at window ≥ warn %': [probe] warn_pct = 90 (
 type: chore
 status: arrived
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-08
 tags: [v1.0, VOY-001, design]
 depends_on: []
@@ -24,11 +24,11 @@ Found in the EXP-002 review (`reviews/EXP-002-r1.md` F2, PR #12). DESIGN.md §2'
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 20:15)
+### `<m5>/s-72a67d16` (2026-10-08 20:15)
 
 Kept in harbor: it lacks a default warn % (or a ruling to drop the clause). No ruling names one; the question is for the Captain.
 
-### M5-MBP-2/s-72a67d16 (2026-10-08 21:58)
+### `<m5>/s-72a67d16` (2026-10-08 21:58)
 
 [steer] bucket-2: option (a). Implement §2's clause with `[probe] warn_pct = 90` (configurable): any window whose used_pct is >= warn_pct reads `degraded`, for subscription `headroom.windows[]` and API `window_pct`.
 Basis:
@@ -46,25 +46,25 @@ Released. Decided — open to the Captain's veto.
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-08T21:58:05+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-09T01:32:24+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-09T01:48:33+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/21> ;
   ] .
 ```
 
-### M5-MBP-2/s-72a67d16 (2026-10-09 01:37)
+### `<m5>/s-72a67d16` (2026-10-09 01:37)
 
 tests red at f8ae737: tests/chore010_warn_pct.rs — 19 red (warn_pct key unknown / default 0.0 stub; warn_state todo!(); 0.90/0.97 subscription rows still ok; DESIGN/example lack warn_pct), 7 green on purpose (89.9 ok, worse states not softened, select/alert pins + controls).
 
-### Mac-mini/s-e7976c42 (2026-10-09 13:38)
+### `<mini>/s-e7976c42` (2026-10-09 13:38)
 
 SIG-010 ruled (Captain 2026-10-09, option 3, the recommended default): a near-limit window (degraded via warn_pct) FILES a signal; latency-degraded and rate_limited do not. CHORE-018 builds it and must tell the two degraded causes apart in the row.

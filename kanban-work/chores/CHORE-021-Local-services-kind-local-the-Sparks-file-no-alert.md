@@ -4,14 +4,14 @@ title: "Local services (kind = local, the Sparks) file no alert — Captain 2026
 type: chore
 status: arrived
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-09
 depends_on: []
 ---
 
 # Local services (kind = local, the Sparks) file no alert — Captain 2026-10-09
 
-Part of VOY-001. The Captain ruled on 2026-10-09, in this repo's Mini session (Mac-mini/s-e7976c42), after saying:
+Part of VOY-001. The Captain ruled on 2026-10-09, in this repo's Mini session (`<mini>/s-e7976c42`), after saying:
 "Local qwen should be on http on DGX1 or DGX2 or both - should not need an API key - but does go up and down as they
 do different work". Asked "When a local Spark (DGX1/DGX2) goes down or switches models, should quotabus file an
 alert?", the Captain chose the option offered as recommended: Captain 2026-10-09: "No alert for local (Recommended)",
@@ -37,17 +37,17 @@ service's `model_missing` (a Spark switched models) also files: both are routine
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-09T22:31:49+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-10T13:30:24+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-10T13:41:59+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/30> ;
   ] .
 ```
@@ -55,6 +55,6 @@ service's `model_missing` (a Spark switched models) also files: both are routine
 
 ## Comments
 
-### M5-MBP-2/s-72a67d16 (2026-10-10 13:33)
+### `<m5>/s-72a67d16` (2026-10-10 13:33)
 
 tests red at 5637ecc: tests/chore021_local_no_alert.rs — 10 red (local flapping ok/unreachable, ok/model_missing, mixed: filed 4 not 0; any state under default and all-listed; arms alert.local.* entry; local ok clears stale entry; unreachable Spark published but files; DESIGN §3 and §10 Q8 lack the ruling), 7 green (fixtures control, API arms/clears/SIG-010 default, select picks ok local, select refuses non-ok local, ruling-check control)

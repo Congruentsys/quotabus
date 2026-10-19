@@ -1,13 +1,13 @@
 reviewed-at-sha: 33e1c232d9bf50dfcbfaeb0352839fd82870ebd0
 verdict: approve
-gate: make check rc=0 at 33e1c232d9bf50dfcbfaeb0352839fd82870ebd0 on M5-MBP-2
+gate: make check rc=0 at 33e1c232d9bf50dfcbfaeb0352839fd82870ebd0 on `<m5>`
 brief: reviews/CHORE-024-r1.brief.md @ 33e1c232d9bf50dfcbfaeb0352839fd82870ebd0
 
 Authorship: all the work under review and this review were done by LLM agent sessions (Claude Opus 5.5); no human
 reviewed it. "Distinct" here means a separate `claude -p` process with a fresh context that wrote none of the work, of
 the SAME model family, briefed by the driver (the author) with the committed brief named above. The commissioning
-session is M5-MBP-2/s-72a67d16. Its stake: it drove the work and wrote no tests or code; the tests (607f280) and the
-code (797526f) were written by sub-agents. Host M5-MBP-2, 2026-10-10, worktree /tmp/rv-CHORE-024 (detached at the sha
+session is `<m5>/s-72a67d16`. Its stake: it drove the work and wrote no tests or code; the tests (607f280) and the
+code (797526f) were written by sub-agents. Host `<m5>`, 2026-10-10, worktree /tmp/rv-CHORE-024 (detached at the sha
 above), CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-024.
 
 ## Findings

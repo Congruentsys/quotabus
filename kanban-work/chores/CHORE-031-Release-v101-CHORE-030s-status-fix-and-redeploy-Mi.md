@@ -4,7 +4,7 @@ title: "Release v1.0.1 (CHORE-030's status fix) and redeploy Mini from the tag"
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-11
 depends_on: []
 related: [CHORE-029, CHORE-030]
@@ -18,7 +18,7 @@ Since v1.0.0 (tag object b153526, commit ab14fe1), main carries one behaviour ch
 The driver session offered "cut a v1.0.1 release with a CHANGELOG entry and then redeploy Mini from that tag, the same way as CHORE-029". Captain 2026-10-11: "yes" (the Captain chose the default the agent offered).
 
 ## Inputs (host-specific)
-Mini (user hankh19, gui/501) and its Doppler login (project nusy-product-team, config dev), for part 2. A session that cannot reach Mini bounces this item with the reason.
+Mini (user `<user>`, gui/501) and its Doppler login (project nusy-product-team, config dev), for part 2. A session that cannot reach Mini bounces this item with the reason.
 
 ## Plan
 1. **Release (code lane, as v1.0.0's PR #37):**
@@ -52,17 +52,17 @@ Mini (user hankh19, gui/501) and its Doppler login (project nusy-product-team, c
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-11T17:39:37+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-11T17:39:39+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-11T18:02:40+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/41> ;
   ] .
 ```
@@ -70,6 +70,6 @@ Mini (user hankh19, gui/501) and its Doppler login (project nusy-product-team, c
 
 ## Comments
 
-### Mac-mini/s-e7976c42 (2026-10-11 17:47)
+### `<mini>/s-e7976c42` (2026-10-11 17:47)
 
 part 1 done: PR #40 merged cdc656f (reviewed-at-sha ad45efb, approve, no findings to fix; CI green). Annotated tag v1.0.1 (object bb9a529) on cdc656f, pushed; GitHub release https://github.com/Congruentsys/quotabus/releases/tag/v1.0.1 from the CHANGELOG section. Part 2 (Mini redeploy) next.

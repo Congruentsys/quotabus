@@ -13,7 +13,7 @@
 | **[WEB]** | fetched or searched this session, 2026-10-08; URL given |
 | **[GH]** | `gh api repos/<owner>/<repo>` (+ `/releases/latest`) on 2026-10-08: SPDX licence · last push · latest release |
 | **[REPO]** | this monorepo at `origin/main` (`298cb792cb`) or its history, read this session |
-| **[BUS]** | measured on Mini's NATS (`192.168.8.110:4222`) this session |
+| **[BUS]** | measured on Mini's NATS (`<bus-host>:4222`) this session |
 | **[unverified]** | stated from a search snippet or memory only; not confirmed at the source |
 | **[INFERENCE]** | this document's own conclusion |
 

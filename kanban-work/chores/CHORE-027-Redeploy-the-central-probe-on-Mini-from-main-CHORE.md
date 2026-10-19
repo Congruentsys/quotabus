@@ -4,7 +4,7 @@ title: "Redeploy the central probe on Mini from main (CHORE-021/022/024 live; DG
 type: chore
 status: arrived
 priority: medium
-assignee: M5-MBP-2/s-72a67d16
+assignee: <m5>/s-72a67d16
 created: 2026-10-10
 depends_on: []
 ---
@@ -13,7 +13,7 @@ depends_on: []
 
 ## Why
 
-Captain 2026-10-10: "create a chore for mini to redeploy it". Mini's central probe binary, `/Users/hankh19/.local/bin/quotabus` (quotabus 0.1.0, installed 2026-10-09 18:14), predates everything merged since. The live tick still prints the old summary, "alert: 16 keys checked, 0 crossings filed, 0 re-armed" (CHORE-026's close, 15:27:09 UTC). Not yet live on Mini:
+Captain 2026-10-10: "create a chore for mini to redeploy it". Mini's central probe binary, `/Users/<user>/.local/bin/quotabus` (quotabus 0.1.0, installed 2026-10-09 18:14), predates everything merged since. The live tick still prints the old summary, "alert: 16 keys checked, 0 crossings filed, 0 re-armed" (CHORE-026's close, 15:27:09 UTC). Not yet live on Mini:
 - **CHORE-021** (#30): `kind = "local"` services file no alert.
 - **CHORE-022** (#31): a local service with no `models` discovers what `/v1/models` serves; `status`/`select` read only its newest cycle.
 - **CHORE-024** (#32): the summary line is `alert: <N> keys checked, <M> local skipped, <F> crossings filed, <C> re-armed`.
@@ -21,7 +21,7 @@ Captain 2026-10-10: "create a chore for mini to redeploy it". Mini's central pro
 
 ## Inputs (host-specific)
 
-Mini only: the `hankh19` GUI login (the unit runs in `gui/501`; doppler's token is in the login keychain, `packaging/README.md`), the Rust toolchain or a build copied from another host, and the bus at `nats://192.168.8.110:4222`. A session that cannot reach Mini bounces this with the reason.
+Mini only: the `<user>` GUI login (the unit runs in `gui/501`; doppler's token is in the login keychain, `packaging/README.md`), the Rust toolchain or a build copied from another host, and the bus at `nats://<bus-host>:4222`. A session that cannot reach Mini bounces this with the reason.
 
 ## Plan
 
@@ -29,7 +29,7 @@ Mini only: the `hankh19` GUI login (the unit runs in `gui/501`; doppler's token 
 2. Keep the current binary as `~/.local/bin/quotabus.prev-<date>`, then install the new one at `~/.local/bin/quotabus`.
    - Under the doppler launcher, replacing the binary does not reset the Local Network grant (HAZ-005 case 2, `docs/findings/HAZ-005-local-network.md`). Confirm this, don't assume it.
 3. Change Mini's config `~/.config/quotabus/quotabus.toml` to match `examples/quotabus.toml` (CHORE-022):
-   - replace the fixed-`models` `local-qwen` service with `dgx1-qwen` (`http://192.168.8.120:8000/v1`) and `dgx2-qwen` (`http://192.168.8.121:8000/v1`), both `kind = "local"` with no `secret` and no `models`;
+   - replace the fixed-`models` `local-qwen` service with `dgx1-qwen` (`http://<dgx1>:8000/v1`) and `dgx2-qwen` (`http://<dgx2>:8000/v1`), both `kind = "local"` with no `secret` and no `models`;
    - keep a dated backup of the old config.
 4. Run one forced cycle the way the unit does, inside `gui/501`. A plain ssh shell is not equivalent: the keychain, Local Network and PATH all differ (HAZ-004, HAZ-005). Use a one-shot LaunchAgent through doppler, like HAZ-005's, then let the regular 300 s tick run.
 
@@ -51,17 +51,17 @@ Mini only: the `hankh19` GUI login (the unit runs in `gui/501`; doppler's token 
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-10T20:27:27+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-10T20:27:35+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-10T20:42:13+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/36> ;
   ] .
 ```

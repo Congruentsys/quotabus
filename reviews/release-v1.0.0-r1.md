@@ -1,14 +1,14 @@
 reviewed-at-sha: 05e3005ec8cc466a7060080008b5af1a5b184c0b
 verdict: approve
-gate: make check rc=0 at 05e3005ec8cc466a7060080008b5af1a5b184c0b on M5-MBP-2
+gate: make check rc=0 at 05e3005ec8cc466a7060080008b5af1a5b184c0b on `<m5>`
 brief: reviews/release-v1.0.0-r1.brief.md @ 05e3005ec8cc466a7060080008b5af1a5b184c0b
 
 Authorship: all the work and this review were done by LLM agent sessions (Claude Opus 5.5); no human reviewed it.
 "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the same model
 family, briefed by the driver (the author) with the committed brief above. The commissioning session is
-M5-MBP-2/s-72a67d16, which drove the release (a sub-agent wrote the bump, CHANGELOG and README).
+`<m5>/s-72a67d16`, which drove the release (a sub-agent wrote the bump, CHANGELOG and README).
 
-Run on M5-MBP-2, 2026-10-10, in a detached worktree of origin/chore/release-v1.0.0 at 05e3005.
+Run on `<m5>`, 2026-10-10, in a detached worktree of origin/chore/release-v1.0.0 at 05e3005.
 
 ## Checks that passed (no finding)
 
@@ -20,7 +20,7 @@ Run on M5-MBP-2, 2026-10-10, in a detached worktree of origin/chore/release-v1.0
    samples (`src/redact.rs:19` doc comment, `tests/review_r1.rs:124-125` clean-text sample) whose point is the shape
    `host/quotabus@x.y.z`, not the crate version. The version reaches rows only via `src/lib.rs:35`
    `env!("CARGO_PKG_VERSION")`. Nothing asserts 0.1.0.
-2. Gate. `PATH=/Users/hankh95/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-release make check` → `rc=0`
+2. Gate. `PATH=/Users/<user>/.cargo/bin:$PATH CARGO_TARGET_DIR=/tmp/qb-target-rv-release make check` → `rc=0`
    (pytest, `yurtle-kanban validate`, fmt, clippy -D warnings, `cargo test --locked`, every `test result: ok`).
    `/tmp/qb-target-rv-release/debug/quotabus --version` → `quotabus 1.0.0`.
 3. PR numbers. `for n in $(seq 1 36); do gh pr view $n --json number,title,state ...; done`: all 36 MERGED, and every
@@ -70,9 +70,9 @@ Run on M5-MBP-2, 2026-10-10, in a detached worktree of origin/chore/release-v1.0
    item type `"signal"`. "local servers file no alert" (#30). install.sh behaviour as in 4. Nothing promised is unbuilt;
    `serve` appears only under "Not in v1.0".
 7. Secrets/public. `git diff origin/main..HEAD | grep -nEi '<email regex>|sk-|Bearer|ghp_|token=|hankh|/Users/'`: the
-   only hits are in the brief (a `/Users/hankh95/...` path and the GitHub noreply address). Both are already on
+   only hits are in the brief (a `/Users/<user>/...` path and the GitHub noreply address). Both are already on
    origin/main: `git grep -l '237287+hankh95@users.noreply' origin/main` → reviews/CHORE-002-r1.brief.md (and more);
-   `git grep -l '/Users/hankh95' origin/main` → docs/DESIGN.md (and more). CHANGELOG and README changes carry none.
+   `git grep -l '/Users/<user>' origin/main` → docs/DESIGN.md (and more). CHANGELOG and README changes carry none.
 
 ## Findings
 

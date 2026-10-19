@@ -1,15 +1,15 @@
 reviewed-at-sha: 7c0f4ca8497b7dd6e18eb3e7dd641d03011445bc
 verdict: approve
-gate: make check rc=0 at 7c0f4ca8497b7dd6e18eb3e7dd641d03011445bc on Mac-mini
+gate: make check rc=0 at 7c0f4ca8497b7dd6e18eb3e7dd641d03011445bc on `<mini>`
 brief: reviews/CHORE-030-r1.brief.md @ 7c0f4ca8497b7dd6e18eb3e7dd641d03011445bc
 
 Authorship: All of this work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 "Distinct" here means a separate `claude -p` process with a fresh context that wrote none of the work. It is the same
 model family, and the driver briefed it with the committed brief above. The commissioning session is
-Mac-mini/s-e7976c42. Its stake: it filed the item, it commissioned the tests (13d5e2e) and the fix (228240b), and it
+`<mini>/s-e7976c42`. Its stake: it filed the item, it commissioned the tests (13d5e2e) and the fix (228240b), and it
 gains from `approve`.
 
-Host Mac-mini, 2026-10-11. Worktree `/tmp/rv-CHORE-030`, detached at the SHA above. `CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target`
+Host `<mini>`, 2026-10-11. Worktree `/tmp/rv-CHORE-030`, detached at the SHA above. `CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target`
 was removed after the gate ran.
 
 ## The brief's checks
@@ -32,7 +32,7 @@ implementation detail.
 
 **2. Real clock, tolerance bands: can they flake?** I ran the file three times:
 ```
-$ for i in 1 2 3; do CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target /Users/hankh19/.cargo/bin/cargo test -q --test chore030_resets_in_now 2>&1 | grep -E "test result|FAILED|panicked"; done
+$ for i in 1 2 3; do CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target /Users/<user>/.cargo/bin/cargo test -q --test chore030_resets_in_now 2>&1 | grep -E "test result|FAILED|panicked"; done
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
@@ -106,7 +106,7 @@ the fake secret name `QB_UNUSED` and no value.
 
 **7. Gate.**
 ```
-$ CARGO=/Users/hankh19/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target make check > /tmp/rv-CHORE-030-gate.log 2>&1; echo "make check rc=$?"
+$ CARGO=/Users/<user>/.cargo/bin/cargo CARGO_TARGET_DIR=/tmp/rv-CHORE-030-target make check > /tmp/rv-CHORE-030-gate.log 2>&1; echo "make check rc=$?"
 make check rc=0
 ```
 The log shows 52 `test result: ok` lines and none FAILED. The script tests: `107 passed in 6.59s`. `yurtle-kanban

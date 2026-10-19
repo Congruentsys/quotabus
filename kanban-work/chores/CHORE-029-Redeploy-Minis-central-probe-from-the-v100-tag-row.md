@@ -4,7 +4,7 @@ title: "Redeploy Mini's central probe from the v1.0.0 tag (rows read quotabus@1.
 type: chore
 status: arrived
 priority: medium
-assignee: Mac-mini/s-e7976c42
+assignee: <mini>/s-e7976c42
 created: 2026-10-11
 depends_on: []
 related: [CHORE-027]
@@ -16,7 +16,7 @@ related: [CHORE-027]
 v1.0.0 is released (PR #37, merge ab14fe1, tag v1.0.0, https://github.com/Congruentsys/quotabus/releases/tag/v1.0.0). Mini's `~/.local/bin/quotabus` was built from deeb435 (CHORE-027) and prints `quotabus 0.1.0`, so every row it writes carries `observed_by …/quotabus@0.1.0`. The code is the same as v1.0.0 (only the version, CHANGELOG and README changed), so this is a relabel, not a behaviour change. Captain 2026-10-11: "yes, file the chore for Mini to redeploy v1.0.0".
 
 ## Inputs (host-specific)
-Mini (user hankh19, gui/501), reached by `ssh mini`, and its Doppler login (project nusy-product-team, config dev). A session that cannot reach Mini bounces this item with the reason.
+Mini (user `<user>`, gui/501), reached by `ssh mini`, and its Doppler login (project nusy-product-team, config dev). A session that cannot reach Mini bounces this item with the reason.
 
 ## Plan
 Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeploy.md`) exactly, with these differences:
@@ -42,17 +42,17 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-11T14:45:37+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ],
   [
     kb:status kb:in_progress ;
     kb:at "2026-10-11T14:51:08+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
   ],
   [
     kb:status kb:done ;
     kb:at "2026-10-11T15:07:03+00:00"^^xsd:dateTime ;
-    kb:by "Mac-mini/s-e7976c42" ;
+    kb:by "<mini>/s-e7976c42" ;
     kb:closedBy <https://github.com/Congruentsys/quotabus/pull/38> ;
   ] .
 ```
@@ -64,13 +64,13 @@ Measure lane, following CHORE-027's steps (`docs/findings/CHORE-027-mini-redeplo
 <> kb:statusChange [
     kb:status kb:ready ;
     kb:at "2026-10-11T14:45:37+00:00"^^xsd:dateTime ;
-    kb:by "M5-MBP-2/s-72a67d16" ;
+    kb:by "<m5>/s-72a67d16" ;
   ] .
 ```
 
 
 ## Comments
 
-### Mac-mini/s-e7976c42 (2026-10-11 15:00)
+### `<mini>/s-e7976c42` (2026-10-11 15:00)
 
-measured on Mini 2026-10-11: v1.0.0 (ab14fe1) installed, --version 'quotabus 1.0.0', forced cycle exit 0, regular tick #716 exit 0, rows observed_by Mac-mini/quotabus@1.0.0. Finding in PR #38 (https://github.com/Congruentsys/quotabus/pull/38), under review r1.
+measured on Mini 2026-10-11: v1.0.0 (ab14fe1) installed, --version 'quotabus 1.0.0', forced cycle exit 0, regular tick #716 exit 0, rows observed_by `<mini>/quotabus@1.0.0`. Finding in PR #38 (https://github.com/Congruentsys/quotabus/pull/38), under review r1.

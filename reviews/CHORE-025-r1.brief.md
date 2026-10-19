@@ -1,6 +1,6 @@
 You are an INDEPENDENT code reviewer for quotabus PR #33 (https://github.com/Congruentsys/quotabus/pull/33), branch `chore/CHORE-025-pin-local-skipped`. You wrote none of this work. Review the tip of that branch, which is the commit adding this brief file. Call it <SHA>; get it with `git rev-parse origin/chore/CHORE-025-pin-local-skipped` after a fetch.
 
-Work in your OWN scratch worktree: `git -C /Users/hankh95/Projects/quotabus fetch -q origin && git -C /Users/hankh95/Projects/quotabus worktree add -q --detach /tmp/rv-CHORE-025 origin/chore/CHORE-025-pin-local-skipped && ln -s /Users/hankh95/Projects/quotabus/.venv /tmp/rv-CHORE-025/.venv`. Remove it when you are done: `git -C /Users/hankh95/Projects/quotabus worktree remove --force /tmp/rv-CHORE-025`. Use CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-025 and add /Users/hankh95/.cargo/bin to PATH.
+Work in your OWN scratch worktree: `git -C /Users/<user>/Projects/quotabus fetch -q origin && git -C /Users/<user>/Projects/quotabus worktree add -q --detach /tmp/rv-CHORE-025 origin/chore/CHORE-025-pin-local-skipped && ln -s /Users/<user>/Projects/quotabus/.venv /tmp/rv-CHORE-025/.venv`. Remove it when you are done: `git -C /Users/<user>/Projects/quotabus worktree remove --force /tmp/rv-CHORE-025`. Use CARGO_TARGET_DIR=/tmp/qb-target-rv-CHORE-025 and add `/Users/<user>/.cargo/bin` to PATH.
 
 Item: kanban-work/chores/CHORE-025-*.md. It came from reviews/CHORE-024-r1.md F6 on main. The PR is TEST-ONLY. Its one commit is 5123e5f, adding tests/chore025_alert_local_skipped_discovering.rs. It pins behaviour that already exists, so the tests are green on today's code. Red was proven by mutation.
 
@@ -23,7 +23,7 @@ brief: reviews/CHORE-025-r1.brief.md @ <SHA>
 Then an `Authorship:` paragraph. It says:
 - All the work and this review were done by LLM agent sessions (Claude Opus 5.5). No human reviewed it.
 - "Distinct" means a separate `claude -p` process with a fresh context that wrote none of the work, of the SAME model family, briefed by the driver (the author) with this committed brief.
-- The commissioning session is M5-MBP-2/s-72a67d16. Its stake: it drove the work and wrote no tests or code. The tests were written by a sub-agent.
+- The commissioning session is `<m5>/s-72a67d16`. Its stake: it drove the work and wrote no tests or code. The tests were written by a sub-agent.
 
 Then the findings, numbered F1, F2 and so on. Each one quotes the command it ran and that command's output. Say whether each one blocks.
 
